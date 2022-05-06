@@ -5,6 +5,7 @@ Purpose: generate format identification and create reports to support:
     3. Identify risks to address immediately.
 """
 import csv
+import datetime
 import os
 import subprocess
 import sys
@@ -88,7 +89,12 @@ def fits_to_csv(fits_xml):
     fileinfo = root.find("fits:fileinfo", ns)
     file_data.append(get_text(fileinfo, "filepath"))
     file_data.append(get_text(fileinfo, "filename"))
-    file_data.append(get_text(fileinfo, "fslastmodified"))
+
+    # Convert from a timestamp to something that is human readable.
+    # Only use the first 10 digits to yet gear, month, and day.
+    timestamp = get_text(fileinfo, "fslastmodified")
+    date = datetime.date.fromtimestamp(int(timestamp[:10]))
+    file_data.append(date)
 
     # Convert size from bytes to MB to be easier to read.
     # Rounded to 2 decimal places unless that will make it 0.
