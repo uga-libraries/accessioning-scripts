@@ -16,13 +16,27 @@ def fits_to_csv(fits_xml):
     """Extracts desired fields from a FITS XML file, reformats when necessary,
     and saves each format identification as a separate row in a CSV. Returns nothing."""
 
-    def get_optional(parent, element):
-        """If an optional element is present, returns the value of text. Otherwise, returns None.
-        Assumes that the element will not repeat."""
+    def get_text(parent, element):
+        """Returns a single value, regardless of if the element is missing, appears once, or repeats.
+        For a missing element (some are optional), returns None.
+        For an element that appears once, returns a string with the value of the text.
+        For an element that repeats, returns a string with the text of every instance separated by semicolons.
 
+        The parent is typically a single element but may be a path, such as identification/identity.
+        This function cannot be used if the desired value is an attribute instead of element text."""
+
+        # If one or more instances of the element are present, returns the text.
+        # For multiple instances, puts a semicolon between the text for each instance.
         try:
-            value = root.find(f"fits:{parent}/fits:{element}", ns).text
+            value = ""
+            value_list = root.findall(f"fits:{parent}/fits:{element}", ns)
+            for item in value_list:
+                if value == "":
+                    value += item.text
+                else:
+                    value += f"; {item.text}"
             return value
+        # If the element is missing, item.text raises an AttributeError.
         except AttributeError:
             return None
 
@@ -38,16 +52,27 @@ def fits_to_csv(fits_xml):
     # Attributes from <identity> that are always present and never repeat.
     format_name = root.find("fits:identification/fits:identity", ns).get("format")
 
-    # Elements from <fileinfo> that are always present and never repeat.
-    path = root.find("fits:fileinfo/fits:filepath", ns).text
-    name = root.find("fits:fileinfo/fits:filename", ns).text
-    date = root.find("fits:fileinfo/fits:fslastmodified", ns).text
-    size = root.find("fits:fileinfo/fits:size", ns).text
-    md5 = root.find("fits:fileinfo/fits:md5checksum", ns).text
+    # Element from <identity> that is always present and may repeat.
+    tools = ""
+    tools_list = root.findall("fits:identification/fits:identity/fits:tool", ns)
+    for tool in tools_list:
+        tool_name = f"{tool.get('toolname')} version {tool.get('toolversion')}"
+        if tools == "":
+            tools += tool_name
+        else:
+            tools += f"; {tool_name}"
 
-    # Elements from <filestatus> that may not be present and never repeat.
-    valid = get_optional("filestatus", "valid")
-    well_formed = get_optional("filestatus", "well-formed")
+    # Elements from <fileinfo>.
+    path = get_text("fileinfo", "filepath")
+    name = get_text("fileinfo", "filename")
+    date = get_text("fileinfo", "fslastmodified")
+    size = get_text("fileinfo", "size")
+    md5 = get_text("fileinfo", "md5checksum")
+
+    # Elements from <filestatus>.
+    valid = get_text("filestatus", "valid")
+    well_formed = get_text("filestatus", "well-formed")
+    message = get_text("filestatus", "message")
 
 
 # Get accession folder path from script argument, verify it is correct, and make it the current directory.
