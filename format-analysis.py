@@ -35,6 +35,9 @@ def fits_to_csv(fits_xml):
 
     # Get the data from the desired elements.
 
+    # Attributes from <identity> that are always present and never repeat.
+    format_name = root.find("fits:identification/fits:identity", ns).get("format")
+
     # Elements from <fileinfo> that are always present and never repeat.
     path = root.find("fits:fileinfo/fits:filepath", ns).text
     name = root.find("fits:fileinfo/fits:filename", ns).text
