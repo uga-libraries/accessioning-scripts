@@ -49,8 +49,9 @@ def fits_to_csv(fits_xml):
 
     # Get the data from the desired elements.
 
-    # Attributes from <identity> that are always present and never repeat.
+    # Elements from <identity>, except for tools (repeats and requires specialized combining).
     format_name = root.find("fits:identification/fits:identity", ns).get("format")
+    mimetype = root.find("fits:identification/fits:identity", ns).get("mimetype")
 
     # Element from <identity> that is always present and may repeat.
     tools = ""
@@ -68,6 +69,7 @@ def fits_to_csv(fits_xml):
     date = get_text("fileinfo", "fslastmodified")
     size = get_text("fileinfo", "size")
     md5 = get_text("fileinfo", "md5checksum")
+    creating = get_text("fileinfo", "creatingApplicationName")
 
     # Elements from <filestatus>.
     valid = get_text("filestatus", "valid")
