@@ -16,6 +16,16 @@ def fits_to_csv(fits_xml):
     """Extracts desired fields from a FITS XML file, reformats when necessary,
     and saves each format identification as a separate row in a CSV. Returns nothing."""
 
+    def get_optional(parent, element):
+        """If an optional element is present, returns the value of text. Otherwise, returns None.
+        Assumes that the element will not repeat."""
+
+        try:
+            value = root.find(f"fits:{parent}/fits:{element}", ns).text
+            return value
+        except AttributeError:
+            return None
+
     # Read the fits.xml file.
     tree = ET.parse(fits_xml)
     root = tree.getroot()
@@ -32,7 +42,9 @@ def fits_to_csv(fits_xml):
     size = root.find("fits:fileinfo/fits:size", ns).text
     md5 = root.find("fits:fileinfo/fits:md5checksum", ns).text
 
-
+    # Elements from <filestatus> that may not be present and never repeat.
+    valid = get_optional("filestatus", "valid")
+    well_formed = get_optional("filestatus", "well-formed")
 
 
 # Get accession folder path from script argument, verify it is correct, and make it the current directory.
