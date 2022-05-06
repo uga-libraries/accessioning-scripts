@@ -22,14 +22,14 @@ def fits_to_csv(fits_xml):
         For an element that appears once, returns a string with the value of the text.
         For an element that repeats, returns a string with the text of every instance separated by semicolons.
 
-        The parent is typically a single element but may be a path, such as identification/identity.
+        The parent element does not need to be a child of root.
         This function cannot be used if the desired value is an attribute instead of element text."""
 
         # If one or more instances of the element are present, returns the text.
         # For multiple instances, puts a semicolon between the text for each instance.
         try:
             value = ""
-            value_list = root.findall(f"fits:{parent}/fits:{element}", ns)
+            value_list = parent.findall(f"fits:{element}", ns)
             for item in value_list:
                 if value == "":
                     value += item.text
@@ -48,33 +48,35 @@ def fits_to_csv(fits_xml):
     ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
 
     # Get the data from the desired elements.
+    # Selects the parent element from root first to have consistent paths regardless of XML hierarchy.
+    for identity in root.find("fits:identification", ns):
+        format_name = identity.get("format")
+        mimetype = identity.get("mimetype")
+        format_version = get_text(identity, "version")
+        puid = get_text(identity, "externalIdentifier[@type='puid']")
 
-    # Elements from <identity>, except for tools (repeats and requires specialized combining).
-    format_name = root.find("fits:identification/fits:identity", ns).get("format")
-    mimetype = root.find("fits:identification/fits:identity", ns).get("mimetype")
+        # For each tool, need to combine attributes with the name and version.
+        tools = ""
+        tools_list = identity.findall("fits:tool", ns)
+        for tool in tools_list:
+            tool_name = f"{tool.get('toolname')} version {tool.get('toolversion')}"
+            if tools == "":
+                tools += tool_name
+            else:
+                tools += f"; {tool_name}"
 
-    # Element from <identity> that is always present and may repeat.
-    tools = ""
-    tools_list = root.findall("fits:identification/fits:identity/fits:tool", ns)
-    for tool in tools_list:
-        tool_name = f"{tool.get('toolname')} version {tool.get('toolversion')}"
-        if tools == "":
-            tools += tool_name
-        else:
-            tools += f"; {tool_name}"
+    for fileinfo in root.find("fits:fileinfo", ns):
+        path = get_text(fileinfo, "filepath")
+        name = get_text(fileinfo, "filename")
+        date = get_text(fileinfo, "fslastmodified")
+        size = get_text(fileinfo, "size")
+        md5 = get_text(fileinfo, "md5checksum")
+        creating = get_text(fileinfo, "creatingApplicationName")
 
-    # Elements from <fileinfo>.
-    path = get_text("fileinfo", "filepath")
-    name = get_text("fileinfo", "filename")
-    date = get_text("fileinfo", "fslastmodified")
-    size = get_text("fileinfo", "size")
-    md5 = get_text("fileinfo", "md5checksum")
-    creating = get_text("fileinfo", "creatingApplicationName")
-
-    # Elements from <filestatus>.
-    valid = get_text("filestatus", "valid")
-    well_formed = get_text("filestatus", "well-formed")
-    message = get_text("filestatus", "message")
+    for filestatus in root.find("fits:filestatus", ns):
+        valid = get_text(filestatus, "valid")
+        well_formed = get_text(filestatus, "well-formed")
+        message = get_text(filestatus, "message")
 
 
 # Get accession folder path from script argument, verify it is correct, and make it the current directory.
