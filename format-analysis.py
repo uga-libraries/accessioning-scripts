@@ -125,7 +125,7 @@ def fits_to_csv(fits_xml):
 
     # Create the CSV rows by combining each list in format_list with file_data.
     # Save each row to the CSV.
-    with open(f"../{accession_number}_FITS.csv", "a", newline="") as csv_open:
+    with open(f"{accession_folder}_FITS/{accession_number}_FITS.csv", "a", newline="") as csv_open:
         csv_write = csv.writer(csv_open)
 
         for format_data in formats_list:
@@ -133,17 +133,17 @@ def fits_to_csv(fits_xml):
             csv_write.writerow(format_data)
 
 
-# Get accession folder path from script argument, verify it is correct, and make it the current directory.
+# Get accession folder path from script argument and verify it is correct.
 # If there is an error, ends the script.
 try:
     accession_folder = sys.argv[1]
-    os.chdir(accession_folder)
 except IndexError:
     print("\nThe required script argument is missing.")
     print("Please run the script again.")
     print("Script usage: python path/format-analysis.py path/accession_folder")
     sys.exit()
-except FileNotFoundError:
+
+if not os.path.exists(accession_folder):
     print(f"\nThe provided accession folder '{accession_folder}' is not a valid directory.")
     print("Please run the script again.")
     print("Script usage: python path/format-analysis.py path/accession_folder")
@@ -166,7 +166,7 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{f"{accession_folder}
 
 # Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
 # and save to a CSV.
-with open(f"../{accession_number}_FITS.csv", "w", newline="") as csv_open:
+with open(f"{accession_folder}_FITS/{accession_number}_FITS.csv", "w", newline="") as csv_open:
     header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
               "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
               "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
@@ -174,10 +174,13 @@ with open(f"../{accession_number}_FITS.csv", "w", newline="") as csv_open:
     csv_write.writerow(header)
 
 for fits_xml in os.listdir(f"{accession_folder}_FITS"):
+    if fits_xml.endswith(".csv"):
+        continue
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
 # Read the CSV with the combined FITS information into pandas for analysis and summarizing.
-df = pd.read_csv(f"../{accession_number}_FITS.csv")
+df_fits = pd.read_csv(f"../{accession_number}_FITS.csv")
+df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
 # Add risk information.
 
