@@ -178,8 +178,9 @@ for fits_xml in os.listdir(f"{accession_folder}_FITS"):
         continue
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
-# Read the CSV with the combined FITS information into pandas for analysis and summarizing.
-df_fits = pd.read_csv(f"../{accession_number}_FITS.csv")
+# Read the FITS, ITA (technical appraisal), and NARA CSVs into pandas for analysis and summarizing.
+df_fits = pd.read_csv(f"{accession_folder}_FITS/{accession_number}_FITS.csv")
+df_ita = pd.read_csv("ITAfiles.csv")
 df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
 # Add risk information.
