@@ -4,6 +4,7 @@ Purpose: generate format identification and create reports to support:
     2. Assigning processing tiers
     3. Identify risks to address immediately.
 """
+import csv
 import os
 import subprocess
 import sys
@@ -37,6 +38,7 @@ def fits_to_csv(fits_xml):
                     value += f"; {item.text}"
             return value
         # If the element is missing, item.text raises an AttributeError.
+        # Returns None, which results in a blank cell in the CSV.
         except AttributeError:
             return None
 
@@ -47,13 +49,16 @@ def fits_to_csv(fits_xml):
     # FITS namespace. All elements in the fits.xml are part of this namespace.
     ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
 
-    # Get the data from the desired elements.
-    # Selects the parent element from root first to have consistent paths regardless of XML hierarchy.
+    # Get the data from the desired elements and save to a list which will be the row in the CSV.
+    # Selects the parent element (identity, fileinfo, and filestatus) from root first
+    # to have consistent paths regardless of XML hierarchy.
+    row = []
+
     for identity in root.find("fits:identification", ns):
-        format_name = identity.get("format")
-        mimetype = identity.get("mimetype")
-        format_version = get_text(identity, "version")
-        puid = get_text(identity, "externalIdentifier[@type='puid']")
+        row.append(identity.get("format"))
+        row.append(get_text(identity, "version"))
+        row.append(identity.get("mimetype"))
+        row.append(get_text(identity, "externalIdentifier[@type='puid']"))
 
         # For each tool, need to combine attributes with the name and version.
         tools = ""
@@ -64,19 +69,25 @@ def fits_to_csv(fits_xml):
                 tools += tool_name
             else:
                 tools += f"; {tool_name}"
+        row.append(tools)
 
-    for fileinfo in root.find("fits:fileinfo", ns):
-        path = get_text(fileinfo, "filepath")
-        name = get_text(fileinfo, "filename")
-        date = get_text(fileinfo, "fslastmodified")
-        size = get_text(fileinfo, "size")
-        md5 = get_text(fileinfo, "md5checksum")
-        creating = get_text(fileinfo, "creatingApplicationName")
+    fileinfo = root.find("fits:fileinfo", ns)
+    row.append(get_text(fileinfo, "filepath"))
+    row.append(get_text(fileinfo, "filename"))
+    row.append(get_text(fileinfo, "fslastmodified"))
+    row.append(get_text(fileinfo, "size"))
+    row.append(get_text(fileinfo, "md5checksum"))
+    row.append(get_text(fileinfo, "creatingApplicationName"))
 
-    for filestatus in root.find("fits:filestatus", ns):
-        valid = get_text(filestatus, "valid")
-        well_formed = get_text(filestatus, "well-formed")
-        message = get_text(filestatus, "message")
+    filestatus = root.find("fits:filestatus", ns)
+    row.append(get_text(filestatus, "valid"))
+    row.append(get_text(filestatus, "well-formed"))
+    row.append(get_text(filestatus, "message"))
+
+    # Save the information as a row or rows in the CSV.
+    with open(f"../{accession_number}_FITS.csv", "a", newline="") as csv_open:
+        csv_write = csv.writer(csv_open)
+        csv_write.writerow(row)
 
 
 # Get accession folder path from script argument, verify it is correct, and make it the current directory.
@@ -112,8 +123,14 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{f"{accession_folder}
 
 # Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
 # and save to a CSV.
+with open(f"../{accession_number}_FITS.csv", "w", newline="") as csv_open:
+    header = ["Format Name", "Format Version", "MIME Type", "PUID", "Identifying Tool(s)",
+              "File Path", "File Name", "Date Last Modified", "Size (GB)", "MD5", "Creating Application",
+              "Valid", "Well-Formed", "File Status Message"]
+    csv_write = csv.writer(csv_open)
+    csv_write.writerow(header)
+
 for fits_xml in os.listdir(f"{accession_folder}_FITS"):
-    print(f"\nReading {fits_xml}")
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
 # Add additional information (file extension, parent folder).
