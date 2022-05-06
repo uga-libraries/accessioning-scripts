@@ -88,7 +88,11 @@ def fits_to_csv(fits_xml):
 
     fileinfo = root.find("fits:fileinfo", ns)
     file_data.append(get_text(fileinfo, "filepath"))
-    file_data.append(get_text(fileinfo, "filename"))
+    filename = get_text(fileinfo, "filename")
+    file_data.append(filename)
+
+    # Calculates file extension from filename, which is everything after the last period in the name.
+    file_data.append(filename.split(".")[-1])
 
     # Convert from a timestamp to something that is human readable.
     # Only use the first 10 digits to yet gear, month, and day.
@@ -157,15 +161,15 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{f"{accession_folder}
 # and save to a CSV.
 with open(f"../{accession_number}_FITS.csv", "w", newline="") as csv_open:
     header = ["Format Name", "Format Version", "MIME Type", "PUID", "Identifying Tool(s)", "Multiple IDs",
-              "File Path", "File Name", "Date Last Modified", "Size (MB)", "MD5", "Creating Application",
-              "Valid", "Well-Formed", "File Status Message"]
+              "File Path", "File Name", "File Extension", "Date Last Modified", "Size (MB)", "MD5",
+              "Creating Application", "Valid", "Well-Formed", "File Status Message"]
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
 
 for fits_xml in os.listdir(f"{accession_folder}_FITS"):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
-# Add additional information (file extension, parent folder).
+# Read the CSV with the combined FITS information into pandas for analysis and summarizing.
 
 # Add risk information.
 
