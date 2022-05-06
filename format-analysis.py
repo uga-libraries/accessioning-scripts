@@ -52,13 +52,15 @@ def fits_to_csv(fits_xml):
     # Get the data from the desired elements and save to a list which will be the row in the CSV.
     # Selects the parent element (identity, fileinfo, and filestatus) from root first
     # to have consistent paths regardless of XML hierarchy.
-    row = []
 
+    # There can be more than one format identity for the same file, so make a list of lists.
+    # Each list is the information for one format identity.
+    formats_list = []
     for identity in root.find("fits:identification", ns):
-        row.append(identity.get("format"))
-        row.append(get_text(identity, "version"))
-        row.append(identity.get("mimetype"))
-        row.append(get_text(identity, "externalIdentifier[@type='puid']"))
+        format_data = [identity.get("format")]
+        format_data.append(get_text(identity, "version"))
+        format_data.append(identity.get("mimetype"))
+        format_data.append(get_text(identity, "externalIdentifier[@type='puid']"))
 
         # For each tool, need to combine attributes with the name and version.
         tools = ""
@@ -69,25 +71,35 @@ def fits_to_csv(fits_xml):
                 tools += tool_name
             else:
                 tools += f"; {tool_name}"
-        row.append(tools)
+        format_data.append(tools)
+
+        formats_list.append(format_data)
+
+    # The information from fileinfo and filestatus is never repeated.
+    # It will be added to the end of each format in format_list after it is gathered.
+    file_data = []
 
     fileinfo = root.find("fits:fileinfo", ns)
-    row.append(get_text(fileinfo, "filepath"))
-    row.append(get_text(fileinfo, "filename"))
-    row.append(get_text(fileinfo, "fslastmodified"))
-    row.append(get_text(fileinfo, "size"))
-    row.append(get_text(fileinfo, "md5checksum"))
-    row.append(get_text(fileinfo, "creatingApplicationName"))
+    file_data.append(get_text(fileinfo, "filepath"))
+    file_data.append(get_text(fileinfo, "filename"))
+    file_data.append(get_text(fileinfo, "fslastmodified"))
+    file_data.append(get_text(fileinfo, "size"))
+    file_data.append(get_text(fileinfo, "md5checksum"))
+    file_data.append(get_text(fileinfo, "creatingApplicationName"))
 
     filestatus = root.find("fits:filestatus", ns)
-    row.append(get_text(filestatus, "valid"))
-    row.append(get_text(filestatus, "well-formed"))
-    row.append(get_text(filestatus, "message"))
+    file_data.append(get_text(filestatus, "valid"))
+    file_data.append(get_text(filestatus, "well-formed"))
+    file_data.append(get_text(filestatus, "message"))
 
-    # Save the information as a row or rows in the CSV.
+    # Create the CSV rows by combining each list in format_list with file_data.
+    # Save each row to the CSV.
     with open(f"../{accession_number}_FITS.csv", "a", newline="") as csv_open:
         csv_write = csv.writer(csv_open)
-        csv_write.writerow(row)
+
+        for format_data in formats_list:
+            format_data.extend(file_data)
+            csv_write.writerow(format_data)
 
 
 # Get accession folder path from script argument, verify it is correct, and make it the current directory.
