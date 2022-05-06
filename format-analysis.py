@@ -62,7 +62,13 @@ def fits_to_csv(fits_xml):
         format_data = [identity.get("format")]
         format_data.append(get_text(identity, "version"))
         format_data.append(identity.get("mimetype"))
-        format_data.append(get_text(identity, "externalIdentifier[@type='puid']"))
+
+        # If there is a PUID, add the PRONOM URL so it will match the NARA Preservation Action Plan CSV.
+        # The value of PUID is None if there is no match.
+        puid = get_text(identity, "externalIdentifier[@type='puid']")
+        if puid:
+            puid = "https://www.nationalarchives.gov.uk/pronom/" + puid
+        format_data.append(puid)
 
         # For each tool, need to combine attributes with the name and version.
         tools = ""
