@@ -7,6 +7,7 @@ Purpose: generate format identification and create reports to support:
 import csv
 import datetime
 import os
+import pandas as pd
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -160,9 +161,9 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{f"{accession_folder}
 # Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
 # and save to a CSV.
 with open(f"../{accession_number}_FITS.csv", "w", newline="") as csv_open:
-    header = ["Format Name", "Format Version", "MIME Type", "PUID", "Identifying Tool(s)", "Multiple IDs",
-              "File Path", "File Name", "File Extension", "Date Last Modified", "Size (MB)", "MD5",
-              "Creating Application", "Valid", "Well-Formed", "File Status Message"]
+    header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+              "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
+              "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
 
@@ -170,6 +171,7 @@ for fits_xml in os.listdir(f"{accession_folder}_FITS"):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
 # Read the CSV with the combined FITS information into pandas for analysis and summarizing.
+df = pd.read_csv(f"../{accession_number}_FITS.csv")
 
 # Add risk information.
 
