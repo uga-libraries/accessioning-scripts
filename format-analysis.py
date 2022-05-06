@@ -89,7 +89,15 @@ def fits_to_csv(fits_xml):
     file_data.append(get_text(fileinfo, "filepath"))
     file_data.append(get_text(fileinfo, "filename"))
     file_data.append(get_text(fileinfo, "fslastmodified"))
-    file_data.append(get_text(fileinfo, "size"))
+
+    # Convert size from bytes to MB to be easier to read.
+    # Rounded to 2 decimal places unless that will make it 0.
+    size = get_text(fileinfo, "size")
+    size = float(size) / 1000000
+    if size > .01:
+        size = round(size, 2)
+    file_data.append(size)
+
     file_data.append(get_text(fileinfo, "md5checksum"))
     file_data.append(get_text(fileinfo, "creatingApplicationName"))
 
@@ -143,7 +151,7 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{f"{accession_folder}
 # and save to a CSV.
 with open(f"../{accession_number}_FITS.csv", "w", newline="") as csv_open:
     header = ["Format Name", "Format Version", "MIME Type", "PUID", "Identifying Tool(s)", "Multiple IDs",
-              "File Path", "File Name", "Date Last Modified", "Size (GB)", "MD5", "Creating Application",
+              "File Path", "File Name", "Date Last Modified", "Size (MB)", "MD5", "Creating Application",
               "Valid", "Well-Formed", "File Status Message"]
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
