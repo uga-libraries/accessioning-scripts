@@ -76,8 +76,14 @@ def fits_to_csv(fits_xml):
         formats_list.append(format_data)
 
     # The information from fileinfo and filestatus is never repeated.
-    # It will be added to the end of each format in format_list after it is gathered.
+    # It will be added to the information about each format identification after it is gathered.
     file_data = []
+
+    # Tests if there are multiple IDs for this format, based on how many format lists are in formats_list.
+    if len(formats_list) == 1:
+        file_data.append(False)
+    else:
+        file_data.append(True)
 
     fileinfo = root.find("fits:fileinfo", ns)
     file_data.append(get_text(fileinfo, "filepath"))
@@ -136,7 +142,7 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{f"{accession_folder}
 # Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
 # and save to a CSV.
 with open(f"../{accession_number}_FITS.csv", "w", newline="") as csv_open:
-    header = ["Format Name", "Format Version", "MIME Type", "PUID", "Identifying Tool(s)",
+    header = ["Format Name", "Format Version", "MIME Type", "PUID", "Identifying Tool(s)", "Multiple IDs",
               "File Path", "File Name", "Date Last Modified", "Size (GB)", "MD5", "Creating Application",
               "Valid", "Well-Formed", "File Status Message"]
     csv_write = csv.writer(csv_open)
