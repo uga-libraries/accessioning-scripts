@@ -6,6 +6,7 @@ Purpose: generate format identification and create reports to support:
 """
 import csv
 import datetime
+import numpy as np
 import os
 import pandas as pd
 import subprocess
@@ -187,11 +188,11 @@ df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
 # Make a dataframe with just formats that have a PUID and match them exactly to NARA.
 # Include all the FITS information and from NARA "Risk Level", "Preservation Action", "Proposed Preservation Plan".
-# Also add a column to indicate the match type is PUID.
+# Also add a column to indicate the match type is PUID if there was a match (Risk Level has a value).
 df_puid = pd.merge(df_fits[df_fits["PUID"].notnull()],
                    df_nara[["PRONOM URL", "Risk Level", "Preservation Action", "Proposed Preservation Plan"]],
                    left_on="PUID", right_on="PRONOM URL", how="left")
-df_puid = df_puid.assign(Match_Type="PRONOM")
+df_puid["Match_Type"] = np.where(df_puid["Risk Level"].notnull(), "PRONOM", None)
 
 # Add technical appraisal information.
 
