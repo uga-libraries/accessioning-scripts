@@ -203,3 +203,5 @@ df_puid["Match_Type"] = np.where(df_puid["Risk Level"].notnull(), "PRONOM", None
 # Make subsets based on different risk factors.
 
 # Save reports.
+with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
+    df_puid.to_excel(result, sheet_name="PUID Match", index=False)
