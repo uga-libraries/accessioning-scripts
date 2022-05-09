@@ -125,7 +125,7 @@ def fits_to_csv(fits_xml):
 
     # Create the CSV rows by combining each list in format_list with file_data.
     # Save each row to the CSV.
-    with open(f"{accession_folder}_FITS/{accession_number}_FITS.csv", "a", newline="") as csv_open:
+    with open(f"{collection_folder}/{accession_number}_fits.csv", "a", newline="") as csv_open:
         csv_write = csv.writer(csv_open)
 
         for format_data in formats_list:
@@ -149,37 +149,37 @@ if not os.path.exists(accession_folder):
     print("Script usage: python path/format-analysis.py path/accession_folder")
     sys.exit()
 
-# Calculates the accession number, which is the name of the last folder in the accession_folder path.
-accession_number = os.path.basename(accession_folder)
+# Calculates the accession number, which is the name of the last folder in the accession_folder path,
+# and the collection folder, which is everything in the accession_folder path except the accession folder.
+collection_folder, accession_number = os.path.split(accession_folder)
 
-# Makes a folder for format identification information in the parent directory of the accession folder.
+# Makes a folder for format identification information in the collection folder of the accession folder.
 # If this folder already exists, prints an error and ends the script.
+fits_output = f"{collection_folder}/{accession_number}_FITS"
 try:
-    os.mkdir(f"{accession_folder}_FITS")
+    os.mkdir(fits_output)
 except FileExistsError:
-    print(f"There is already FITS data for accession {accession_folder}.")
-    print(f"Delete or move the '{accession_folder}_FITS' folder and run the script again.")
+    print(f"There is already FITS data for accession {accession_number}.")
+    print(f"Delete or move the '{fits_output}' folder and run the script again.")
     sys.exit()
 
 # Generates the format identification information for the accession using FITS
-subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{f"{accession_folder}_FITS"}"', shell=True)
+subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
 # Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
-# and save to a CSV.
-with open(f"{accession_folder}_FITS/{accession_number}_FITS.csv", "w", newline="") as csv_open:
+# and save to a CSV in the collection folder.
+with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
     header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
               "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
               "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
 
-for fits_xml in os.listdir(f"{accession_folder}_FITS"):
-    if fits_xml.endswith(".csv"):
-        continue
+for fits_xml in os.listdir(fits_output):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
 # Read the FITS, ITA (technical appraisal), and NARA CSVs into pandas for analysis and summarizing.
-df_fits = pd.read_csv(f"{accession_folder}_FITS/{accession_number}_FITS.csv")
+df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
 df_ita = pd.read_csv("ITAfiles.csv")
 df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
