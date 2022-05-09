@@ -192,12 +192,17 @@ df_puid = pd.merge(df_fits[df_fits["PUID"].notnull()],
                    df_nara[["PRONOM URL", "Risk Level", "Preservation Action", "Proposed Preservation Plan"]],
                    left_on="PUID", right_on="PRONOM URL", how="left")
 
-# If there was not a match to NARA by PUID, move to a separate dataframe to continue testing for matches.
+# If there was not a match to NARA by PUID, move to a separate dataframe without columns from NARA.
 # For the ones that did match, leave in df_puid, remove NARA PUID column, and add a column indicating the match type.
 df_puid_no = df_puid[df_puid["Risk Level"].isnull()].copy()
+df_puid_no = df_puid_no.drop(["PRONOM URL", "Risk Level", "Preservation Action", "Proposed Preservation Plan"], axis=1)
 df_puid = df_puid.dropna(subset=["Risk Level"])
-df_puid = df_puid.drop(['PRONOM URL'], axis=1)
+df_puid = df_puid.drop(["PRONOM URL"], axis=1)
 df_puid = df_puid.assign(Match_Type="PRONOM")
+
+# Make a dataframe with formats that aren't matched to NARA yet, either because they have no PUID or
+# because the PUID was not in NARA.
+df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
 
 # Add technical appraisal information.
 
