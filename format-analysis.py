@@ -188,11 +188,16 @@ df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
 # Make a dataframe with just formats that have a PUID and match them exactly to NARA.
 # Include all the FITS information and from NARA "Risk Level", "Preservation Action", "Proposed Preservation Plan".
-# Also add a column to indicate the match type is PUID if there was a match (Risk Level has a value).
 df_puid = pd.merge(df_fits[df_fits["PUID"].notnull()],
                    df_nara[["PRONOM URL", "Risk Level", "Preservation Action", "Proposed Preservation Plan"]],
                    left_on="PUID", right_on="PRONOM URL", how="left")
-df_puid["Match_Type"] = np.where(df_puid["Risk Level"].notnull(), "PRONOM", None)
+
+# If there was not a match to NARA by PUID, move to a separate dataframe to continue testing for matches.
+# For the ones that did match, leave in df_puid, remove NARA PUID column, and add a column indicating the match type.
+df_puid_no = df_puid[df_puid["Risk Level"].isnull()].copy()
+df_puid = df_puid.dropna(subset=["Risk Level"])
+df_puid = df_puid.drop(['PRONOM URL'], axis=1)
+df_puid = df_puid.assign(Match_Type="PRONOM")
 
 # Add technical appraisal information.
 
