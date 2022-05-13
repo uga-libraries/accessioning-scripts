@@ -154,30 +154,30 @@ if not os.path.exists(accession_folder):
 # and the collection folder, which is everything in the accession_folder path except the accession folder.
 collection_folder, accession_number = os.path.split(accession_folder)
 
-# Makes a folder for format identification information in the collection folder of the accession folder.
-# If this folder already exists, prints an error and ends the script.
-fits_output = f"{collection_folder}/{accession_number}_FITS"
-try:
-    os.mkdir(fits_output)
-except FileExistsError:
-    print(f"There is already FITS data for accession {accession_number}.")
-    print(f"Delete or move the '{fits_output}' folder and run the script again.")
-    sys.exit()
-
-# Generates the format identification information for the accession using FITS
-subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
-
-# Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
-# and save to a CSV in the collection folder.
-with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
-    header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-              "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
-              "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
-    csv_write = csv.writer(csv_open)
-    csv_write.writerow(header)
-
-for fits_xml in os.listdir(fits_output):
-    fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
+# # Makes a folder for format identification information in the collection folder of the accession folder.
+# # If this folder already exists, prints an error and ends the script.
+# fits_output = f"{collection_folder}/{accession_number}_FITS"
+# try:
+#     os.mkdir(fits_output)
+# except FileExistsError:
+#     print(f"There is already FITS data for accession {accession_number}.")
+#     print(f"Delete or move the '{fits_output}' folder and run the script again.")
+#     sys.exit()
+#
+# # Generates the format identification information for the accession using FITS
+# subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
+#
+# # Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
+# # and save to a CSV in the collection folder.
+# with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
+#     header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+#               "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
+#               "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
+#     csv_write = csv.writer(csv_open)
+#     csv_write.writerow(header)
+#
+# for fits_xml in os.listdir(fits_output):
+#     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
 # Read the FITS, ITA (technical appraisal), and NARA CSVs into pandas for analysis and summarizing.
 df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
@@ -217,8 +217,13 @@ df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
 
 # Name and version is a match (case insensitive).
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower", how="left")
+df_version = df_matching.dropna(subset=["Risk Level"])
+df_version = df_version.assign(Match_Type="Format Name and Version")
+
+# Name is a match (case insensitive). For ones without a version, which are NaN in name_version.
+df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_lower", right_on="format_lower", how="left")
 df_name = df_matching.dropna(subset=["Risk Level"])
-df_name = df_name.assign(Match_Type="Format Name and Version")
+df_name = df_name.assign(Match_Type="Format Name")
 
 # Extension is exact match.
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="File_Extension", right_on="File Extension(s)", how="left")
@@ -226,7 +231,7 @@ df_ext = df_matching.dropna(subset=["Risk Level"])
 df_ext = df_ext.assign(Match_Type="File Extension")
 
 # Combine the dataframes with different matches to save to spreadsheet
-df_risk = pd.concat([df_puid, df_name, df_ext])
+df_risk = pd.concat([df_puid, df_version, df_name, df_ext])
 
 # Add technical appraisal information.
 
