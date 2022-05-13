@@ -237,8 +237,11 @@ df_unmatched.drop(nara_columns, inplace=True, axis=1)
 df_ext = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_ext = df_ext.assign(Match_Type="File Extension")
 
+# Add match type of "None" for any that are still unmatched.
+df_unmatched = df_unmatched.assign(Match_Type="None")
+
 # Combine the dataframes with different matches to save to spreadsheet
-df_risk = pd.concat([df_puid, df_version, df_name, df_ext])
+df_risk = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
 
 # Add technical appraisal information.
 
