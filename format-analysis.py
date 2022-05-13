@@ -204,6 +204,23 @@ df_puid = df_puid.assign(Match_Type="PRONOM")
 # because the PUID was not in NARA.
 df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
 
+# Make a dataframe with just the columns from NARA that want to use for matching.
+df_nara_min = df_nara[["Format Name", "File Extension(s)", "Risk Level", "Preservation Action",
+                       "Proposed Preservation Plan"]].copy()
+
+# Name is exact match.
+df_matching = pd.merge(df_unmatched, df_nara_min, left_on="Format_Name", right_on="Format Name", how="left")
+df_name = df_matching.dropna(subset=["Risk Level"])
+df_name = df_name.assign(Match_Type="Format Name")
+
+# Extension is exact match.
+df_matching = pd.merge(df_unmatched, df_nara_min, left_on="File_Extension", right_on="File Extension(s)", how="left")
+df_ext = df_matching.dropna(subset=["Risk Level"])
+df_ext = df_ext.assign(Match_Type="File Extension")
+
+# Combine the dataframes with different matches to save to spreadsheet
+df_risk = pd.concat([df_puid, df_name, df_ext])
+
 # Add technical appraisal information.
 
 # Summarize: by format identification.
@@ -214,4 +231,4 @@ df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
 
 # Save reports.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
-    df_puid.to_excel(result, sheet_name="PUID Match", index=False)
+    df_risk.to_excel(result, sheet_name="Risk", index=False)
