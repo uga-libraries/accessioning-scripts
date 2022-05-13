@@ -186,6 +186,7 @@ df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
 # Add columns to df_fits and df_nara to assist in better matching.
 df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
+df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
 df_nara["format_lower"] = df_nara["Format Name"].str.lower()
 df_fits["ext_lower"] = df_fits["File_Extension"].str.lower()
 df_nara["exts_lower"] = df_nara["File Extension(s)"].str.lower()
@@ -214,10 +215,10 @@ df_puid = df_puid.assign(Match_Type="PRONOM")
 # because the PUID was not in NARA.
 df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
 
-# Name is exact match.
-df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="Format_Name", right_on="Format Name", how="left")
+# Name and version is a match (case insensitive).
+df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower", how="left")
 df_name = df_matching.dropna(subset=["Risk Level"])
-df_name = df_name.assign(Match_Type="Format Name")
+df_name = df_name.assign(Match_Type="Format Name and Version")
 
 # Extension is exact match.
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="File_Extension", right_on="File Extension(s)", how="left")
