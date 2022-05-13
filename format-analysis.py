@@ -225,8 +225,9 @@ df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_lower"
 df_name = df_matching.dropna(subset=["Risk Level"])
 df_name = df_name.assign(Match_Type="Format Name")
 
-# Extension is exact match.
-df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="File_Extension", right_on="File Extension(s)", how="left")
+# Extension is a match (case insensitive).
+# Will not match if NARA has more than one possible extension for that format version.
+df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="ext_lower", right_on="exts_lower", how="left")
 df_ext = df_matching.dropna(subset=["Risk Level"])
 df_ext = df_ext.assign(Match_Type="File Extension")
 
