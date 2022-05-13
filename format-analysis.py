@@ -212,23 +212,29 @@ df_puid = df_puid.drop(["PRONOM URL"], axis=1)
 df_puid = df_puid.assign(Match_Type="PRONOM")
 
 # Make a dataframe with formats that aren't matched to NARA yet, either because they have no PUID or
-# because the PUID was not in NARA.
+# because the PUID was not in NARA. Updates this dataframe after each attempted match.
 df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
 
 # Name and version is a match (case insensitive).
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower", how="left")
-df_version = df_matching.dropna(subset=["Risk Level"])
+df_unmatched = df_matching[df_matching["Risk Level"].isnull()].copy()
+df_unmatched.drop(nara_columns, inplace=True, axis=1)
+df_version = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_version = df_version.assign(Match_Type="Format Name and Version")
 
 # Name is a match (case insensitive). For ones without a version, which are NaN in name_version.
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_lower", right_on="format_lower", how="left")
-df_name = df_matching.dropna(subset=["Risk Level"])
+df_unmatched = df_matching[df_matching["Risk Level"].isnull()].copy()
+df_unmatched.drop(nara_columns, inplace=True, axis=1)
+df_name = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_name = df_name.assign(Match_Type="Format Name")
 
 # Extension is a match (case insensitive).
 # Will not match if NARA has more than one possible extension for that format version.
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="ext_lower", right_on="exts_lower", how="left")
-df_ext = df_matching.dropna(subset=["Risk Level"])
+df_unmatched = df_matching[df_matching["Risk Level"].isnull()].copy()
+df_unmatched.drop(nara_columns, inplace=True, axis=1)
+df_ext = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_ext = df_ext.assign(Match_Type="File Extension")
 
 # Combine the dataframes with different matches to save to spreadsheet
