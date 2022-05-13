@@ -198,22 +198,16 @@ nara_columns = ["Format Name", "File Extension(s)", "PRONOM URL", "Risk Level", 
 
 # Add risk information.
 
-# Make a dataframe with just formats that have a PUID and match them exactly to NARA.
-# Include all the FITS information and from NARA "Risk Level", "Preservation Action", "Proposed Preservation Plan".
-df_puid = pd.merge(df_fits[df_fits["PUID"].notnull()], df_nara[nara_columns],
-                   left_on="PUID", right_on="PRONOM URL", how="left")
-
-# If there was not a match to NARA by PUID, move to a separate dataframe without columns from NARA.
-# For the ones that did match, leave in df_puid, remove NARA PUID column, and add a column indicating the match type.
-df_puid_no = df_puid[df_puid["Risk Level"].isnull()].copy()
-df_puid_no = df_puid_no.drop(nara_columns, axis=1)
-df_puid = df_puid.dropna(subset=["Risk Level"])
-df_puid = df_puid.drop(["PRONOM URL"], axis=1)
+# PRONOM Identifier. Have to filter for PUID is not null or it will match unrelated formats with no PUID.
+df_matching = pd.merge(df_fits[df_fits["PUID"].notnull()], df_nara[nara_columns], left_on="PUID", right_on="PRONOM URL", how="left")
+df_unmatched = df_matching[df_matching["Risk Level"].isnull()].copy()
+df_unmatched.drop(nara_columns, inplace=True, axis=1)
+df_puid = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_puid = df_puid.assign(Match_Type="PRONOM")
 
-# Make a dataframe with formats that aren't matched to NARA yet, either because they have no PUID or
-# because the PUID was not in NARA. Updates this dataframe after each attempted match.
-df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
+# Add the formats with no PUID back into the unmatched dataframe for additional attempted matches.
+# This dataframe will be updated after every attempted match with the ones that still aren't matched.
+df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_unmatched])
 
 # Name and version is a match (case insensitive).
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower", how="left")
