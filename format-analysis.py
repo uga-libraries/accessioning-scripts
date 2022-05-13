@@ -184,18 +184,28 @@ df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
 df_ita = pd.read_csv("ITAfiles.csv")
 df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
+# Add columns to df_fits and df_nara to assist in better matching.
+df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
+df_nara["format_lower"] = df_nara["Format Name"].str.lower()
+df_fits["ext_lower"] = df_fits["File_Extension"].str.lower()
+df_nara["exts_lower"] = df_nara["File Extension(s)"].str.lower()
+
+# List of columns to look at in NARA each time.
+# Could not get it to work to save these to a separate dataframe - got duplicate columns after merging.
+nara_columns = ["Format Name", "File Extension(s)", "PRONOM URL", "Risk Level", "Preservation Action",
+                "Proposed Preservation Plan", "format_lower", "exts_lower"]
+
 # Add risk information.
 
 # Make a dataframe with just formats that have a PUID and match them exactly to NARA.
 # Include all the FITS information and from NARA "Risk Level", "Preservation Action", "Proposed Preservation Plan".
-df_puid = pd.merge(df_fits[df_fits["PUID"].notnull()],
-                   df_nara[["PRONOM URL", "Risk Level", "Preservation Action", "Proposed Preservation Plan"]],
+df_puid = pd.merge(df_fits[df_fits["PUID"].notnull()], df_nara[nara_columns],
                    left_on="PUID", right_on="PRONOM URL", how="left")
 
 # If there was not a match to NARA by PUID, move to a separate dataframe without columns from NARA.
 # For the ones that did match, leave in df_puid, remove NARA PUID column, and add a column indicating the match type.
 df_puid_no = df_puid[df_puid["Risk Level"].isnull()].copy()
-df_puid_no = df_puid_no.drop(["PRONOM URL", "Risk Level", "Preservation Action", "Proposed Preservation Plan"], axis=1)
+df_puid_no = df_puid_no.drop(nara_columns, axis=1)
 df_puid = df_puid.dropna(subset=["Risk Level"])
 df_puid = df_puid.drop(["PRONOM URL"], axis=1)
 df_puid = df_puid.assign(Match_Type="PRONOM")
@@ -204,17 +214,13 @@ df_puid = df_puid.assign(Match_Type="PRONOM")
 # because the PUID was not in NARA.
 df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_puid_no])
 
-# Make a dataframe with just the columns from NARA that want to use for matching.
-df_nara_min = df_nara[["Format Name", "File Extension(s)", "Risk Level", "Preservation Action",
-                       "Proposed Preservation Plan"]].copy()
-
 # Name is exact match.
-df_matching = pd.merge(df_unmatched, df_nara_min, left_on="Format_Name", right_on="Format Name", how="left")
+df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="Format_Name", right_on="Format Name", how="left")
 df_name = df_matching.dropna(subset=["Risk Level"])
 df_name = df_name.assign(Match_Type="Format Name")
 
 # Extension is exact match.
-df_matching = pd.merge(df_unmatched, df_nara_min, left_on="File_Extension", right_on="File Extension(s)", how="left")
+df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="File_Extension", right_on="File Extension(s)", how="left")
 df_ext = df_matching.dropna(subset=["Risk Level"])
 df_ext = df_ext.assign(Match_Type="File Extension")
 
