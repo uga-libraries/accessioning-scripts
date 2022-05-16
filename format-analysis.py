@@ -268,6 +268,7 @@ risk_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 nara_at_risk = df_risk[df_risk["Risk Level"] != "Low Risk"].copy()
 unidentified = df_risk[df_risk["Format_Name"] == "Unknown Binary"].copy()
 tech_appraisal = df_risk[df_risk["Technical Appraisal Candidate"] == True].copy()
+duplicates = df_fits.loc[df_fits.duplicated(subset="MD5", keep=False)].copy()
 
 # Save reports.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
@@ -277,3 +278,4 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     unidentified.to_excel(result, sheet_name="Unidentified Formats", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
+    duplicates.to_excel(result, sheet_name="Duplicates", index=False)
