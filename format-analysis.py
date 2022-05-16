@@ -246,7 +246,14 @@ df_risk.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_l
 ta_list = df_ita["SUBSTRING"].tolist()
 df_risk["Technical Appraisal Candidate"] = df_risk["File_Name"].str.contains("|".join(map(re.escape, ta_list)))
 
-# Summarize: by format identification.
+# Summarize: file count and file size for each FITS format name (version is not included).
+files = df_fits.groupby("Format_Name")["Format_Name"].count()
+files_percent = round((files / len(df_fits.index)) * 100, 2)
+size = df_fits.groupby("Format_Name")["Size_(MB)"].sum()
+size_percent = round((size / df_fits["Size_(MB)"].sum()) * 100, 2)
+format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
+format_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
+
 # Summarize: by risk.
 # Summarize: by parent.
 
@@ -255,3 +262,4 @@ df_risk["Technical Appraisal Candidate"] = df_risk["File_Name"].str.contains("|"
 # Save reports.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
     df_risk.to_excel(result, sheet_name="Risk", index=False)
+    format_subtotals.to_excel(result, sheet_name="Format Subtotals")
