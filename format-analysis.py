@@ -3,7 +3,16 @@ Purpose: generate format identification and create reports to support:
     1. Appraisal (technical and content based)
     2. Assigning processing tiers
     3. Identify risks to address immediately.
+
+Produces a spreadsheet with risk information based on NARA preservation action plans and a local list of formats that
+typically indicate removal during technical appraisal, with several tabs that summarize this information in different
+ways.
+
+Script usage: python path/format-analysis.py accession_folder
+The accession_folder is the path to the folder with files to be analyzed.
+Script output is saved in the parent folder of the accession folder.
 """
+
 import csv
 import datetime
 import os
@@ -27,6 +36,7 @@ def fits_to_csv(fits_xml):
         For an element that repeats, returns a string with the text of every instance separated by semicolons.
 
         The parent element does not need to be a child of root.
+        Always use this function to get values even if haven't seen it repeat or be blank, just in case.
         This function cannot be used if the desired value is an attribute instead of element text."""
 
         # If one or more instances of the element are present, returns the text.
@@ -54,7 +64,7 @@ def fits_to_csv(fits_xml):
 
     # Get the data from the desired elements and save to a list which will be the row in the CSV.
     # Selects the parent element (identity, fileinfo, and filestatus) from root first
-    # to have consistent paths regardless of XML hierarchy.
+    # to have consistent paths regardless of the XML hierarchy.
 
     # There can be more than one format identity for the same file, so make a list of lists.
     # Each list is the information for one format identity.
@@ -65,7 +75,7 @@ def fits_to_csv(fits_xml):
         format_data.append(identity.get("mimetype"))
 
         # If there is a PUID, add the PRONOM URL so it will match the NARA Preservation Action Plan CSV.
-        # The value of PUID is None if there is no match.
+        # The value of PUID is None if there is no PUID in the FITs.
         puid = get_text(identity, "externalIdentifier[@type='puid']")
         if puid:
             puid = "https://www.nationalarchives.gov.uk/pronom/" + puid
@@ -85,7 +95,9 @@ def fits_to_csv(fits_xml):
         formats_list.append(format_data)
 
     # The information from fileinfo and filestatus is never repeated.
-    # It will be added to the information about each format identification after it is gathered.
+    # It is saved to its own list and added to each format list before saving it to the CSV.
+    # If information does not need reformatting, it is found and appended to the list in the same line.
+    # If the information is reformatted or used to calculate additional information, it is saved to a variable first.
     file_data = []
 
     # Tests if there are multiple IDs for this format, based on how many format lists are in formats_list.
@@ -103,7 +115,7 @@ def fits_to_csv(fits_xml):
     file_data.append(filename.split(".")[-1])
 
     # Convert from a timestamp to something that is human readable.
-    # Only use the first 10 digits to yet gear, month, and day.
+    # Only use the first 10 digits to get year, month, and day. Will be formatted YYYY-MM-DD.
     timestamp = get_text(fileinfo, "fslastmodified")
     date = datetime.date.fromtimestamp(int(timestamp[:10]))
     file_data.append(date)
@@ -134,12 +146,12 @@ def fits_to_csv(fits_xml):
             csv_write.writerow(format_data)
 
 
-# Get accession folder path from script argument and verify it is correct.
+# Gets the accession folder path from the script argument and verifies it is correct.
 # If there is an error, ends the script.
 try:
     accession_folder = sys.argv[1]
 except IndexError:
-    print("\nThe required script argument is missing.")
+    print("\nThe required script argument (accession_folder) is missing.")
     print("Please run the script again.")
     print("Script usage: python path/format-analysis.py path/accession_folder")
     sys.exit()
@@ -154,7 +166,7 @@ if not os.path.exists(accession_folder):
 # and the collection folder, which is everything in the accession_folder path except the accession folder.
 collection_folder, accession_number = os.path.split(accession_folder)
 
-# Makes a folder for format identification information in the collection folder of the accession folder.
+# Makes a folder for format identification information in the collection folder.
 # If this folder already exists, prints an error and ends the script.
 fits_output = f"{collection_folder}/{accession_number}_FITS"
 try:
@@ -164,11 +176,10 @@ except FileExistsError:
     print(f"Delete or move the '{fits_output}' folder and run the script again.")
     sys.exit()
 
-# Generates the format identification information for the accession using FITS
+# Generates the format identification information for the accession using FITS.
 subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
-# Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
-# and save to a CSV in the collection folder.
+# Starts a CSV in the collectin folder, with a header row, for combined FITS information.
 with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
     header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
               "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
@@ -176,6 +187,7 @@ with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") a
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
 
+# Extracts select format information for each file, with some data reformatting, and saves to the FITS CSV.
 for fits_xml in os.listdir(fits_output):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
@@ -184,7 +196,9 @@ df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
 df_ita = pd.read_csv("ITAfiles.csv")
 df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
 
-# Add columns to df_fits and df_nara to assist in better matching.
+# Adds columns to df_fits and df_nara to assist in better matching.
+# Most are lowercase versions of columns for case-insensitive matching.
+# Also combines format name and version in FITS, since NARA has those in one column.
 df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
 df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
 df_nara["format_lower"] = df_nara["Format Name"].str.lower()
@@ -192,20 +206,21 @@ df_fits["ext_lower"] = df_fits["File_Extension"].str.lower()
 df_nara["exts_lower"] = df_nara["File Extension(s)"].str.lower()
 
 # List of columns to look at in NARA each time.
-# Could not get it to work to save these to a separate dataframe - got duplicate columns after merging.
 nara_columns = ["Format Name", "File Extension(s)", "PRONOM URL", "Risk Level", "Preservation Action",
                 "Proposed Preservation Plan", "format_lower", "exts_lower"]
 
-# Add risk information.
+# Adds risk information from NARA using different techniques, starting with the most accurate.
+# A new column Match_Type is added to identify which technique produced a match.
 
-# PRONOM Identifier. Have to filter for PUID is not null or it will match unrelated formats with no PUID.
+# PRONOM Identifier is a match.
+# Have to filter for PUID is not null or it will match unrelated formats with no PUID.
 df_matching = pd.merge(df_fits[df_fits["PUID"].notnull()], df_nara[nara_columns], left_on="PUID", right_on="PRONOM URL", how="left")
 df_unmatched = df_matching[df_matching["Risk Level"].isnull()].copy()
 df_unmatched.drop(nara_columns, inplace=True, axis=1)
 df_puid = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_puid = df_puid.assign(Match_Type="PRONOM")
 
-# Add the formats with no PUID back into the unmatched dataframe for additional attempted matches.
+# Adds the formats with no PUID back into the unmatched dataframe for additional attempted matches.
 # This dataframe will be updated after every attempted match with the ones that still aren't matched.
 df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_unmatched])
 
@@ -216,7 +231,8 @@ df_unmatched.drop(nara_columns, inplace=True, axis=1)
 df_version = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_version = df_version.assign(Match_Type="Format Name and Version")
 
-# Name is a match (case insensitive). For ones without a version, which are NaN in name_version.
+# Name is a match (case insensitive).
+# For ones without a version, which are NaN in name_version.
 df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_lower", right_on="format_lower", how="left")
 df_unmatched = df_matching[df_matching["Risk Level"].isnull()].copy()
 df_unmatched.drop(nara_columns, inplace=True, axis=1)
@@ -231,22 +247,22 @@ df_unmatched.drop(nara_columns, inplace=True, axis=1)
 df_ext = df_matching[df_matching["Risk Level"].notnull()].copy()
 df_ext = df_ext.assign(Match_Type="File Extension")
 
-# Add match type of "None" for any that are still unmatched.
+# Adds match type of "None" for any that are still unmatched.
 df_unmatched = df_unmatched.assign(Match_Type="None")
 
-# Combine the dataframes with different matches to save to spreadsheet
-# and remove columns that are just used for FITS and NARA comparisons.
+# Combines the dataframes with different matches to save to spreadsheet
+# and removes columns that are just used for FITS and NARA comparisons.
 df_risk = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
 df_risk.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
 
-# Add technical appraisal information.
+# Adds technical appraisal information.
 # Creates a column with True or False for if that filename indicates deletion for technical appraisal
 # because it contains a string from the first column in df_ita.
-# re.escape is used to escape any unusual characters in the filename that have regex meaning.
+# re.escape is used to escape any unusual characters in the filename that have regex meanings.
 ta_list = df_ita["SUBSTRING"].tolist()
 df_risk["Technical Appraisal Candidate"] = df_risk["File_Name"].str.contains("|".join(map(re.escape, ta_list)))
 
-# Summarize: file count and file size for each FITS format name (version is not included).
+# Summarizes by format name (version is not included).
 files = df_fits.groupby("Format_Name")["Format_Name"].count()
 files_percent = round((files / len(df_fits.index)) * 100, 2)
 size = df_fits.groupby("Format_Name")["Size_(MB)"].sum()
@@ -254,7 +270,7 @@ size_percent = round((size / df_fits["Size_(MB)"].sum()) * 100, 2)
 format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 format_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
-# Summarize: by risk level and technical appraisal,
+# Summarizes by risk level and technical appraisal,
 # since risk is not a concern if will likely delete during technical appraisal.
 df_risk["Risk Level"].fillna("No NARA Match", inplace=True)
 files = df_risk.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Format_Name"].count()
@@ -264,14 +280,15 @@ size_percent = round((size / df_risk["Size_(MB)"].sum()) * 100, 2)
 risk_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 risk_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
-# Make subsets based on different risk factors.
+# Makes subsets based on different risk factors.
 nara_at_risk = df_risk[df_risk["Risk Level"] != "Low Risk"].copy()
 unidentified = df_risk[df_risk["Format_Name"] == "Unknown Binary"].copy()
 tech_appraisal = df_risk[df_risk["Technical Appraisal Candidate"] == True].copy()
 multiple_ids = df_fits[df_fits["Multiple_IDs"] == True].copy()
 duplicates = df_fits.loc[df_fits.duplicated(subset="MD5", keep=False)].copy()
 
-# Save reports.
+# Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
+# The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
     df_risk.to_excel(result, sheet_name="Risk", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
