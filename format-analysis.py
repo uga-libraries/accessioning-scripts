@@ -235,7 +235,9 @@ df_ext = df_ext.assign(Match_Type="File Extension")
 df_unmatched = df_unmatched.assign(Match_Type="None")
 
 # Combine the dataframes with different matches to save to spreadsheet
+# and remove columns that are just used for FITS and NARA comparisons.
 df_risk = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
+df_risk.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
 
 # Add technical appraisal information.
 # Creates a column with True or False for if that filename indicates deletion for technical appraisal
