@@ -254,8 +254,15 @@ size_percent = round((size / df_fits["Size_(MB)"].sum()) * 100, 2)
 format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 format_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
-# Summarize: by risk.
-# Summarize: by parent.
+# Summarize: by risk level and technical appraisal,
+# since risk is not a concern if will likely delete during technical appraisal.
+df_risk["Risk Level"].fillna("No NARA Match", inplace=True)
+files = df_risk.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Format_Name"].count()
+files_percent = round((files / len(df_risk.index)) * 100, 2)
+size = df_risk.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Size_(MB)"].sum()
+size_percent = round((size / df_risk["Size_(MB)"].sum()) * 100, 2)
+risk_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
+risk_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
 # Make subsets based on different risk factors.
 
@@ -263,3 +270,4 @@ format_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
     df_risk.to_excel(result, sheet_name="Risk", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
+    risk_subtotals.to_excel(result, sheet_name="Risk Subtotals")
