@@ -6,9 +6,9 @@ Purpose: generate format identification and create reports to support:
 """
 import csv
 import datetime
-import numpy as np
 import os
 import pandas as pd
+import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -154,30 +154,30 @@ if not os.path.exists(accession_folder):
 # and the collection folder, which is everything in the accession_folder path except the accession folder.
 collection_folder, accession_number = os.path.split(accession_folder)
 
-# # Makes a folder for format identification information in the collection folder of the accession folder.
-# # If this folder already exists, prints an error and ends the script.
-# fits_output = f"{collection_folder}/{accession_number}_FITS"
-# try:
-#     os.mkdir(fits_output)
-# except FileExistsError:
-#     print(f"There is already FITS data for accession {accession_number}.")
-#     print(f"Delete or move the '{fits_output}' folder and run the script again.")
-#     sys.exit()
-#
-# # Generates the format identification information for the accession using FITS
-# subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
-#
-# # Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
-# # and save to a CSV in the collection folder.
-# with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
-#     header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-#               "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
-#               "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
-#     csv_write = csv.writer(csv_open)
-#     csv_write.writerow(header)
-#
-# for fits_xml in os.listdir(fits_output):
-#     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
+# Makes a folder for format identification information in the collection folder of the accession folder.
+# If this folder already exists, prints an error and ends the script.
+fits_output = f"{collection_folder}/{accession_number}_FITS"
+try:
+    os.mkdir(fits_output)
+except FileExistsError:
+    print(f"There is already FITS data for accession {accession_number}.")
+    print(f"Delete or move the '{fits_output}' folder and run the script again.")
+    sys.exit()
+
+# Generates the format identification information for the accession using FITS
+subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
+
+# Extract select format information for each file, with some data reformatting (PRONOM URL, date, size unit),
+# and save to a CSV in the collection folder.
+with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
+    header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+              "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
+              "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
+    csv_write = csv.writer(csv_open)
+    csv_write.writerow(header)
+
+for fits_xml in os.listdir(fits_output):
+    fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
 # Read the FITS, ITA (technical appraisal), and NARA CSVs into pandas for analysis and summarizing.
 df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
@@ -238,6 +238,11 @@ df_unmatched = df_unmatched.assign(Match_Type="None")
 df_risk = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
 
 # Add technical appraisal information.
+# Creates a column with True or False for if that filename indicates deletion for technical appraisal
+# because it contains a string from the first column in df_ita.
+# re.escape is used to escape any unusual characters in the filename that have regex meaning.
+ta_list = df_ita["SUBSTRING"].tolist()
+df_risk["Technical Appraisal Candidate"] = df_risk["File_Name"].str.contains("|".join(map(re.escape, ta_list)))
 
 # Summarize: by format identification.
 # Summarize: by risk.
