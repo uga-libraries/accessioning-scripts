@@ -2,7 +2,8 @@
 
 This script generates a CSV manifest of all the digital files received in an accession. 
 Using the "compare" argument compares the initial manifest to the files left in the 
-accession and generates an additional CSV log of any files that were deleted in the process. 
+accession after technical appraisal and generates an additional CSV log of any files 
+that were deleted in the process. 
 
 This script requires an installation of 'pandas' in your Python environment.
 
