@@ -88,11 +88,6 @@ def get_file_info(entry):
     data = [path, sizeKB, date_created, date_modified]
     return data
 
-
-dir_to_log = sys.argv[1]
-date = datetime.now().strftime("%Y%m%d")
-header = ['File', 'SizeKB', 'DateCreated', 'DateModified', 'Notes']
-
 if __name__ == "__main__":
     
     # Check for a "compare" arugment provided by the user
@@ -150,10 +145,13 @@ if __name__ == "__main__":
         
         # Compare the two dataframes and create a new dataframe of files that are missing from the 
         # current manifest, which indicates that they were deleted during appraisal
-        deleted = pd.concat([man_df, new_df]).drop_duplicates(keep=False)
+        deleted = pd.concat([man_df, new_df], ignore_index=True)
+        deleted['FName'] = deleted['File'].astype(str).str.split('\\', 5).str[-1].str.strip()
+        deleted = deleted.drop_duplicates('FName', keep=False)
         deleted.drop(['DateModified'], axis=1, inplace=True)
         deleted.insert(3, 'DateDeleted', datetime.now().strftime("%Y-%m-%d"))
-
+        deleted.drop(['FName'], axis=1, inplace=True)
+        print(deleted)
         # Write the dataframe of deleted files to a new CSV
         deleted.to_csv(f'{dir_to_log}\\deletionlog_{date}.csv', encoding="utf-8", index=False)
 
