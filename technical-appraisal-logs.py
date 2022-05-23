@@ -60,7 +60,7 @@ def find_init_manifest(dirpath):
     with os.scandir(dirpath) as d:
         for entry in d:
             fname = str(entry)
-            if (date in fname) and ('initialmanifest' in fname):
+            if 'initialmanifest' in fname:
                 init_manifest = entry.path
                 return str(init_manifest)
 
