@@ -239,6 +239,7 @@ for fits_xml in os.listdir(fits_output):
 # Read the FITS, ITA (technical appraisal), and NARA CSVs into pandas for analysis and summarizing.
 df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
 df_ita = pd.read_csv(c.ITA)
+df_risk = pd.read_csv(c.RISK)
 df_nara = pd.read_csv(c.NARA)
 
 # Adds columns to df_fits and df_nara to assist in better matching.
@@ -297,15 +298,20 @@ df_unmatched = df_unmatched.assign(Match_Type="None")
 
 # Combines the dataframes with different matches to save to spreadsheet
 # and removes columns that are just used for FITS and NARA comparisons.
-df_risk = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
-df_risk.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
+df_results = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
+df_results.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
 
 # Adds technical appraisal information.
 # Creates a column with True or False for if that filename indicates deletion for technical appraisal
 # because it contains a string from the first column in df_ita.
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
 ta_list = df_ita["FITS_FORMAT"].tolist()
-df_risk["Technical Appraisal Candidate"] = df_risk["File_Name"].str.contains("|".join(map(re.escape, ta_list)))
+df_results["Technical Appraisal Candidate"] = df_results["File_Name"].str.contains("|".join(map(re.escape, ta_list)))
+
+# Adds other risk information.
+# Creates a column with True or False for if that FITs format indicates a possible risk.
+risk_list = df_risk["FITS_FORMAT"].tolist()
+df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)))
 
 # Summarizes by format name (version is not included).
 files = df_fits.groupby("Format_Name")["Format_Name"].count()
@@ -317,29 +323,31 @@ format_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
 # Summarizes by risk level and technical appraisal,
 # since risk is not a concern if will likely delete during technical appraisal.
-df_risk["Risk Level"].fillna("No NARA Match", inplace=True)
-files = df_risk.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Format_Name"].count()
-files_percent = round((files / len(df_risk.index)) * 100, 2)
-size = df_risk.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Size_(MB)"].sum()
-size_percent = round((size / df_risk["Size_(MB)"].sum()) * 100, 2)
+df_results["Risk Level"].fillna("No NARA Match", inplace=True)
+files = df_results.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Format_Name"].count()
+files_percent = round((files / len(df_results.index)) * 100, 2)
+size = df_results.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Size_(MB)"].sum()
+size_percent = round((size / df_results["Size_(MB)"].sum()) * 100, 2)
 risk_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 risk_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
 # Makes subsets based on different risk factors.
-nara_at_risk = df_risk[df_risk["Risk Level"] != "Low Risk"].copy()
-unidentified = df_risk[df_risk["Format_Name"] == "Unknown Binary"].copy()
-tech_appraisal = df_risk[df_risk["Technical Appraisal Candidate"] == True].copy()
+nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
+unidentified = df_results[df_results["Format_Name"] == "Unknown Binary"].copy()
+tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True].copy()
+other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
 multiple_ids = df_fits[df_fits["Multiple_IDs"] == True].copy()
 duplicates = df_fits.loc[df_fits.duplicated(subset="MD5", keep=False)].copy()
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
-    df_risk.to_excel(result, sheet_name="Risk", index=False)
+    df_results.to_excel(result, sheet_name="Risk", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
     risk_subtotals.to_excel(result, sheet_name="Risk Subtotals")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     unidentified.to_excel(result, sheet_name="Unidentified Formats", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
+    other_risk.to_excel(result, sheet_name="Other Risks", index=False)
     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
     duplicates.to_excel(result, sheet_name="Duplicates", index=False)
