@@ -193,8 +193,8 @@ for fits_xml in os.listdir(fits_output):
 
 # Read the FITS, ITA (technical appraisal), and NARA CSVs into pandas for analysis and summarizing.
 df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
-df_ita = pd.read_csv("ITAfiles.csv")
-df_nara = pd.read_csv("NARA_PreservationActionPlan_FileFormats.csv")
+df_ita = pd.read_csv(c.ITA)
+df_nara = pd.read_csv(c.NARA)
 
 # Adds columns to df_fits and df_nara to assist in better matching.
 # Most are lowercase versions of columns for case-insensitive matching.
@@ -259,7 +259,7 @@ df_risk.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_l
 # Creates a column with True or False for if that filename indicates deletion for technical appraisal
 # because it contains a string from the first column in df_ita.
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
-ta_list = df_ita["SUBSTRING"].tolist()
+ta_list = df_ita["FITS_FORMAT"].tolist()
 df_risk["Technical Appraisal Candidate"] = df_risk["File_Name"].str.contains("|".join(map(re.escape, ta_list)))
 
 # Summarizes by format name (version is not included).
