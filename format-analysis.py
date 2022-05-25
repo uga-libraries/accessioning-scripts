@@ -25,6 +25,41 @@ import xml.etree.ElementTree as ET
 import configuration as c
 
 
+def check_configuration():
+    """Verifies all the expected variables are in the configuration file and paths are valid.
+    Returns a list of paths with errors, or an empty list if there are no errors.
+    This avoids wasting processing time by doing earlier steps before the path error is encountered."""
+
+    errors = []
+
+    try:
+        if not os.path.exists(c.FITS):
+            errors.append(f"FITS path '{c.FITS}' is not correct.")
+    except AttributeError:
+        errors.append("FITS variable is missing from the configuration file.")
+
+    try:
+        if not os.path.exists(c.ITA):
+            errors.append(f"ITAfileformats.csv path '{c.ITA}' is not correct.")
+    except AttributeError:
+        errors.append("ITA variable is missing from the configuration file.")
+
+    try:
+        if not os.path.exists(c.RISK):
+            errors.append(f"Riskfileformats.csv path '{c.RISK}' is not correct.")
+    except AttributeError:
+        errors.append("RISK variable is missing from the configuration file.")
+
+    try:
+        if not os.path.exists(c.NARA):
+            errors.append(f"NARA Preservation Action Plans CSV path '{c.NARA}' is not correct.")
+    except AttributeError:
+        errors.append("NARA variable is missing from the configuration file.")
+
+    # Returns the errors list. If there were no errors, it will be empty.
+    return errors
+
+
 def fits_to_csv(fits_xml):
     """Extracts desired fields from a FITS XML file, reformats when necessary,
     and saves each format identification as a separate row in a CSV. Returns nothing."""
@@ -160,6 +195,16 @@ if not os.path.exists(accession_folder):
     print(f"\nThe provided accession folder '{accession_folder}' is not a valid directory.")
     print("Please run the script again.")
     print("Script usage: python path/format-analysis.py path/accession_folder")
+    sys.exit()
+
+# Verifies the configuration file has all of the required variables and the file paths are valid.
+# If there are any errors, prints an error and ends the script.
+configuration_errors = check_configuration()
+if len(configuration_errors) > 0:
+    print('\nProblems detected with configuration.py:')
+    for error in configuration_errors:
+        print("   * " + error)
+    print('\nCorrect the configuration file and run the script again. Use configuration_template.py as a model.')
     sys.exit()
 
 # Calculates the accession number, which is the name of the last folder in the accession_folder path,
