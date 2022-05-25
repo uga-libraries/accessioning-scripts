@@ -332,7 +332,6 @@ risk_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
-unidentified = df_results[df_results["Format_Name"] == "Unknown Binary"].copy()
 tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True].copy()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
 multiple_ids = df_fits[df_fits["Multiple_IDs"] == True].copy()
@@ -345,7 +344,6 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
     risk_subtotals.to_excel(result, sheet_name="Risk Subtotals")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
-    unidentified.to_excel(result, sheet_name="Unidentified Formats", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
