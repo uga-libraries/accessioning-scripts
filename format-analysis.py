@@ -302,11 +302,10 @@ df_results = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
 df_results.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
 
 # Adds technical appraisal information.
-# Creates a column with True or False for if that filename indicates deletion for technical appraisal
-# because it contains a string from the first column in df_ita.
+# Creates a column with True or False for if that FITS format indicates something to delete during technical appraisal.
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
 ta_list = df_ita["FITS_FORMAT"].tolist()
-df_results["Technical Appraisal Candidate"] = df_results["File_Name"].str.contains("|".join(map(re.escape, ta_list)))
+df_results["Technical Appraisal Candidate"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)))
 
 # Adds other risk information.
 # Creates a column with True or False for if that FITs format indicates a possible risk.
