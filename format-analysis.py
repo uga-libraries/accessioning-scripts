@@ -142,10 +142,10 @@ def fits_to_csv(fits_xml):
 
     fileinfo = root.find("fits:fileinfo", ns)
     file_data.append(get_text(fileinfo, "filepath"))
-    filename = get_text(fileinfo, "filename")
-    file_data.append(filename)
 
     # Calculates file extension from filename, which is everything after the last period in the name.
+    # Adds the filename to the list later in the function so it can be the first column.
+    filename = get_text(fileinfo, "filename")
     file_data.append(filename.split(".")[-1])
 
     # Convert from a timestamp to something that is human readable.
@@ -176,6 +176,7 @@ def fits_to_csv(fits_xml):
         csv_write = csv.writer(csv_open)
 
         for format_data in formats_list:
+            format_data.insert(0, filename)
             format_data.extend(file_data)
             csv_write.writerow(format_data)
 
@@ -225,8 +226,8 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shel
 
 # Starts a CSV in the collectin folder, with a header row, for combined FITS information.
 with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
-    header = ["Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-              "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_KB", "MD5",
+    header = ["File_Name", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+              "File_Path", "File_Extension", "Date_Last_Modified", "Size_KB", "MD5",
               "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
