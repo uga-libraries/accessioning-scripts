@@ -107,7 +107,6 @@ def fits_to_csv(fits_xml):
     for identity in root.find("fits:identification", ns):
         format_data = [identity.get("format")]
         format_data.append(get_text(identity, "version"))
-        format_data.append(identity.get("mimetype"))
 
         # If there is a PUID, add the PRONOM URL so it will match the NARA Preservation Action Plan CSV.
         # The value of PUID is None if there is no PUID in the FITs.
@@ -226,7 +225,7 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shel
 
 # Starts a CSV in the collectin folder, with a header row, for combined FITS information.
 with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
-    header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+    header = ["Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
               "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_KB", "MD5",
               "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     csv_write = csv.writer(csv_open)
