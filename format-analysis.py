@@ -155,12 +155,12 @@ def fits_to_csv(fits_xml):
     date = datetime.date.fromtimestamp(int(timestamp[:10]))
     file_data.append(date)
 
-    # Convert size from bytes to MB to be easier to read.
-    # Rounded to 2 decimal places unless that will make it 0.
+    # Convert size from bytes to KB to be easier to read.
+    # Rounded to 3 decimal places unless that will make it 0.
     size = get_text(fileinfo, "size")
-    size = float(size) / 1000000
-    if size > .01:
-        size = round(size, 2)
+    size = float(size) / 1000
+    if size > .001:
+        size = round(size, 3)
     file_data.append(size)
 
     file_data.append(get_text(fileinfo, "md5checksum"))
@@ -227,7 +227,7 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shel
 # Starts a CSV in the collectin folder, with a header row, for combined FITS information.
 with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
     header = ["Format_Name", "Format_Version", "MIME_Type", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-              "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_(MB)", "MD5",
+              "File_Path", "File_Name", "File_Extension", "Date_Last_Modified", "Size_KB", "MD5",
               "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
@@ -317,20 +317,20 @@ df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".
 # Summarizes by format name (version is not included).
 files = df_fits.groupby("Format_Name")["Format_Name"].count()
 files_percent = round((files / len(df_fits.index)) * 100, 2)
-size = df_fits.groupby("Format_Name")["Size_(MB)"].sum()
-size_percent = round((size / df_fits["Size_(MB)"].sum()) * 100, 2)
+size = df_fits.groupby("Format_Name")["Size_KB"].sum()
+size_percent = round((size / df_fits["Size_KB"].sum()) * 100, 2)
 format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
-format_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
+format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
 # Summarizes by risk level and technical appraisal,
 # since risk is not a concern if will likely delete during technical appraisal.
 df_results["Risk Level"].fillna("No NARA Match", inplace=True)
 files = df_results.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Format_Name"].count()
 files_percent = round((files / len(df_results.index)) * 100, 2)
-size = df_results.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Size_(MB)"].sum()
-size_percent = round((size / df_results["Size_(MB)"].sum()) * 100, 2)
+size = df_results.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Size_KB"].sum()
+size_percent = round((size / df_results["Size_KB"].sum()) * 100, 2)
 risk_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
-risk_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
+risk_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
