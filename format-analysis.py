@@ -224,7 +224,7 @@ except FileExistsError:
 # Generates the format identification information for the accession using FITS.
 subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
-# Starts a CSV in the collectin folder, with a header row, for combined FITS information.
+# Starts a CSV in the collection folder, with a header row, for combined FITS information.
 with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
     header = ["File_Name", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
               "File_Path", "File_Extension", "Date_Last_Modified", "Size_KB", "MD5",
@@ -236,7 +236,8 @@ with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") a
 for fits_xml in os.listdir(fits_output):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
-# Read the FITS, ITA (technical appraisal), and NARA CSVs into pandas for analysis and summarizing.
+# Read the FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA CSVs
+# into pandas for analysis and summarizing.
 df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
 df_ita = pd.read_csv(c.ITA)
 df_risk = pd.read_csv(c.RISK)
@@ -244,7 +245,7 @@ df_nara = pd.read_csv(c.NARA)
 
 # Adds columns to df_fits and df_nara to assist in better matching.
 # Most are lowercase versions of columns for case-insensitive matching.
-# Also combines format name and version in FITS, since NARA has those in one column.
+# Also combines format name and version in FITS, since NARA has that information in one column.
 df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
 df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
 df_nara["format_lower"] = df_nara["Format Name"].str.lower()
@@ -302,15 +303,15 @@ df_results = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
 df_results.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
 
 # Adds technical appraisal information.
-# Creates a column with True or False for if that FITS format indicates something to delete during technical appraisal
-# or if it is in a folder named "trash" or "trashes.
+# Creates a column with True or False for if that FITS format identification indicates something to delete
+# during technical appraisal or if it is in a folder named "trash" or "trashes".
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
 ta_list = df_ita["FITS_FORMAT"].tolist()
 df_results["Technical Appraisal Candidate"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)))
 df_results["Technical Appraisal Candidate"] = df_results["File_Path"].str.contains("trash")
 
 # Adds other risk information.
-# Creates a column with True or False for if that FITs format indicates a possible risk.
+# Creates a column with True or False for if that FITs format identification indicates a possible risk.
 risk_list = df_risk["FITS_FORMAT"].tolist()
 df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)))
 
