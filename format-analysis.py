@@ -329,18 +329,18 @@ risk_list = df_risk["FITS_FORMAT"].tolist()
 df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)))
 
 # Summarizes by format name (version is not included).
-files = df_fits.groupby("Format_Name")["Format_Name"].count()
-files_percent = round((files / len(df_fits.index)) * 100, 2)
-size = df_fits.groupby("Format_Name")["Size_KB"].sum()
-size_percent = round((size / df_fits["Size_KB"].sum()) * 100, 2)
+files = round(df_fits.groupby("Format_Name")["Format_Name"].count(), 3)
+files_percent = round((files / len(df_fits.index)) * 100, 3)
+size = round(df_fits.groupby("Format_Name")["Size_KB"].sum(), 3)
+size_percent = round((size / df_fits["Size_KB"].sum()) * 100, 3)
 format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
 # Summarizes by risk level.
-files = df_results.groupby("Risk Level", dropna=False)["Format_Name"].count()
-files_percent = round((files / len(df_results.index)) * 100, 2)
-size = df_results.groupby("Risk Level", dropna=False)["Size_KB"].sum()
-size_percent = round((size / df_results["Size_KB"].sum()) * 100, 2)
+files = round(df_results.groupby("Risk Level", dropna=False)["Format_Name"].count(), 3)
+files_percent = round((files / len(df_results.index)) * 100, 3)
+size = round(df_results.groupby("Risk Level", dropna=False)["Size_KB"].sum(), 3)
+size_percent = round((size / df_results["Size_KB"].sum()) * 100, 3)
 risk_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 risk_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
