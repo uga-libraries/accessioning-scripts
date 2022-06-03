@@ -186,6 +186,15 @@ def match_nara_risk():
     A new column Match_Type is added to identify which technique produced a match.
     Returns a dataframe with the NARA matches."""
 
+    # Adds columns to df_fits and df_nara to assist in better matching.
+    # Most are lowercase versions of columns for case-insensitive matching.
+    # Also combines format name and version in FITS, since NARA has that information in one column.
+    df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
+    df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
+    df_nara["format_lower"] = df_nara["Format Name"].str.lower()
+    df_fits["ext_lower"] = df_fits["File_Extension"].str.lower()
+    df_nara["exts_lower"] = df_nara["File Extension(s)"].str.lower()
+
     # List of columns to look at in NARA each time.
     nara_columns = ["Format Name", "File Extension(s)", "PRONOM URL", "Risk Level",
                     "Proposed Preservation Plan", "format_lower", "exts_lower"]
@@ -231,10 +240,13 @@ def match_nara_risk():
     # Adds match type of "None" for any that are still unmatched.
     df_unmatched = df_unmatched.assign(Match_Type="None")
 
-    # Combines the dataframes with different matches to save to spreadsheet
-    # and removes columns that are just used for FITS and NARA comparisons.
+    # Combines the dataframes with different matches to save to spreadsheet.
     df_matched = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
+
+    # Removes columns that are just used for FITS and NARA comparisons from all dataframes.
     df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
+    df_fits.drop(["name_version", "name_lower", "ext_lower"], inplace=True, axis=1)
+    df_nara.drop(["format_lower", "exts_lower"], inplace=True, axis=1)
 
     return df_matched
 
@@ -300,15 +312,6 @@ df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
 df_ita = pd.read_csv(c.ITA)
 df_risk = pd.read_csv(c.RISK)
 df_nara = pd.read_csv(c.NARA)
-
-# Adds columns to df_fits and df_nara to assist in better matching.
-# Most are lowercase versions of columns for case-insensitive matching.
-# Also combines format name and version in FITS, since NARA has that information in one column.
-df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
-df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
-df_nara["format_lower"] = df_nara["Format Name"].str.lower()
-df_fits["ext_lower"] = df_fits["File_Extension"].str.lower()
-df_nara["exts_lower"] = df_nara["File Extension(s)"].str.lower()
 
 # Adds risk information from NARA using different techniques, starting with the most accurate.
 # A new column Match_Type is added to identify which technique produced a match.
