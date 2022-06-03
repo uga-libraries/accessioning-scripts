@@ -348,9 +348,9 @@ risk_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
-tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True].copy()
+tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True][["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]].copy()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
-multiple_ids = df_results[df_results["Multiple_IDs"] == True].copy()
+multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:14].copy()
 duplicates = df_results.loc[df_results.duplicated(subset="MD5", keep=False)][["File_Path", "Size_KB", "MD5"]].copy()
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
