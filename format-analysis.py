@@ -141,12 +141,10 @@ def fits_to_csv(fits_xml):
         file_data.append(True)
 
     fileinfo = root.find("fits:fileinfo", ns)
-    file_data.append(get_text(fileinfo, "filepath"))
 
     # Calculates file extension from filename, which is everything after the last period in the name.
-    # Adds the filename to the list later in the function so it can be the first column.
-    filename = get_text(fileinfo, "filename")
-    file_data.append(filename.split(".")[-1])
+    # The file name is not included in the FITS CSV, because the file path is used to identify the file.
+    file_data.append(get_text(fileinfo, "filename").split(".")[-1])
 
     # Convert from a timestamp to something that is human readable.
     # Only use the first 10 digits to get year, month, and day. Will be formatted YYYY-MM-DD.
@@ -170,13 +168,13 @@ def fits_to_csv(fits_xml):
     file_data.append(get_text(filestatus, "well-formed"))
     file_data.append(get_text(filestatus, "message"))
 
-    # Create the CSV rows by combining each list in format_list with file_data.
+    # Create the CSV rows by combining each list in format_list with the file path and file_data.
     # Save each row to the CSV.
     with open(f"{collection_folder}/{accession_number}_fits.csv", "a", newline="") as csv_open:
         csv_write = csv.writer(csv_open)
 
         for format_data in formats_list:
-            format_data.insert(0, filename)
+            format_data.insert(0, get_text(fileinfo, "filepath"))
             format_data.extend(file_data)
             csv_write.writerow(format_data)
 
@@ -296,9 +294,9 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shel
 
 # Starts a CSV in the collection folder, with a header row, for combined FITS information.
 with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
-    header = ["File_Name", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-              "File_Path", "File_Extension", "Date_Last_Modified", "Size_KB", "MD5",
-              "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
+    header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+              "File_Extension", "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application",
+              "Valid", "Well-Formed", "Status_Message"]
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
 
