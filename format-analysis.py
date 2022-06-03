@@ -235,8 +235,8 @@ def match_nara_risk():
     df_ext = df_to_match[df_to_match["Risk Level"].notnull()].copy()
     df_ext = df_ext.assign(Match_Type="File Extension")
 
-    # Adds match type of "None" for any that are still unmatched.
-    df_unmatched = df_unmatched.assign(Match_Type="None")
+    # Adds match type of "No NARA Match" for any that are still unmatched.
+    df_unmatched = df_unmatched.assign(Match_Type="No NARA Match")
 
     # Combines the dataframes with different matches to save to spreadsheet.
     df_matched = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
@@ -336,12 +336,10 @@ size_percent = round((size / df_fits["Size_KB"].sum()) * 100, 2)
 format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
-# Summarizes by risk level and technical appraisal,
-# since risk is not a concern if will likely delete during technical appraisal.
-df_results["Risk Level"].fillna("No NARA Match", inplace=True)
-files = df_results.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Format_Name"].count()
+# Summarizes by risk level.
+files = df_results.groupby("Risk Level", dropna=False)["Format_Name"].count()
 files_percent = round((files / len(df_results.index)) * 100, 2)
-size = df_results.groupby(["Risk Level", "Technical Appraisal Candidate"], dropna=False)["Size_KB"].sum()
+size = df_results.groupby("Risk Level", dropna=False)["Size_KB"].sum()
 size_percent = round((size / df_results["Size_KB"].sum()) * 100, 2)
 risk_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 risk_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
@@ -359,7 +357,6 @@ validation_error = df_results[(df_results["Valid"] == False) | (df_results["Well
 df_duplicates = df_results[["File_Path", "Size_KB", "MD5"]].copy()
 df_duplicates = df_duplicates.drop_duplicates(subset=["File_Path"], keep=False)
 df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="MD5", keep=False)]
-
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
