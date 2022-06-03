@@ -187,7 +187,7 @@ def match_nara_risk():
     Returns a dataframe with the NARA matches."""
 
     # List of columns to look at in NARA each time.
-    nara_columns = ["Format Name", "File Extension(s)", "PRONOM URL", "Risk Level", "Preservation Action",
+    nara_columns = ["Format Name", "File Extension(s)", "PRONOM URL", "Risk Level",
                     "Proposed Preservation Plan", "format_lower", "exts_lower"]
 
     # PRONOM Identifier is a match.
