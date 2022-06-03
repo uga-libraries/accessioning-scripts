@@ -351,6 +351,7 @@ nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
 tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True][["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]].copy()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
 multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:14].copy()
+validation_error = df_results[(df_results["Valid"] == False) | (df_results["Well-Formed"] == False) | (df_results["Status_Message"].notnull())].copy()
 
 # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
 # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
@@ -371,3 +372,4 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
     df_duplicates.to_excel(result, sheet_name="Duplicates", index=False)
+    validation_error.to_excel(result, sheet_name="Validation", index=False)
