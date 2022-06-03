@@ -351,7 +351,14 @@ nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
 tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True][["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]].copy()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
 multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:14].copy()
-duplicates = df_results.loc[df_results.duplicated(subset="MD5", keep=False)][["File_Path", "Size_KB", "MD5"]].copy()
+
+# Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
+# Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
+# or multiple matches to NARA.
+df_duplicates = df_results[["File_Path", "Size_KB", "MD5"]].copy()
+df_duplicates = df_duplicates.drop_duplicates(subset=["File_Path"], keep=False)
+df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="MD5", keep=False)]
+
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
@@ -363,4 +370,4 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
-    duplicates.to_excel(result, sheet_name="Duplicates", index=False)
+    df_duplicates.to_excel(result, sheet_name="Duplicates", index=False)
