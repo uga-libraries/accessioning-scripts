@@ -329,12 +329,22 @@ risk_list = df_risk["FITS_FORMAT"].tolist()
 df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)))
 
 # Summarizes by format name (version is not included).
-files = round(df_fits.groupby("Format_Name")["Format_Name"].count(), 3)
-files_percent = round((files / len(df_fits.index)) * 100, 3)
-size = round(df_fits.groupby("Format_Name")["Size_KB"].sum(), 3)
-size_percent = round((size / df_fits["Size_KB"].sum()) * 100, 3)
+# groupby includes risk level so that is part of the result, even though each format only has one risk level.
+files = round(df_results.groupby(["Format_Name", "Risk Level"], dropna=False)["Format_Name"].count(), 3)
+files_percent = round((files / len(df_results.index)) * 100, 3)
+size = round(df_results.groupby(["Format_Name", "Risk Level"], dropna=False)["Size_KB"].sum(), 3)
+size_percent = round((size / df_results["Size_KB"].sum()) * 100, 3)
 format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
+
+# Summarizes by risk and then format name (version is not included).
+# Not sure which we want, so doing both for testing.
+files = round(df_results.groupby(["Risk Level", "Format_Name"], dropna=False)["Format_Name"].count(), 3)
+files_percent = round((files / len(df_results.index)) * 100, 3)
+size = round(df_results.groupby(["Risk Level", "Format_Name"], dropna=False)["Size_KB"].sum(), 3)
+size_percent = round((size / df_results["Size_KB"].sum()) * 100, 3)
+risk_format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
+risk_format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
 # Summarizes by risk level.
 files = round(df_results.groupby("Risk Level", dropna=False)["Format_Name"].count(), 3)
@@ -363,6 +373,7 @@ df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="MD5", keep=Fa
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
     df_results.to_excel(result, sheet_name="Risk", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
+    risk_format_subtotals.to_excel(result, sheet_name="Risk Format Subtotals")
     risk_subtotals.to_excel(result, sheet_name="Risk Subtotals")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
