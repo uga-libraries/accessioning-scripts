@@ -353,7 +353,7 @@ nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
 tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True].copy()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
 multiple_ids = df_results[df_results["Multiple_IDs"] == True].copy()
-duplicates = df_results.loc[df_results.duplicated(subset="MD5", keep=False)].copy()
+duplicates = df_results.loc[df_results.duplicated(subset="MD5", keep=False)][["File_Path", "Size_KB", "MD5"]].copy()
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
