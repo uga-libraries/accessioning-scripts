@@ -60,6 +60,21 @@ def check_configuration():
     return errors
 
 
+def csv_to_dataframe(csv_file):
+    """Reads a CSV into a dataframe and returns the result. If the dataframe must be read by ignoring encoding
+    errors, also prints a message to the terminal to alert users that something was wrong. This happens when there
+    are special characters in the CSV. """
+
+    try:
+        dataframe = pd.read_csv(csv_file)
+    except UnicodeDecodeError:
+        print("UnicodeDecodeError when trying to read:", csv_file)
+        print("CSV was read with ignore encoding errors, so data may not be complete.")
+        dataframe = pd.read_csv(csv_file, encoding_errors="ignore")
+
+    return dataframe
+
+
 def fits_to_csv(fits_xml):
     """Extracts desired fields from a FITS XML file, reformats when necessary,
     and saves each format identification as a separate row in a CSV. Returns nothing."""
@@ -304,12 +319,12 @@ with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") a
 for fits_xml in os.listdir(fits_output):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
-# Read the FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA CSVs
-# into pandas for analysis and summarizing.
-df_fits = pd.read_csv(f"{collection_folder}/{accession_number}_fits.csv")
-df_ita = pd.read_csv(c.ITA)
-df_risk = pd.read_csv(c.RISK)
-df_nara = pd.read_csv(c.NARA)
+# Read the CSVs with data [FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA]
+# into pandas for analysis and summarizing, and prints a warning if encoding errors have to be ignored.
+df_fits = csv_to_dataframe(f"{collection_folder}/{accession_number}_fits.csv")
+df_ita = csv_to_dataframe(c.ITA)
+df_risk = csv_to_dataframe(c.RISK)
+df_nara = csv_to_dataframe(c.NARA)
 
 # Adds risk information from NARA using different techniques, starting with the most accurate.
 # A new column Match_Type is added to identify which technique produced a match.
