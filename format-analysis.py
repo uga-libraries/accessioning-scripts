@@ -337,15 +337,6 @@ size_percent = round((size / df_results["Size_KB"].sum()) * 100, 3)
 format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
 format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
-# Summarizes by risk and then format name (version is not included).
-# Not sure which we want, so doing both for testing.
-files = round(df_results.groupby(["Risk Level", "Format_Name"], dropna=False)["Format_Name"].count(), 3)
-files_percent = round((files / len(df_results.index)) * 100, 3)
-size = round(df_results.groupby(["Risk Level", "Format_Name"], dropna=False)["Size_KB"].sum(), 3)
-size_percent = round((size / df_results["Size_KB"].sum()) * 100, 3)
-risk_format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
-risk_format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
-
 # Summarizes by risk level.
 files = round(df_results.groupby("Risk Level", dropna=False)["Format_Name"].count(), 3)
 files_percent = round((files / len(df_results.index)) * 100, 3)
@@ -369,7 +360,6 @@ media_subtotals.columns = ["File Count", "Size (KB)", "NARA High Risk", "NARA Mo
 media_subtotals.fillna(0, inplace=True)
 df_results.drop(["Media"], inplace=True, axis=1)
 
-
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
 tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True][["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]].copy()
@@ -389,7 +379,6 @@ df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="MD5", keep=Fa
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
     df_results.to_excel(result, sheet_name="Risk", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
-    risk_format_subtotals.to_excel(result, sheet_name="Risk Format Subtotals")
     risk_subtotals.to_excel(result, sheet_name="Risk Subtotals")
     media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
