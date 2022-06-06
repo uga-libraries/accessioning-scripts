@@ -116,19 +116,19 @@ def fits_to_csv(fits_xml):
     # Selects the parent element (identity, fileinfo, and filestatus) from root first
     # to have consistent paths regardless of the XML hierarchy.
 
-    # There can be more than one format identity for the same file, so make a list of lists.
-    # Each list is the information for one format identity.
-    formats_list = []
+    # There can be more than one format identity for the same file, so make a dictionary.
+    # The key is name+version (to keep unique) and the value is a dictionary with all the data points.
+    # Doesn't include identifications that aren't useful (e.g., name+version same but only one has PUID).
+    formats_dictionary = {}
     for identity in root.find("fits:identification", ns):
-        format_data = [identity.get("format")]
-        format_data.append(get_text(identity, "version"))
+        format_data = {"name": identity.get("format"), "version": get_text(identity, "version")}
 
         # If there is a PUID, add the PRONOM URL so it will match the NARA Preservation Action Plan CSV.
         # The value of PUID is None if there is no PUID in the FITs.
         puid = get_text(identity, "externalIdentifier[@type='puid']")
         if puid:
             puid = "https://www.nationalarchives.gov.uk/pronom/" + puid
-        format_data.append(puid)
+        format_data["puid"] = puid
 
         # For each tool, need to combine attributes with the name and version.
         tools = ""
@@ -139,9 +139,26 @@ def fits_to_csv(fits_xml):
                 tools += tool_name
             else:
                 tools += f"; {tool_name}"
-        format_data.append(tools)
+        format_data["tools"] = tools
 
-        formats_list.append(format_data)
+        # The rest of the loop adds format information to the formats dictionary unless it meets one of the criteria
+        # used to simplify format identifications.
+        format_key = format_data["name"] + format_data["version"]
+
+        # Don't include a format identification if there is an identical name+version that has a PUID.
+        if format_key in formats_dictionary:
+            if formats_dictionary[format_key]["puid"] == "":
+                formats_dictionary[format_key] = format_data
+
+        # If one of the format identifications is empty, do not include any other format information.
+        elif format_key == "empty":
+            formats_dictionary = {format_key:format_data}
+        elif "empty" in formats_dictionary:
+            continue
+
+        # Otherwise, adds the format to the dictionary.
+        else:
+            formats_dictionary[format_key] = format_data
 
     # The information from fileinfo and filestatus is never repeated.
     # It is saved to its own list and added to each format list before saving it to the CSV.
@@ -150,7 +167,7 @@ def fits_to_csv(fits_xml):
     file_data = []
 
     # Tests if there are multiple IDs for this format, based on how many format lists are in formats_list.
-    if len(formats_list) == 1:
+    if len(formats_dictionary) == 1:
         file_data.append(False)
     else:
         file_data.append(True)
@@ -188,10 +205,12 @@ def fits_to_csv(fits_xml):
     with open(f"{collection_folder}/{accession_number}_fits.csv", "a", newline="") as csv_open:
         csv_write = csv.writer(csv_open)
 
-        for format_data in formats_list:
-            format_data.insert(0, get_text(fileinfo, "filepath"))
-            format_data.extend(file_data)
-            csv_write.writerow(format_data)
+        for format_id in formats_dictionary:
+            row = [get_text(fileinfo, "filepath"), formats_dictionary[format_id]["name"],
+                   formats_dictionary[format_id]["version"], formats_dictionary[format_id]["puid"],
+                   formats_dictionary[format_id]["tools"]]
+            row.extend(file_data)
+            csv_write.writerow(row)
 
 
 def match_nara_risk():
