@@ -356,11 +356,19 @@ risk_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
 
 # Summarizes by media folder (the top level folder inside the accession folder).
 df_results["Media"] = df_results["File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
-files = df_results.groupby("Media")["Format_Name"].count()
+files = df_results.groupby("Media")["File_Path"].count()
 size = df_results.groupby("Media")["Size_KB"].sum()
-media_subtotals = pd.concat([files, size], axis=1)
-media_subtotals.columns = ["File Count", "Size (KB)"]
+high_risk = df_results[df_results["Risk Level"] == "High Risk"].groupby("Media")["File_Path"].count()
+moderate_risk = df_results[df_results["Risk Level"] == "Moderate Risk"].groupby("Media")["File_Path"].count()
+low_risk = df_results[df_results["Risk Level"] == "Low Risk"].groupby("Media")["File_Path"].count()
+unknown_risk = df_results[df_results["Match_Type"] == "No NARA Match"].groupby("Media")["File_Path"].count()
+technical_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True].groupby("Media")["File_Path"].count()
+other_risk = df_results[df_results["Other Risk Indicator"] == True].groupby("Media")["File_Path"].count()
+media_subtotals = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
+media_subtotals.columns = ["File Count", "Size (KB)", "NARA High Risk", "NARA Moderate Risk", "NARA Low Risk", "No NARA Match: Risk Unknown", "Technical Appraisal Candidate", "Other Risk Indicator"]
+media_subtotals.fillna(0, inplace=True)
 df_results.drop(["Media"], inplace=True, axis=1)
+
 
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
@@ -383,7 +391,7 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
     risk_format_subtotals.to_excel(result, sheet_name="Risk Format Subtotals")
     risk_subtotals.to_excel(result, sheet_name="Risk Subtotals")
-    media_subtotals.to_excel(result, sheet_name="Media Subtotals")
+    media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
