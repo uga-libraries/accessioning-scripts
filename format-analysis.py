@@ -335,8 +335,7 @@ df_results = match_nara_risk()
 # during technical appraisal or if it is in a folder named "trash" or "trashes".
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
 ta_list = df_ita["FITS_FORMAT"].tolist()
-df_results["Technical Appraisal Candidate"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)))
-df_results["Technical Appraisal Candidate"] = df_results["File_Path"].str.contains("trash")
+df_results["Technical Appraisal Candidate"] = (df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)))) | (df_results["File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\"))
 
 # Adds other risk information.
 # Creates a column with True or False for if that FITs format identification indicates a possible risk.
