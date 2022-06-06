@@ -389,7 +389,9 @@ unknown_risk = df_results[df_results["Match_Type"] == "No NARA Match"].groupby("
 technical_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True].groupby("Media")["File_Path"].count()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].groupby("Media")["File_Path"].count()
 media_subtotals = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
-media_subtotals.columns = ["File Count", "Size (KB)", "NARA High Risk", "NARA Moderate Risk", "NARA Low Risk", "No NARA Match: Risk Unknown", "Technical Appraisal Candidate", "Other Risk Indicator"]
+media_subtotals.columns = ["File Count", "Size (KB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
+                           "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
+                           "Technical Appraisal Candidate (File Count)", "Other Risk Indicator (File Count)"]
 media_subtotals.fillna(0, inplace=True)
 df_results.drop(["Media"], inplace=True, axis=1)
 
