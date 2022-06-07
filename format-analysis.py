@@ -399,7 +399,8 @@ df_results.drop(["Media"], inplace=True, axis=1)
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
 tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True][["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]].copy()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
-multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:14].copy()
+multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:18].copy()
+multiple_ids.drop(["Format Name", "File Extension(s)", "PRONOM URL"], inplace=True, axis=1)
 validation_error = df_results[(df_results["Valid"] == False) | (df_results["Well-Formed"] == False) | (df_results["Status_Message"].notnull())].copy()
 
 # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
