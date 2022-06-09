@@ -13,12 +13,13 @@ Script usage: python /path/to/script /path/to/accession/directory [compare]
 import os
 import csv
 import sys
+import hashlib
 import pandas as pd
 from datetime import datetime
 
 dir_to_log = sys.argv[1]
 date = datetime.now().strftime("%Y%m%d")
-header = ['File', 'SizeKB', 'DateCreated', 'DateModified', 'Notes']
+header = ['File', 'SizeKB', 'DateCreated', 'DateModified', 'MD5', 'Notes']
 
 def scan_full_dir(dirpath):
     """Scans a directory tree and gets os.DirEntry objects for all its files and subdirectories
@@ -65,7 +66,7 @@ def find_init_manifest(dirpath):
                 return str(init_manifest)
 
 def get_file_info(entry):
-    """Aggregates relevant attributes from the os.DirEntry object for a file
+    """Aggregates relevant attributes from the os.DirEntry object for a file and generates its MD5 hash
         Description of the chained stat() method: https://docs.python.org/3/library/os.html#os.DirEntry.stat
     
     Parameters
@@ -78,6 +79,8 @@ def get_file_info(entry):
     list
         A list of the file's relevant attributes in str format
     """
+    data = []
+
     path = entry.path
     size = entry.stat().st_size
     sizeKB = round((int(size)/1000), 1)
@@ -85,7 +88,17 @@ def get_file_info(entry):
     date_modified = datetime.fromtimestamp(modified).strftime('%Y-%m-%d')
     created = entry.stat().st_ctime
     date_created = datetime.fromtimestamp(created).strftime('%Y-%m-%d')
-    data = [path, sizeKB, date_created, date_modified]
+
+    data.extend([path, sizeKB, date_modified, date_created])
+
+    if len(path) > 250:
+        path = (f'\\\\?\\{path}')
+    with open(path, 'rb') as f:
+        file_data = f.read()
+        md5 = hashlib.md5(file_data).hexdigest()
+        md5_generated = md5.upper()
+        data.append(md5_generated)
+
     return data
 
 if __name__ == "__main__":
@@ -131,8 +144,9 @@ if __name__ == "__main__":
         print('\nDeletion log will be saved to the accession folder. Working...')
         man_df = pd.DataFrame(columns = header)
         man = find_init_manifest(dir_to_log)
-        df = pd.read_csv(man, sep=',')
+        df = pd.read_csv(man)
         man_df = pd.concat([man_df, df], axis=0)
+        print(man_df)
 
         # Scan the directory and put current file information into a separate dataframe
         new_df = pd.DataFrame(columns=header[:-1])
@@ -140,8 +154,10 @@ if __name__ == "__main__":
             data = get_file_info(entry)
             new_df.loc[len(new_df)] = data
         
+        print(new_df)
+        
         # Exclude any existing manifests or deletion logs
-        new_df = new_df[new_df["File"].str.contains("initialmanifest|deletionlog") == False]
+        new_df[~new_df['File'].str.contains('deletionlog_|initialmanifest')]
         
         # Compare the two dataframes
         deleted = pd.concat([man_df, new_df], ignore_index=True)
