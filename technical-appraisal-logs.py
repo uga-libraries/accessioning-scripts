@@ -146,15 +146,12 @@ if __name__ == "__main__":
         man = find_init_manifest(dir_to_log)
         df = pd.read_csv(man)
         man_df = pd.concat([man_df, df], axis=0)
-        print(man_df)
 
         # Scan the directory and put current file information into a separate dataframe
         new_df = pd.DataFrame(columns=header[:-1])
         for entry in scan_full_dir(dir_to_log):
             data = get_file_info(entry)
             new_df.loc[len(new_df)] = data
-        
-        print(new_df)
         
         # Exclude any existing manifests or deletion logs
         new_df[~new_df['File'].str.contains('deletionlog_|initialmanifest')]
