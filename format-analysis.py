@@ -105,9 +105,15 @@ def fits_to_csv(fits_xml):
         except AttributeError:
             return None
 
-    # Read the fits.xml file.
-    tree = ET.parse(fits_xml)
-    root = tree.getroot()
+    # Read the fits.xml file. If there is a read error, prints the filename and continues the script.
+    try:
+        tree = ET.parse(fits_xml)
+        root = tree.getroot()
+    except ET.ParseError as et_error:
+        print(f"\nCould not get format information from {os.path.basename(fits_xml)}")
+        print("ElementTree error:", et_error.msg)
+        print("This file will not be included in the analysis.")
+        return
 
     # FITS namespace. All elements in the fits.xml are part of this namespace.
     ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
