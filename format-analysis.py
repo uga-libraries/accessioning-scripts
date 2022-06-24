@@ -405,12 +405,14 @@ validation_error = df_results[(df_results["Valid"] == False) | (df_results["Well
 
 # Makes a subset of files that meet one of the technical appraisal criteria (format or trash folder),
 # including adding a column for which criteria was used.
+# Removes duplicate rows, which are caused by multiple matches to NARA risk criteria.
 columns_list = ["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]
 tech_format = df_results[df_results["Technical Appraisal Format"] == True][columns_list].copy()
 tech_format.insert(0, "Criteria", "Format")
 tech_trash = df_results[df_results["Technical Appraisal Trash"] == True][columns_list].copy()
 tech_trash.insert(0, "Criteria", "Trash Folder")
 tech_appraisal = pd.concat([tech_format, tech_trash])
+tech_appraisal.drop_duplicates(inplace=True)
 
 # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
 # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
