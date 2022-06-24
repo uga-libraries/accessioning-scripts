@@ -1,5 +1,4 @@
-﻿FITS_FORMAT,NOTES
+﻿FORMAT,NOTES
 GZIP, Archive format
 StuffIt Archive, Archive format
-ZIP, Archive format
-ZIP Format, Archive format
+zip, Archive format

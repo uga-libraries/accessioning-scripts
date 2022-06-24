@@ -355,15 +355,16 @@ df_results = match_nara_risk()
 
 # Adds two columns for technical appraisal information, one by format and on by if the file is in a trash folder.
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
-# Matches are case insensitive.
+# Matches are case insensitive and will match partial strings.
 ta_list = df_ita["FITS_FORMAT"].tolist()
 df_results["Technical Appraisal Format"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)
 df_results["Technical Appraisal Trash"] = df_results["File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False)
 
 # Adds other risk information.
 # Creates a column with True or False for if that FITs format identification indicates a possible risk.
-risk_list = df_risk["FITS_FORMAT"].tolist()
-df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)))
+# Matches are case insensitive and will match partial strings.
+risk_list = df_risk["FORMAT"].tolist()
+df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)
 
 # Summarizes by format name (version is not included).
 # groupby includes risk level so that is part of the result, even though each format only has one risk level.
@@ -401,7 +402,6 @@ df_results.drop(["Media"], inplace=True, axis=1)
 
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
-other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
 multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:18].copy()
 multiple_ids.drop(["Format Name", "File Extension(s)", "PRONOM URL"], inplace=True, axis=1)
 validation_error = df_results[(df_results["Valid"] == False) | (df_results["Well-Formed"] == False) | (df_results["Status_Message"].notnull())].copy()
@@ -416,6 +416,14 @@ tech_trash = df_results[df_results["Technical Appraisal Trash"] == True][columns
 tech_trash.insert(0, "Criteria", "Trash Folder")
 tech_appraisal = pd.concat([tech_format, tech_trash])
 tech_appraisal.drop_duplicates(inplace=True)
+
+# Makes a subset of files that meet one of the "other risk" criteria (format or NARA low risk but transform),
+# including adding a column for which criteria was used.
+other_format = df_results[df_results["Other Risk Indicator"] == True][columns_list].copy()
+other_format.insert(0, "Criteria", "Format")
+other_nara_transform = df_results[(df_results["Risk Level"] == "Low Risk") & df_results["Proposed Preservation Plan"].str.startswith("Transform")][columns_list].copy()
+other_nara_transform.insert(0, "Criteria", "NARA Low Risk/Transform")
+other_risk = pd.concat([other_format, other_nara_transform])
 
 # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
 # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
