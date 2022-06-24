@@ -202,15 +202,15 @@ def fits_to_csv(fits_xml):
 
     # Create the CSV rows by combining each list in format_list with the file path and file_data.
     # Save each row to the CSV.
-    with open(f"{collection_folder}/{accession_number}_fits.csv", "a", newline="") as csv_open:
-        csv_write = csv.writer(csv_open)
-
-        for format_id in formats_dictionary:
-            row = [get_text(fileinfo, "filepath"), formats_dictionary[format_id]["name"],
-                   formats_dictionary[format_id]["version"], formats_dictionary[format_id]["puid"],
-                   formats_dictionary[format_id]["tools"]]
-            row.extend(file_data)
-            csv_write.writerow(row)
+    file_open = open(f"{collection_folder}/{accession_number}_fits.csv", "a", newline="")
+    file_write = csv.writer(file_open)
+    for format_id in formats_dictionary:
+        row = [get_text(fileinfo, "filepath"), formats_dictionary[format_id]["name"],
+               formats_dictionary[format_id]["version"], formats_dictionary[format_id]["puid"],
+               formats_dictionary[format_id]["tools"]]
+        row.extend(file_data)
+        file_write.writerow(row)
+    file_open.close()
 
 
 def match_nara_risk():
@@ -326,13 +326,14 @@ except FileExistsError:
 # Generates the format identification information for the accession using FITS.
 subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
-# Starts a CSV in the collection folder, with a header row, for combined FITS information.
-with open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="") as csv_open:
-    header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-              "File_Extension", "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application",
-              "Valid", "Well-Formed", "Status_Message"]
-    csv_write = csv.writer(csv_open)
-    csv_write.writerow(header)
+# Makes a CSV in the collection folder, with a header row, for combined FITS information.
+header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+          "File_Extension", "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application",
+          "Valid", "Well-Formed", "Status_Message"]
+csv_open = open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="")
+csv_write = csv.writer(csv_open)
+csv_write.writerow(header)
+csv_open.close()
 
 # Extracts select format information for each file, with some data reformatting, and saves to the FITS CSV.
 for fits_xml in os.listdir(fits_output):
