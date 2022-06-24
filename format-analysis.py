@@ -180,10 +180,6 @@ def fits_to_csv(fits_xml):
 
     fileinfo = root.find("fits:fileinfo", ns)
 
-    # Calculates file extension from filename, which is everything after the last period in the name.
-    # The file name is not included in the FITS CSV, because the file path is used to identify the file.
-    file_data.append(get_text(fileinfo, "filename").split(".")[-1])
-
     # Convert from a timestamp to something that is human readable.
     # Only use the first 10 digits to get year, month, and day. Will be formatted YYYY-MM-DD.
     timestamp = get_text(fileinfo, "fslastmodified")
@@ -226,11 +222,12 @@ def match_nara_risk():
 
     # Adds columns to df_fits and df_nara to assist in better matching.
     # Most are lowercase versions of columns for case-insensitive matching.
-    # Also combines format name and version in FITS, since NARA has that information in one column.
+    # Also combines format name and version in FITS, since NARA has that information in one column,
+    # and makes a column of the file extension in FITS, since NARA has that as a separate column.
     df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
     df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
     df_nara["format_lower"] = df_nara["Format Name"].str.lower()
-    df_fits["ext_lower"] = df_fits["File_Extension"].str.lower()
+    df_fits["ext_lower"] = df_fits["File_Path"].str.lower().str.split(".").str[-1]
     df_nara["exts_lower"] = df_nara["File Extension(s)"].str.lower()
 
     # List of columns to look at in NARA each time.
@@ -334,7 +331,7 @@ subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shel
 
 # Makes a CSV in the collection folder, with a header row, for combined FITS information.
 header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-          "File_Extension", "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application",
+          "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application",
           "Valid", "Well-Formed", "Status_Message"]
 csv_open = open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="")
 csv_write = csv.writer(csv_open)
