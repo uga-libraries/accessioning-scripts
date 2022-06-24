@@ -350,13 +350,12 @@ df_nara = csv_to_dataframe(c.NARA)
 # A new column Match_Type is added to identify which technique produced a match.
 df_results = match_nara_risk()
 
-# Adds technical appraisal information.
-# Creates a column with True or False for if that FITS format identification indicates something to delete
-# during technical appraisal or if it is in a folder named "trash" or "trashes".
+# Adds two columns for technical appraisal information, one by format and on by if the file is in a trash folder.
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
 # Matches are case insensitive.
 ta_list = df_ita["FITS_FORMAT"].tolist()
-df_results["Technical Appraisal Candidate"] = (df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)) | (df_results["File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False))
+df_results["Technical Appraisal Format"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)
+df_results["Technical Appraisal Trash"] = df_results["File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False)
 
 # Adds other risk information.
 # Creates a column with True or False for if that FITs format identification indicates a possible risk.
@@ -388,22 +387,30 @@ high_risk = df_results[df_results["Risk Level"] == "High Risk"].groupby("Media")
 moderate_risk = df_results[df_results["Risk Level"] == "Moderate Risk"].groupby("Media")["File_Path"].count()
 low_risk = df_results[df_results["Risk Level"] == "Low Risk"].groupby("Media")["File_Path"].count()
 unknown_risk = df_results[df_results["Match_Type"] == "No NARA Match"].groupby("Media")["File_Path"].count()
-technical_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True].groupby("Media")["File_Path"].count()
+technical_appraisal = df_results[df_results["Technical Appraisal Format"] == True].groupby("Media")["File_Path"].count()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].groupby("Media")["File_Path"].count()
 media_subtotals = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
 media_subtotals.columns = ["File Count", "Size (KB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                            "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
-                           "Technical Appraisal Candidate (File Count)", "Other Risk Indicator (File Count)"]
+                           "Technical Appraisal Format (File Count)", "Other Risk Indicator (File Count)"]
 media_subtotals.fillna(0, inplace=True)
 df_results.drop(["Media"], inplace=True, axis=1)
 
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
-tech_appraisal = df_results[df_results["Technical Appraisal Candidate"] == True][["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]].copy()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].copy()
 multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:18].copy()
 multiple_ids.drop(["Format Name", "File Extension(s)", "PRONOM URL"], inplace=True, axis=1)
 validation_error = df_results[(df_results["Valid"] == False) | (df_results["Well-Formed"] == False) | (df_results["Status_Message"].notnull())].copy()
+
+# Makes a subset of files that meet one of the technical appraisal criteria (format or trash folder),
+# including adding a column for which criteria was used.
+columns_list = ["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]
+tech_format = df_results[df_results["Technical Appraisal Format"] == True][columns_list].copy()
+tech_format.insert(0, "Criteria", "Format")
+tech_trash = df_results[df_results["Technical Appraisal Trash"] == True][columns_list].copy()
+tech_trash.insert(0, "Criteria", "Trash Folder")
+tech_appraisal = pd.concat([tech_format, tech_trash])
 
 # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
 # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
