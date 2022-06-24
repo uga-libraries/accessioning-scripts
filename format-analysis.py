@@ -286,6 +286,18 @@ def match_nara_risk():
     return df_matched
 
 
+def subtotal(df, criteria):
+    """Returns a dataframe with file and size subtotals based on the provided criteria."""
+
+    files = round(df.groupby(criteria, dropna=False)["Format_Name"].count(), 3)
+    files_percent = round((files / len(df.index)) * 100, 3)
+    size = round(df.groupby(criteria, dropna=False)["Size_KB"].sum()/1000, 3)
+    size_percent = round((size / df["Size_KB"].sum()) * 100, 3)
+    subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
+    subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
+    return subtotals
+
+
 # Gets the accession folder path from the script argument and verifies it is correct.
 # If there is an error, ends the script.
 try:
@@ -366,23 +378,6 @@ df_results["Technical Appraisal Trash"] = df_results["File_Path"].str.contains("
 risk_list = df_risk["FORMAT"].tolist()
 df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)
 
-# Summarizes by format name (version is not included).
-# groupby includes risk level so that is part of the result, even though each format only has one risk level.
-files = round(df_results.groupby(["Format_Name", "Risk Level"], dropna=False)["Format_Name"].count(), 3)
-files_percent = round((files / len(df_results.index)) * 100, 3)
-size = round(df_results.groupby(["Format_Name", "Risk Level"], dropna=False)["Size_KB"].sum(), 3)
-size_percent = round((size / df_results["Size_KB"].sum()) * 100, 3)
-format_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
-format_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
-
-# Summarizes by risk level.
-files = round(df_results.groupby("Risk Level", dropna=False)["Format_Name"].count(), 3)
-files_percent = round((files / len(df_results.index)) * 100, 3)
-size = round(df_results.groupby("Risk Level", dropna=False)["Size_KB"].sum(), 3)
-size_percent = round((size / df_results["Size_KB"].sum()) * 100, 3)
-risk_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
-risk_subtotals.columns = ["File Count", "File %", "Size (KB)", "Size %"]
-
 # Summarizes by media folder (the top level folder inside the accession folder).
 df_results["Media"] = df_results["File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
 files = df_results.groupby("Media")["File_Path"].count()
@@ -432,12 +427,20 @@ df_duplicates = df_results[["File_Path", "Size_KB", "MD5"]].copy()
 df_duplicates = df_duplicates.drop_duplicates(subset=["File_Path"], keep=False)
 df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="MD5", keep=False)]
 
+# Calculates file and size subtotals based on different criteria.
+format_subtotals = subtotal(df_results, ["Format_Name", "Risk Level"])
+nara_risk_subtotals = subtotal(df_results, ["Risk Level"])
+technical_appraisal_subtotals = subtotal(tech_appraisal, ["Criteria", "Format_Name"])
+other_risk_subtotals = subtotal(other_risk, ["Criteria", "Format_Name"])
+
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
     df_results.to_excel(result, sheet_name="Risk", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
-    risk_subtotals.to_excel(result, sheet_name="Risk Subtotals")
+    nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
+    technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
+    other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
     media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
