@@ -60,6 +60,41 @@ def check_configuration():
     return errors
 
 
+def update_fits():
+    """Deletes any files in the FITS folder that do not have a corresponding file in the accession folder.
+    This is used when the script is run again after doing some appraisal."""
+
+    # Makes a dataframe with the file paths from the accession folder.
+    accession_paths = []
+    for root, directories, files in os.walk(accession_folder):
+        for file in files:
+            accession_paths.append(os.path.join(root, file))
+    accession_df = pd.DataFrame(accession_paths, columns=["accession_path"])
+
+    # Makes a dataframe with the file names from the FITS folder and the original path from the FITS XML.
+    # The original path will match the accession path.
+    fits_data = {"fits_name": [], "fits_path": []}
+    for file in os.listdir(fits_output):
+        fits_data["fits_name"].append(file)
+
+        tree = ET.parse(os.path.join(fits_output, file))
+        root = tree.getroot()
+        ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
+        fileinfo = root.find("fits:fileinfo", ns)
+        path = fileinfo.find("fits:filepath", ns)
+        fits_data["fits_path"].append(path.text)
+    fits_df = pd.DataFrame(fits_data)
+
+    # Compares the two dataframes and makes a list of any files in the FITS folder but not the accession folder.
+    compare_df = fits_df.merge(accession_df, left_on="fits_path", right_on="accession_path", how="left")
+    fits_only_df = compare_df[compare_df["accession_path"].isnull()]
+    fits_only_list = fits_only_df["fits_name"].to_list()
+
+    # Deletes the FITS files that aren't in the accession folder.
+    for fits in fits_only_list:
+        os.remove(os.path.join(fits_output, fits))
+
+
 def csv_to_dataframe(csv_file):
     """Reads a CSV into a dataframe and returns the result. If the dataframe must be read by ignoring encoding
     errors, also prints a message to the terminal to alert users that something was wrong. This happens when there
@@ -224,7 +259,7 @@ def match_nara_risk():
     # Most are lowercase versions of columns for case-insensitive matching.
     # Also combines format name and version in FITS, since NARA has that information in one column,
     # and makes a column of the file extension in FITS, since NARA has that as a separate column.
-    df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"]
+    df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"].to_string()
     df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
     df_nara["format_lower"] = df_nara["Format Name"].str.lower()
     df_fits["ext_lower"] = df_fits["File_Path"].str.lower().str.split(".").str[-1]
@@ -328,18 +363,18 @@ if len(configuration_errors) > 0:
 # and the collection folder, which is everything in the accession_folder path except the accession folder.
 collection_folder, accession_number = os.path.split(accession_folder)
 
-# Makes a folder for format identification information in the collection folder.
-# If this folder already exists, prints an error and ends the script.
+# If there is already a folder with FITS format identification information in the collection folder,
+# updates the folder by deleting any files that are no longer in accession folder.
+# Otherwise, runs FITS to generate the format identification information.
+# Prints to the terminal which mode the script is using so the archivist can stop the script if there is an error.
 fits_output = f"{collection_folder}/{accession_number}_FITS"
-try:
+if os.path.exists(fits_output):
+    print("\nUpdating the report using existing FITS format identification information.")
+    update_fits()
+else:
+    print("\nNew accession. Generating the FITS format identification information.")
     os.mkdir(fits_output)
-except FileExistsError:
-    print(f"There is already FITS data for accession {accession_number}.")
-    print(f"Delete or move the '{fits_output}' folder and run the script again.")
-    sys.exit()
-
-# Generates the format identification information for the accession using FITS.
-subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
+    subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
 # Makes a CSV in the collection folder, with a header row, for combined FITS information.
 header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
