@@ -22,7 +22,12 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-import configuration as c
+try:
+    import configuration as c
+except ModuleNotFoundError:
+    print("\nCould not run the script. Missing the required configuration.py file.")
+    print("Make a configuration.py file using configuration_template.py and save it to the folder with the script.")
+    sys.exit()
 
 
 def check_configuration():
