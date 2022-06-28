@@ -327,14 +327,25 @@ def match_nara_risk():
 
 
 def subtotal(df, criteria):
-    """Returns a dataframe with file and size subtotals based on the provided criteria."""
+    """Returns a dataframe with file and size subtotals based on the provided criteria.
+    If no files meet the criteria, adds an explanatory message to the dataframe instead."""
 
+    # Calculates each subtotal and reformats the numbers.
+    # All numbers are 3 decimal places and the size is in MB.
     files = round(df.groupby(criteria, dropna=False)["Format_Name"].count(), 3)
     files_percent = round((files / len(df.index)) * 100, 3)
     size = round(df.groupby(criteria, dropna=False)["Size_KB"].sum()/1000, 3)
     size_percent = round((size / df["Size_KB"].sum()) * 100, 3)
+
+    # Combines the subtotals to a single dataframe and labels the columns.
     subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
     subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
+
+    # If the dataframe is empty (no files met the criteria), adds an explanatory note.
+    # If this was not done, there would be an IndexError when saving the dataframe to the spreadsheet.
+    if subtotals.empty:
+        subtotals = pd.DataFrame(["There are no files of this type"], columns=["Message"])
+
     return subtotals
 
 
