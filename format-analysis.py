@@ -264,56 +264,56 @@ def match_nara_risk():
     # Most are lowercase versions of columns for case-insensitive matching.
     # Also combines format name and version in FITS, since NARA has that information in one column,
     # and makes a column of the file extension in FITS, since NARA has that as a separate column.
-    df_fits["name_version"] = df_fits["Format_Name"].str.lower() + " " + df_fits["Format_Version"].to_string()
-    df_fits["name_lower"] = df_fits["Format_Name"].str.lower()
-    df_nara["format_lower"] = df_nara["Format Name"].str.lower()
-    df_fits["ext_lower"] = df_fits["File_Path"].str.lower().str.split(".").str[-1]
-    df_nara["exts_lower"] = df_nara["File Extension(s)"].str.lower()
+    df_fits["name_version"] = df_fits["FITS_Format_Name"].str.lower() + " " + df_fits["FITS_Format_Version"].to_string()
+    df_fits["name_lower"] = df_fits["FITS_Format_Name"].str.lower()
+    df_nara["format_lower"] = df_nara["NARA_Format Name"].str.lower()
+    df_fits["ext_lower"] = df_fits["FITS_File_Path"].str.lower().str.split(".").str[-1]
+    df_nara["exts_lower"] = df_nara["NARA_File Extension(s)"].str.lower()
 
     # List of columns to look at in NARA each time.
-    nara_columns = ["Format Name", "File Extension(s)", "PRONOM URL", "Risk Level",
-                    "Proposed Preservation Plan", "format_lower", "exts_lower"]
+    nara_columns = ["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL", "NARA_Risk Level",
+                    "NARA_Proposed Preservation Plan", "format_lower", "exts_lower"]
 
     # PRONOM Identifier is a match.
     # Have to filter for PUID is not null or it will match unrelated formats with no PUID.
-    df_to_match = pd.merge(df_fits[df_fits["PUID"].notnull()], df_nara[nara_columns], left_on="PUID",
-                           right_on="PRONOM URL", how="left")
-    df_unmatched = df_to_match[df_to_match["Risk Level"].isnull()].copy()
+    df_to_match = pd.merge(df_fits[df_fits["FITS_PUID"].notnull()], df_nara[nara_columns], left_on="FITS_PUID",
+                           right_on="NARA_PRONOM URL", how="left")
+    df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_puid = df_to_match[df_to_match["Risk Level"].notnull()].copy()
-    df_puid = df_puid.assign(Match_Type="PRONOM")
+    df_puid = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
+    df_puid = df_puid.assign(NARA_Match_Type="PRONOM")
 
     # Adds the formats with no PUID back into the unmatched dataframe for additional attempted matches.
     # This dataframe will be updated after every attempted match with the ones that still aren't matched.
-    df_unmatched = pd.concat([df_fits[df_fits["PUID"].isnull()], df_unmatched])
+    df_unmatched = pd.concat([df_fits[df_fits["FITS_PUID"].isnull()], df_unmatched])
 
     # Name and version is a match (case insensitive).
     df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower",
                            how="left")
-    df_unmatched = df_to_match[df_to_match["Risk Level"].isnull()].copy()
+    df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_version = df_to_match[df_to_match["Risk Level"].notnull()].copy()
-    df_version = df_version.assign(Match_Type="Format Name and Version")
+    df_version = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
+    df_version = df_version.assign(NARA_Match_Type="Format Name and Version")
 
     # Name is a match (case insensitive).
     # For ones without a version, which are NaN in name_version.
     df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_lower", right_on="format_lower",
                            how="left")
-    df_unmatched = df_to_match[df_to_match["Risk Level"].isnull()].copy()
+    df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_name = df_to_match[df_to_match["Risk Level"].notnull()].copy()
-    df_name = df_name.assign(Match_Type="Format Name")
+    df_name = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
+    df_name = df_name.assign(NARA_Match_Type="Format Name")
 
     # Extension is a match (case insensitive).
     # Will not match if NARA has more than one possible extension for that format version.
     df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="ext_lower", right_on="exts_lower", how="left")
-    df_unmatched = df_to_match[df_to_match["Risk Level"].isnull()].copy()
+    df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_ext = df_to_match[df_to_match["Risk Level"].notnull()].copy()
-    df_ext = df_ext.assign(Match_Type="File Extension")
+    df_ext = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
+    df_ext = df_ext.assign(NARA_Match_Type="File Extension")
 
     # Adds match type of "No NARA Match" for any that are still unmatched.
-    df_unmatched = df_unmatched.assign(Match_Type="No NARA Match")
+    df_unmatched = df_unmatched.assign(NARA_Match_Type="No NARA Match")
 
     # Combines the dataframes with different matches to save to spreadsheet.
     df_matched = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
@@ -332,10 +332,10 @@ def subtotal(df, criteria):
 
     # Calculates each subtotal and reformats the numbers.
     # All numbers are 3 decimal places and the size is in MB.
-    files = round(df.groupby(criteria, dropna=False)["Format_Name"].count(), 3)
+    files = round(df.groupby(criteria, dropna=False)["FITS_Format_Name"].count(), 3)
     files_percent = round((files / len(df.index)) * 100, 3)
-    size = round(df.groupby(criteria, dropna=False)["Size_KB"].sum()/1000, 3)
-    size_percent = round((size / df["Size_KB"].sum()) * 100, 3)
+    size = round(df.groupby(criteria, dropna=False)["FITS_Size_KB"].sum()/1000, 3)
+    size_percent = round((size / df["FITS_Size_KB"].sum()) * 100, 3)
 
     # Combines the subtotals to a single dataframe and labels the columns.
     subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
@@ -412,6 +412,10 @@ df_ita = csv_to_dataframe(c.ITA)
 df_risk = csv_to_dataframe(c.RISK)
 df_nara = csv_to_dataframe(c.NARA)
 
+# Adds prefix to the FITS and NARA dataframes so the source of the data is clear when data is combined.
+df_fits = df_fits.add_prefix("FITS_")
+df_nara = df_nara.add_prefix("NARA_")
+
 # Adds risk information from NARA using different techniques, starting with the most accurate.
 # A new column Match_Type is added to identify which technique produced a match.
 df_results = match_nara_risk()
@@ -420,45 +424,45 @@ df_results = match_nara_risk()
 # re.escape is used to escape any unusual characters in the filename that have regex meanings.
 # Matches are case insensitive and will match partial strings.
 ta_list = df_ita["FITS_FORMAT"].tolist()
-df_results["Technical Appraisal Format"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)
-df_results["Technical Appraisal Trash"] = df_results["File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False)
+df_results["Technical Appraisal_Format"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)
+df_results["Technical Appraisal_Trash"] = df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False)
 
 # Adds other risk information.
 # Creates a column with True or False for if that FITs format identification indicates a possible risk.
 # Matches are case insensitive and will match partial strings.
 risk_list = df_risk["FORMAT"].tolist()
-df_results["Other Risk Indicator"] = df_results["Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)
+df_results["Other Risk Indicator"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)
 
 # Summarizes by media folder (the top level folder inside the accession folder).
-df_results["Media"] = df_results["File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
-files = df_results.groupby("Media")["File_Path"].count()
-size = df_results.groupby("Media")["Size_KB"].sum()
-high_risk = df_results[df_results["Risk Level"] == "High Risk"].groupby("Media")["File_Path"].count()
-moderate_risk = df_results[df_results["Risk Level"] == "Moderate Risk"].groupby("Media")["File_Path"].count()
-low_risk = df_results[df_results["Risk Level"] == "Low Risk"].groupby("Media")["File_Path"].count()
-unknown_risk = df_results[df_results["Match_Type"] == "No NARA Match"].groupby("Media")["File_Path"].count()
-technical_appraisal = df_results[df_results["Technical Appraisal Format"] == True].groupby("Media")["File_Path"].count()
-other_risk = df_results[df_results["Other Risk Indicator"] == True].groupby("Media")["File_Path"].count()
+df_results["Media"] = df_results["FITS_File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
+files = df_results.groupby("Media")["FITS_File_Path"].count()
+size = df_results.groupby("Media")["FITS_Size_KB"].sum()
+high_risk = df_results[df_results["NARA_Risk Level"] == "High Risk"].groupby("Media")["FITS_File_Path"].count()
+moderate_risk = df_results[df_results["NARA_Risk Level"] == "Moderate Risk"].groupby("Media")["FITS_File_Path"].count()
+low_risk = df_results[df_results["NARA_Risk Level"] == "Low Risk"].groupby("Media")["FITS_File_Path"].count()
+unknown_risk = df_results[df_results["NARA_Match_Type"] == "No NARA Match"].groupby("Media")["FITS_File_Path"].count()
+technical_appraisal = df_results[df_results["Technical Appraisal_Format"] == True].groupby("Media")["FITS_File_Path"].count()
+other_risk = df_results[df_results["Other Risk Indicator"] == True].groupby("Media")["FITS_File_Path"].count()
 media_subtotals = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
 media_subtotals.columns = ["File Count", "Size (KB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                            "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
-                           "Technical Appraisal Format (File Count)", "Other Risk Indicator (File Count)"]
+                           "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
 media_subtotals.fillna(0, inplace=True)
 df_results.drop(["Media"], inplace=True, axis=1)
 
 # Makes subsets based on different risk factors.
-nara_at_risk = df_results[df_results["Risk Level"] != "Low Risk"].copy()
-multiple_ids = df_results[df_results["Multiple_IDs"] == True].iloc[:, 0:18].copy()
-multiple_ids.drop(["Format Name", "File Extension(s)", "PRONOM URL"], inplace=True, axis=1)
-validation_error = df_results[(df_results["Valid"] == False) | (df_results["Well-Formed"] == False) | (df_results["Status_Message"].notnull())].copy()
+nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
+multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].iloc[:, 0:18].copy()
+multiple_ids.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
+validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) | (df_results["FITS_Status_Message"].notnull())].copy()
 
 # Makes a subset of files that meet one of the technical appraisal criteria (format or trash folder),
 # including adding a column for which criteria was used.
 # Removes duplicate rows, which are caused by multiple matches to NARA risk criteria.
-columns_list = ["File_Path", "Format_Name", "Format_Version", "Identifying_Tool(s)", "Multiple_IDs", "Size_KB", "Creating_Application"]
-tech_format = df_results[df_results["Technical Appraisal Format"] == True][columns_list].copy()
+columns_list = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)", "FITS_Multiple_IDs", "FITS_Size_KB", "FITS_Creating_Application"]
+tech_format = df_results[df_results["Technical Appraisal_Format"] == True][columns_list].copy()
 tech_format.insert(0, "Criteria", "Format")
-tech_trash = df_results[df_results["Technical Appraisal Trash"] == True][columns_list].copy()
+tech_trash = df_results[df_results["Technical Appraisal_Trash"] == True][columns_list].copy()
 tech_trash.insert(0, "Criteria", "Trash Folder")
 tech_appraisal = pd.concat([tech_format, tech_trash])
 tech_appraisal.drop_duplicates(inplace=True)
@@ -467,27 +471,27 @@ tech_appraisal.drop_duplicates(inplace=True)
 # including adding a column for which criteria was used.
 other_format = df_results[df_results["Other Risk Indicator"] == True][columns_list].copy()
 other_format.insert(0, "Criteria", "Format")
-other_nara_transform = df_results[(df_results["Risk Level"] == "Low Risk") & df_results["Proposed Preservation Plan"].str.startswith("Transform")][columns_list].copy()
+other_nara_transform = df_results[(df_results["NARA_Risk Level"] == "Low Risk") & df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")][columns_list].copy()
 other_nara_transform.insert(0, "Criteria", "NARA Low Risk/Transform")
 other_risk = pd.concat([other_format, other_nara_transform])
 
 # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
 # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
 # or multiple matches to NARA.
-df_duplicates = df_results[["File_Path", "Size_KB", "MD5"]].copy()
-df_duplicates = df_duplicates.drop_duplicates(subset=["File_Path"], keep=False)
-df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="MD5", keep=False)]
+df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
+df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
+df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
 
 # Calculates file and size subtotals based on different criteria.
-format_subtotals = subtotal(df_results, ["Format_Name", "Risk Level"])
-nara_risk_subtotals = subtotal(df_results, ["Risk Level"])
-technical_appraisal_subtotals = subtotal(tech_appraisal, ["Criteria", "Format_Name"])
-other_risk_subtotals = subtotal(other_risk, ["Criteria", "Format_Name"])
+format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"])
+nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"])
+technical_appraisal_subtotals = subtotal(tech_appraisal, ["Criteria", "FITS_Format_Name"])
+other_risk_subtotals = subtotal(other_risk, ["Criteria", "FITS_Format_Name"])
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
-    df_results.to_excel(result, sheet_name="Risk", index=False)
+    df_results.to_excel(result, sheet_name="Full Data", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
     nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
     technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
