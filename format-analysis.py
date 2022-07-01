@@ -21,6 +21,7 @@ import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from fuzzywuzzy import process
 
 try:
     import configuration as c
@@ -287,7 +288,7 @@ def match_nara_risk():
     # This dataframe will be updated after every attempted match with the ones that still aren't matched.
     df_unmatched = pd.concat([df_fits[df_fits["FITS_PUID"].isnull()], df_unmatched])
 
-    # Name and version is a match (case insensitive).
+    # Name and version is an exact match (case insensitive).
     df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower",
                            how="left")
     df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
@@ -295,7 +296,7 @@ def match_nara_risk():
     df_version = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
     df_version = df_version.assign(NARA_Match_Type="Format Name and Version")
 
-    # Name is a match (case insensitive).
+    # Name is an exact match (case insensitive).
     # For ones without a version, which are NaN in name_version.
     df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_lower", right_on="format_lower",
                            how="left")
@@ -303,6 +304,20 @@ def match_nara_risk():
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
     df_name = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
     df_name = df_name.assign(NARA_Match_Type="Format Name")
+
+    # Name and version is a fuzzy match.
+    # Allows for some difference in how a name is formatted and how the version is included.
+    # It needs a function for error handling if there isn't a close enough match.
+    def match(value, column, score):
+        try:
+            return process.extractOne(value, column, score_cutoff=score)[0]
+        except TypeError:
+            return None
+
+    df_unmatched['key'] = df_unmatched.name_lower.apply(lambda x: match(x, df_nara.format_lower, 85))
+    df_fuzzy_version = df_unmatched.dropna(subset=["key"]).merge(df_nara, left_on='key', right_on='format_lower')
+    df_fuzzy_version = df_fuzzy_version.assign(NARA_Match_Type="Fuzzy Format Name and Version")
+    df_unmatched = df_unmatched[df_unmatched["key"].isnull()]
 
     # Extension is a match (case insensitive).
     # Makes an expanded version of the NARA dataframe for one row per possible extension per format.
@@ -321,7 +336,7 @@ def match_nara_risk():
     df_unmatched = df_unmatched.assign(NARA_Match_Type="No NARA Match")
 
     # Combines the dataframes with different matches to save to spreadsheet.
-    df_matched = pd.concat([df_puid, df_version, df_name, df_ext, df_unmatched])
+    df_matched = pd.concat([df_puid, df_version, df_name, df_fuzzy_version, df_ext, df_unmatched])
 
     # Removes columns that are just used for FITS and NARA comparisons from all dataframes.
     df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
