@@ -305,8 +305,13 @@ def match_nara_risk():
     df_name = df_name.assign(NARA_Match_Type="Format Name")
 
     # Extension is a match (case insensitive).
-    # Will not match if NARA has more than one possible extension for that format version.
-    df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="ext_lower", right_on="exts_lower", how="left")
+    # Makes an expanded version of the NARA dataframe for one row per possible extension per format.
+    # NARA has pipe separated string of extensions if a format has more than one.
+    df_nara_expanded = df_nara[nara_columns].copy()
+    df_nara_expanded["ext_separate"] = df_nara_expanded["exts_lower"].str.split(r"|")
+    df_nara_expanded = df_nara_expanded.explode("ext_separate")
+    df_to_match = pd.merge(df_unmatched, df_nara_expanded, left_on="ext_lower", right_on="ext_separate", how="left")
+    df_to_match.drop("ext_separate", inplace=True, axis=1)
     df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
     df_ext = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
