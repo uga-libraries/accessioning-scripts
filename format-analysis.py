@@ -266,7 +266,8 @@ def match_nara_risk():
     # Most are lowercase versions of columns for case-insensitive matching.
     # Also combines format name and version in FITS, since NARA has that information in one column,
     # and makes a column of the file extension in FITS, since NARA has that as a separate column.
-    df_fits["name_version"] = df_fits["FITS_Format_Name"].str.lower() + " " + df_fits["FITS_Format_Version"].to_string()
+    df_fits["name_version"] = df_fits["FITS_Format_Name"].str.lower() + " " + df_fits["FITS_Format_Version"].astype(str)
+    df_fits["name_version"] = df_fits["name_version"].str.strip(" nan")
     df_fits["name_lower"] = df_fits["FITS_Format_Name"].str.lower()
     df_nara["format_lower"] = df_nara["NARA_Format Name"].str.lower()
     df_fits["ext_lower"] = df_fits["FITS_File_Path"].str.lower().str.split(".").str[-1]
@@ -289,22 +290,15 @@ def match_nara_risk():
     # This dataframe will be updated after every attempted match with the ones that still aren't matched.
     df_unmatched = pd.concat([df_fits[df_fits["FITS_PUID"].isnull()], df_unmatched])
 
-    # Name and version is an exact match (case insensitive).
+    # Name, and version if it has one, is an exact match (case insensitive).
+    # Uses a pattern of "format_name version" since that is most common in NARA.
+    # If the format name and version are combined in another way, this will not match it.
     df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower",
                            how="left")
     df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_version = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
-    df_version = df_version.assign(NARA_Match_Type="Format Name and Version")
-
-    # Name is an exact match (case insensitive).
-    # For ones without a version, which are NaN in name_version.
-    df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_lower", right_on="format_lower",
-                           how="left")
-    df_unmatched = df_to_match[df_to_match["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_name = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
-    df_name = df_name.assign(NARA_Match_Type="Format Name")
+    df_format = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
+    df_format = df_format.assign(NARA_Match_Type="Format Name")
 
     # Name and version is a fuzzy match.
     # Allows for some difference in how a name is formatted and how the version is included.
@@ -315,11 +309,11 @@ def match_nara_risk():
         except TypeError:
             return None
 
-    df_unmatched['key'] = df_unmatched.name_lower.apply(lambda x: match(x, df_nara.format_lower, 85))
-    df_fuzzy_version = df_unmatched.dropna(subset=["key"]).merge(df_nara[nara_columns], left_on='key', right_on='format_lower')
-    df_fuzzy_version = df_fuzzy_version.assign(NARA_Match_Type="Fuzzy Format Name and Version")
+    df_unmatched['key'] = df_unmatched.name_lower.apply(lambda x: match(x, df_nara.format_lower, 90))
+    df_fuzzy_format = df_unmatched.dropna(subset=["key"]).merge(df_nara[nara_columns], left_on='key', right_on='format_lower')
+    df_fuzzy_format = df_fuzzy_format.assign(NARA_Match_Type="Fuzzy Format Name")
     df_unmatched = df_unmatched[df_unmatched["key"].isnull()]
-    df_fuzzy_version.drop(["key"], inplace=True, axis=1)
+    df_fuzzy_format.drop(["key"], inplace=True, axis=1)
     df_unmatched.drop(["key"], inplace=True, axis=1)
 
     # Extension is a match (case insensitive).
@@ -339,7 +333,7 @@ def match_nara_risk():
     df_unmatched = df_unmatched.assign(NARA_Match_Type="No NARA Match")
 
     # Combines the dataframes with different matches to save to spreadsheet.
-    df_matched = pd.concat([df_puid, df_version, df_name, df_fuzzy_version, df_ext, df_unmatched])
+    df_matched = pd.concat([df_puid, df_format, df_fuzzy_format, df_ext, df_unmatched])
 
     # Removes columns that are just used for FITS and NARA comparisons from all dataframes.
     df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
