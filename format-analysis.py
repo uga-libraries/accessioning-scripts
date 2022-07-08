@@ -372,6 +372,48 @@ def subtotal(df, criteria):
     return subtotals
 
 
+def media_subtotal(df):
+    """"Summarizes by media folder (the top level folder inside the accession folder).
+    For each folder, includes the number of files, size in MB, and number of files in each risk category.
+    Returns a dataframe."""
+
+    # Calculates the media folder names.
+    df["Media"] = df["FITS_File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
+
+    # Calculates the total files and MB in each media folder.
+    # Size is converted to MB.
+    files = df.groupby("Media")["FITS_File_Path"].count()
+    size = round(df.groupby("Media")["FITS_Size_KB"].sum() / 1000, 3)
+
+    # Calculates the number of files of each NARA risk level in each media folder.
+    high_risk = df[df["NARA_Risk Level"] == "High Risk"].groupby("Media")["FITS_File_Path"].count()
+    moderate_risk = df[df["NARA_Risk Level"] == "Moderate Risk"].groupby("Media")[
+        "FITS_File_Path"].count()
+    low_risk = df[df["NARA_Risk Level"] == "Low Risk"].groupby("Media")["FITS_File_Path"].count()
+    unknown_risk = df[df["NARA_Match_Type"] == "No NARA Match"].groupby("Media")[
+        "FITS_File_Path"].count()
+
+    # Calculates the number of files for the other risk categories in each media folder.
+    # Technical appraisal is by format and doesn't include files in trash folders.
+    # Other risk is by format and doesn't include files with low NARA risk but a tranformation recommendation.
+    technical_appraisal = df[df["Technical Appraisal_Format"] == True].groupby("Media")[
+        "FITS_File_Path"].count()
+    other_risk = df[df["Other Risk Indicator"] == True].groupby("Media")["FITS_File_Path"].count()
+
+    # Combines all the data into a single dataframe, with labeled columns.
+    # Fills any empty cells with a 0 to make blanks easier to read.
+    media_subtotals = pd.concat(
+        [files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
+    media_subtotals.columns = ["File Count", "Size (MB)", "NARA High Risk (File Count)",
+                               "NARA Moderate Risk (File Count)",
+                               "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
+                               "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
+    media_subtotals.fillna(0, inplace=True)
+
+    # Returns the media_subtotals dataframe.
+    return media_subtotals
+
+
 # Gets the accession folder path from the script argument and verifies it is correct.
 # If there is an error, ends the script.
 try:
@@ -468,23 +510,6 @@ else:
     # Saves the information in df_results to a CSV for archivist review.
     df_results.to_csv(csv_path, index=False)
 
-# Summarizes by media folder (the top level folder inside the accession folder).
-df_results["Media"] = df_results["FITS_File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
-files = df_results.groupby("Media")["FITS_File_Path"].count()
-size = df_results.groupby("Media")["FITS_Size_KB"].sum()/1000
-high_risk = df_results[df_results["NARA_Risk Level"] == "High Risk"].groupby("Media")["FITS_File_Path"].count()
-moderate_risk = df_results[df_results["NARA_Risk Level"] == "Moderate Risk"].groupby("Media")["FITS_File_Path"].count()
-low_risk = df_results[df_results["NARA_Risk Level"] == "Low Risk"].groupby("Media")["FITS_File_Path"].count()
-unknown_risk = df_results[df_results["NARA_Match_Type"] == "No NARA Match"].groupby("Media")["FITS_File_Path"].count()
-technical_appraisal = df_results[df_results["Technical Appraisal_Format"] == True].groupby("Media")["FITS_File_Path"].count()
-other_risk = df_results[df_results["Other Risk Indicator"] == True].groupby("Media")["FITS_File_Path"].count()
-media_subtotals = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
-media_subtotals.columns = ["File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
-                           "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
-                           "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
-media_subtotals.fillna(0, inplace=True)
-df_results.drop(["Media"], inplace=True, axis=1)
-
 # Makes subsets based on different risk factors.
 nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
 multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].iloc[:, 0:18].copy()
@@ -520,10 +545,16 @@ df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=Fa
 df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
 
 # Calculates file and size subtotals based on different criteria.
-format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"])
-nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"])
+# Makes a version of df_results without duplicates caused by multiple possible NARA matches
+# to get more accurate numbers.
+df_results_dedup = df_results.copy()
+df_results_dedup.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
+df_results_dedup.drop_duplicates(inplace=True)
+format_subtotals = subtotal(df_results_dedup, ["FITS_Format_Name", "NARA_Risk Level"])
+nara_risk_subtotals = subtotal(df_results_dedup, ["NARA_Risk Level"])
 technical_appraisal_subtotals = subtotal(tech_appraisal, ["Criteria", "FITS_Format_Name"])
 other_risk_subtotals = subtotal(other_risk, ["Criteria", "FITS_Format_Name"])
+media_subtotals = media_subtotal(df_results_dedup)
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
