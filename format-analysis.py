@@ -258,8 +258,8 @@ def fits_to_csv(fits_xml):
 
 
 def match_nara_risk():
-    """Adds risk information from NARA to the FITS data using different techniques, starting with the most accurate.
-    A new column Match_Type is added to identify which technique produced a match.
+    """Combines risk information from NARA with the FITS data using different techniques,
+    starting with the most accurate. A new column Match_Type is added to identify which technique produced a match.
     Returns a dataframe with the NARA matches."""
 
     # Adds columns to df_fits and df_nara to assist in better matching.
@@ -343,8 +343,6 @@ def match_nara_risk():
 
     # Removes columns that are just used for FITS and NARA comparisons from all dataframes.
     df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
-    df_fits.drop(["name_version", "name_lower", "ext_lower"], inplace=True, axis=1)
-    df_nara.drop(["format_lower", "exts_lower"], inplace=True, axis=1)
 
     return df_matched
 
