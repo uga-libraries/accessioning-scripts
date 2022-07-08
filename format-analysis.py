@@ -409,7 +409,7 @@ if os.path.exists(fits_output):
     print("\nUpdating the report using existing FITS format identification information.")
     update_fits()
 else:
-    print("\nNew accession. Generating the FITS format identification information.")
+    print("\nGenerating new FITS format identification information.")
     os.mkdir(fits_output)
     subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
@@ -437,22 +437,34 @@ df_nara = csv_to_dataframe(c.NARA)
 df_fits = df_fits.add_prefix("FITS_")
 df_nara = df_nara.add_prefix("NARA_")
 
-# Adds risk information from NARA using different techniques, starting with the most accurate.
-# A new column Match_Type is added to identify which technique produced a match.
-df_results = match_nara_risk()
+# If there is already a spreadsheet with combined FITs and risk information from a previous iteration of the script,
+# reads that into a dataframe for additional analysis. This lets the archivist manually adjust the risk matches.
+# Otherwise, combines FITS, NARA, technical appraisal, and other risk data to a dataframe.
+csv_path = os.path.join(collection_folder, f"{accession_number}_full_risk_data.csv")
+if os.path.exists(csv_path):
+    print("\nUpdating the report using existing risk data.")
+    df_results = csv_to_dataframe(csv_path)
+else:
+    print("\nGenerating new risk data for the report.")
+    # Adds risk information from NARA using different techniques, starting with the most accurate.
+    # A new column Match_Type is added to identify which technique produced a match.
+    df_results = match_nara_risk()
 
-# Adds two columns for technical appraisal information, one by format and on by if the file is in a trash folder.
-# re.escape is used to escape any unusual characters in the filename that have regex meanings.
-# Matches are case insensitive and will match partial strings.
-ta_list = df_ita["FITS_FORMAT"].tolist()
-df_results["Technical Appraisal_Format"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)
-df_results["Technical Appraisal_Trash"] = df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False)
+    # Adds two columns for technical appraisal information, one by format and on by if the file is in a trash folder.
+    # re.escape is used to escape any unusual characters in the filename that have regex meanings.
+    # Matches are case insensitive and will match partial strings.
+    ta_list = df_ita["FITS_FORMAT"].tolist()
+    df_results["Technical Appraisal_Format"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)
+    df_results["Technical Appraisal_Trash"] = df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False)
 
-# Adds other risk information.
-# Creates a column with True or False for if that FITs format identification indicates a possible risk.
-# Matches are case insensitive and will match partial strings.
-risk_list = df_risk["FORMAT"].tolist()
-df_results["Other Risk Indicator"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)
+    # Adds other risk information.
+    # Creates a column with True or False for if that FITs format identification indicates a possible risk.
+    # Matches are case insensitive and will match partial strings.
+    risk_list = df_risk["FORMAT"].tolist()
+    df_results["Other Risk Indicator"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)
+
+    # Saves the information in df_results to a CSV for archivist review.
+    df_results.to_csv(csv_path, index=False)
 
 # Summarizes by media folder (the top level folder inside the accession folder).
 df_results["Media"] = df_results["FITS_File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
@@ -512,7 +524,6 @@ other_risk_subtotals = subtotal(other_risk, ["Criteria", "FITS_Format_Name"])
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
-    df_results.to_excel(result, sheet_name="Full Data", index=False)
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
     nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
     technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
