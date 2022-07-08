@@ -489,6 +489,7 @@ df_results.drop(["Media"], inplace=True, axis=1)
 nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
 multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].iloc[:, 0:18].copy()
 multiple_ids.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
+multiple_ids.drop_duplicates(inplace=True)
 validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) | (df_results["FITS_Status_Message"].notnull())].copy()
 
 # Makes a subset of files that meet one of the technical appraisal criteria (format or trash folder),
@@ -509,6 +510,7 @@ other_format.insert(0, "Criteria", "Format")
 other_nara_transform = df_results[(df_results["NARA_Risk Level"] == "Low Risk") & df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")][columns_list].copy()
 other_nara_transform.insert(0, "Criteria", "NARA Low Risk/Transform")
 other_risk = pd.concat([other_format, other_nara_transform])
+other_risk.drop_duplicates(inplace=True)
 
 # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
 # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
