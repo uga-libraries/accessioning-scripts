@@ -23,6 +23,7 @@ import sys
 import xml.etree.ElementTree as ET
 from fuzzywuzzy import process
 
+# Configuration is made by the user on each new machine the script is installed on, so it could be missing.
 try:
     import configuration as c
 except ModuleNotFoundError:
@@ -456,7 +457,7 @@ df_results["Other Risk Indicator"] = df_results["FITS_Format_Name"].str.contains
 # Summarizes by media folder (the top level folder inside the accession folder).
 df_results["Media"] = df_results["FITS_File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
 files = df_results.groupby("Media")["FITS_File_Path"].count()
-size = df_results.groupby("Media")["FITS_Size_KB"].sum()
+size = df_results.groupby("Media")["FITS_Size_KB"].sum()/1000
 high_risk = df_results[df_results["NARA_Risk Level"] == "High Risk"].groupby("Media")["FITS_File_Path"].count()
 moderate_risk = df_results[df_results["NARA_Risk Level"] == "Moderate Risk"].groupby("Media")["FITS_File_Path"].count()
 low_risk = df_results[df_results["NARA_Risk Level"] == "Low Risk"].groupby("Media")["FITS_File_Path"].count()
@@ -464,7 +465,7 @@ unknown_risk = df_results[df_results["NARA_Match_Type"] == "No NARA Match"].grou
 technical_appraisal = df_results[df_results["Technical Appraisal_Format"] == True].groupby("Media")["FITS_File_Path"].count()
 other_risk = df_results[df_results["Other Risk Indicator"] == True].groupby("Media")["FITS_File_Path"].count()
 media_subtotals = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
-media_subtotals.columns = ["File Count", "Size (KB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
+media_subtotals.columns = ["File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                            "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
                            "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
 media_subtotals.fillna(0, inplace=True)
