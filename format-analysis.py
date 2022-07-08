@@ -316,9 +316,11 @@ def match_nara_risk():
             return None
 
     df_unmatched['key'] = df_unmatched.name_lower.apply(lambda x: match(x, df_nara.format_lower, 85))
-    df_fuzzy_version = df_unmatched.dropna(subset=["key"]).merge(df_nara, left_on='key', right_on='format_lower')
+    df_fuzzy_version = df_unmatched.dropna(subset=["key"]).merge(df_nara[nara_columns], left_on='key', right_on='format_lower')
     df_fuzzy_version = df_fuzzy_version.assign(NARA_Match_Type="Fuzzy Format Name and Version")
     df_unmatched = df_unmatched[df_unmatched["key"].isnull()]
+    df_fuzzy_version.drop(["key"], inplace=True, axis=1)
+    df_unmatched.drop(["key"], inplace=True, axis=1)
 
     # Extension is a match (case insensitive).
     # Makes an expanded version of the NARA dataframe for one row per possible extension per format.
