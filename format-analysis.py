@@ -117,7 +117,7 @@ def csv_to_dataframe(csv_file):
     return dataframe
 
 
-def fits_to_csv(fits_xml):
+def fits_to_csv(fits_file):
     """Extracts desired fields from a FITS XML file, reformats when necessary,
     and saves each format identification as a separate row in a CSV. Returns nothing."""
 
@@ -149,10 +149,10 @@ def fits_to_csv(fits_xml):
 
     # Read the fits.xml file. If there is a read error, prints the filename and continues the script.
     try:
-        tree = ET.parse(fits_xml)
+        tree = ET.parse(fits_file)
         root = tree.getroot()
     except ET.ParseError as et_error:
-        print(f"\nCould not get format information from {os.path.basename(fits_xml)}")
+        print(f"\nCould not get format information from {os.path.basename(fits_file)}")
         print("ElementTree error:", et_error.msg)
         print("This file will not be included in the analysis.")
         return
@@ -200,7 +200,7 @@ def fits_to_csv(fits_xml):
 
         # If one of the format identifications is empty, do not include any other format information.
         elif format_key == "empty":
-            formats_dictionary = {format_key:format_data}
+            formats_dictionary = {format_key: format_data}
         elif "empty" in formats_dictionary:
             continue
 
@@ -310,7 +310,8 @@ def match_nara_risk():
             return None
 
     df_unmatched['key'] = df_unmatched.name_lower.apply(lambda x: match(x, df_nara.format_lower, 90))
-    df_fuzzy_format = df_unmatched.dropna(subset=["key"]).merge(df_nara[nara_columns], left_on='key', right_on='format_lower')
+    df_fuzzy_format = df_unmatched.dropna(subset=["key"]).merge(df_nara[nara_columns],
+                                                                left_on='key', right_on='format_lower')
     df_fuzzy_format = df_fuzzy_format.assign(NARA_Match_Type="Fuzzy Format Name")
     df_unmatched = df_unmatched[df_unmatched["key"].isnull()]
     df_fuzzy_format.drop(["key"], inplace=True, axis=1)
@@ -387,23 +388,22 @@ def media_subtotal(df):
 
     # Calculates the number of files for the other risk categories in each media folder.
     # Technical appraisal is by format and doesn't include files in trash folders.
-    # Other risk is by format and doesn't include files with low NARA risk but a tranformation recommendation.
+    # Other risk is by format and doesn't include files with low NARA risk but a transformation recommendation.
     technical_appraisal = df[df["Technical Appraisal_Format"] == True].groupby("Media")[
         "FITS_File_Path"].count()
-    other_risk = df[df["Other Risk Indicator"] == True].groupby("Media")["FITS_File_Path"].count()
+    other = df[df["Other Risk Indicator"] == True].groupby("Media")["FITS_File_Path"].count()
 
     # Combines all the data into a single dataframe, with labeled columns.
     # Fills any empty cells with a 0 to make blanks easier to read.
-    media_subtotals = pd.concat(
-        [files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other_risk], axis=1)
-    media_subtotals.columns = ["File Count", "Size (MB)", "NARA High Risk (File Count)",
-                               "NARA Moderate Risk (File Count)",
-                               "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
-                               "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
-    media_subtotals.fillna(0, inplace=True)
+    media = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other],
+                      axis=1)
+    media.columns = ["File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
+                     "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
+                     "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
+    media.fillna(0, inplace=True)
 
     # Returns the media_subtotals dataframe.
-    return media_subtotals
+    return media
 
 
 # Gets the accession folder path from the script argument and verifies it is correct.
@@ -507,12 +507,14 @@ nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
 multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].iloc[:, 0:18].copy()
 multiple_ids.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 multiple_ids.drop_duplicates(inplace=True)
-validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) | (df_results["FITS_Status_Message"].notnull())].copy()
+validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
+                              (df_results["FITS_Status_Message"].notnull())].copy()
 
 # Makes a subset of files that meet one of the technical appraisal criteria (format or trash folder),
 # including adding a column for which criteria was used.
 # Removes duplicate rows, which are caused by multiple matches to NARA risk criteria.
-columns_list = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)", "FITS_Multiple_IDs", "FITS_Size_KB", "FITS_Creating_Application"]
+columns_list = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
+                "FITS_Multiple_IDs", "FITS_Size_KB", "FITS_Creating_Application"]
 tech_format = df_results[df_results["Technical Appraisal_Format"] == True][columns_list].copy()
 tech_format.insert(0, "Criteria", "Format")
 tech_trash = df_results[df_results["Technical Appraisal_Trash"] == True][columns_list].copy()
@@ -524,7 +526,8 @@ tech_appraisal.drop_duplicates(inplace=True)
 # including adding a column for which criteria was used.
 other_format = df_results[df_results["Other Risk Indicator"] == True][columns_list].copy()
 other_format.insert(0, "Criteria", "Format")
-other_nara_transform = df_results[(df_results["NARA_Risk Level"] == "Low Risk") & df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")][columns_list].copy()
+other_nara_transform = df_results[(df_results["NARA_Risk Level"] == "Low Risk") &
+                                  df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")][columns_list].copy()
 other_nara_transform.insert(0, "Criteria", "NARA Low Risk/Transform")
 other_risk = pd.concat([other_format, other_nara_transform])
 other_risk.drop_duplicates(inplace=True)
