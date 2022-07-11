@@ -351,7 +351,7 @@ def subtotal(df, criteria):
     files = round(df.groupby(criteria, dropna=False)["FITS_Format_Name"].count(), 3)
     files_percent = round((files / len(df.index)) * 100, 3)
     size = round(df.groupby(criteria, dropna=False)["FITS_Size_KB"].sum()/1000, 3)
-    size_percent = round((size / df["FITS_Size_KB"].sum()) * 100, 3)
+    size_percent = round((size / (df["FITS_Size_KB"].sum()/1000)) * 100, 3)
 
     # Combines the subtotals to a single dataframe and labels the columns.
     subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
