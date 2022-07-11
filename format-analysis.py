@@ -342,16 +342,16 @@ def match_nara_risk():
     return df_matched
 
 
-def subtotal(df, criteria):
+def subtotal(df, criteria, totals):
     """Returns a dataframe with file and size subtotals based on the provided criteria.
     If no files meet the criteria, adds an explanatory message to the dataframe instead."""
 
     # Calculates each subtotal and reformats the numbers.
     # All numbers are 3 decimal places and the size is in MB.
     files = round(df.groupby(criteria, dropna=False)["FITS_Format_Name"].count(), 3)
-    files_percent = round((files / len(df.index)) * 100, 3)
+    files_percent = round((files / totals["Files"]) * 100, 3)
     size = round(df.groupby(criteria, dropna=False)["FITS_Size_KB"].sum()/1000, 3)
-    size_percent = round((size / (df["FITS_Size_KB"].sum()/1000)) * 100, 3)
+    size_percent = round((size / totals["MB"]) * 100, 3)
 
     # Combines the subtotals to a single dataframe and labels the columns.
     subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
@@ -539,16 +539,20 @@ df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy(
 df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
 df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
 
-# Calculates file and size subtotals based on different criteria.
-# Makes a version of df_results without duplicates caused by multiple possible NARA matches
-# to get more accurate numbers.
+# Makes a version of df_results without duplicates caused by multiple possible NARA matches with the same risk
+# to get more accurate numbers for the subtotals.
 df_results_dedup = df_results.copy()
 df_results_dedup.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 df_results_dedup.drop_duplicates(inplace=True)
-format_subtotals = subtotal(df_results_dedup, ["FITS_Format_Name", "NARA_Risk Level"])
-nara_risk_subtotals = subtotal(df_results_dedup, ["NARA_Risk Level"])
-technical_appraisal_subtotals = subtotal(tech_appraisal, ["Criteria", "FITS_Format_Name"])
-other_risk_subtotals = subtotal(other_risk, ["Criteria", "FITS_Format_Name"])
+
+# Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+totals_dict = {"Files": len(df_results_dedup.index), "MB": df_results_dedup["FITS_Size_KB"].sum()/1000}
+
+# Calculates file and size subtotals based on different criteria.
+format_subtotals = subtotal(df_results_dedup, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
+nara_risk_subtotals = subtotal(df_results_dedup, ["NARA_Risk Level"], totals_dict)
+technical_appraisal_subtotals = subtotal(tech_appraisal, ["Criteria", "FITS_Format_Name"], totals_dict)
+other_risk_subtotals = subtotal(other_risk, ["Criteria", "FITS_Format_Name"], totals_dict)
 media_subtotals = media_subtotal(df_results_dedup)
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
