@@ -253,7 +253,13 @@ def fits_to_csv(fits_file):
                formats_dictionary[format_id]["version"], formats_dictionary[format_id]["puid"],
                formats_dictionary[format_id]["tools"]]
         row.extend(file_data)
-        file_write.writerow(row)
+        # If there is a character (usually in the filepath) that cannot be read,
+        # saves it to a text file to use for renaming.
+        try:
+            file_write.writerow(row)
+        except UnicodeEncodeError:
+            with open(f"{collection_folder}/{accession_number}_encode_errors.txt", "a", encoding="utf-8") as text:
+                text.write(get_text(fileinfo, "filepath") + "\n")
     file_open.close()
 
 
@@ -443,7 +449,8 @@ collection_folder, accession_number = os.path.split(accession_folder)
 fits_output = f"{collection_folder}/{accession_number}_FITS"
 if os.path.exists(fits_output):
     print("\nUpdating the report using existing FITS format identification information.")
-    update_fits()
+    # TODO: put this back after testing encoding error handling
+    # update_fits()
 else:
     print("\nGenerating new FITS format identification information.")
     os.mkdir(fits_output)
@@ -461,6 +468,13 @@ csv_open.close()
 # Extracts select format information for each file, with some data reformatting, and saves to the FITS CSV.
 for fits_xml in os.listdir(fits_output):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
+
+# If an encode errors text file was made during the previous step, removes any duplicate files.
+# Files are duplicated if they have more than one format identification.
+if os.path.exists(f"{collection_folder}/{accession_number}_encode_errors.txt"):
+    error_df = pd.read_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=None)
+    error_df.drop_duplicates(inplace=True)
+    error_df.to_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=False, index=False)
 
 # Read the CSVs with data [FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA]
 # into pandas for analysis and summarizing, and prints a warning if encoding errors have to be ignored.
