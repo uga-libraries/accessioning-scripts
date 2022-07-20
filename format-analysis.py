@@ -92,14 +92,23 @@ def update_fits():
         fits_data["fits_path"].append(path.text)
     fits_df = pd.DataFrame(fits_data)
 
-    # Compares the two dataframes and makes a list of any files in the FITS folder but not the accession folder.
+    # Makes a list of any files in the FITS folder but not the accession folder.
+    # Deletes the FITS files that aren't in the accession folder.
     compare_df = fits_df.merge(accession_df, left_on="fits_path", right_on="accession_path", how="left")
     fits_only_df = compare_df[compare_df["accession_path"].isnull()]
     fits_only_list = fits_only_df["fits_name"].to_list()
-
-    # Deletes the FITS files that aren't in the accession folder.
     for fits in fits_only_list:
         os.remove(os.path.join(fits_output, fits))
+
+    # Makes a list of any files in the accession folder but not in the FITs folder.
+    # Creates a FITS file for any that do not have one.
+    compare_df = fits_df.merge(accession_df, left_on="fits_path", right_on="accession_path", how="right")
+    acc_only_df = compare_df[compare_df["fits_path"].isnull()]
+    acc_only_list = acc_only_df["accession_path"].to_list()
+    for file in acc_only_list:
+        file_name = os.path.basename(file)
+        subprocess.run(f'"{c.FITS}" -i "{file}" -o "{collection_folder}/{accession_number}_FITS/{file_name}.fits.xml"',
+                       shell=True)
 
 
 def csv_to_dataframe(csv_file):
