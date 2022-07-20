@@ -449,8 +449,7 @@ collection_folder, accession_number = os.path.split(accession_folder)
 fits_output = f"{collection_folder}/{accession_number}_FITS"
 if os.path.exists(fits_output):
     print("\nUpdating the report using existing FITS format identification information.")
-    # TODO: put this back after testing encoding error handling
-    # update_fits()
+    update_fits()
 else:
     print("\nGenerating new FITS format identification information.")
     os.mkdir(fits_output)
