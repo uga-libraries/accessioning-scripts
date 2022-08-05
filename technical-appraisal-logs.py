@@ -1,6 +1,9 @@
 """File Manifest and Deletion Log Generator
 
 This script generates a CSV manifest of all the digital files received in an accession. 
+It also identifies file paths that may break other scripts and saves those paths to a 
+separate log for review.
+
 Using the "compare" argument compares the initial manifest to the files left in the 
 accession after technical appraisal and generates an additional CSV log of any files 
 that were deleted in the process. 
@@ -129,16 +132,41 @@ if __name__ == "__main__":
                 if check.lower() in ['y', 'yes']:
                     print('\nFile manifest will be saved to the accession folder. Working...')
 
-        # Create the manifest CSV
-        with open(f'{dir_to_log}\\initialmanifest_{date}.csv', "w", encoding="utf-8", newline='') as manifest:
-            writer = csv.writer(manifest)
-            writer.writerow(header)
+        # Create the manifest CSV and a log of files to review
+        with open(f'{dir_to_log}\\initialmanifest_{date}.csv', "w", encoding="utf-8", newline='') as manifest, open(f'{dir_to_log}\\filestoreview_{date}.csv', "w", encoding="utf-8", newline='') as review_log:
+            wr_initman = csv.writer(manifest)
+            wr_revlog = csv.writer(review_log)
+            wr_initman.writerow(header)
+            wr_revlog.writerow(header)
 
             # Scan through the full directory tree and write the relevant file information to the log
             for entry in scan_full_dir(dir_to_log):
                 data = get_file_info(entry)
-                writer.writerow(data)
+                wr_initman.writerow(data)
 
+                # Look at the file path and check for any problematic characters
+                filepath = data[0]
+                path = str(filepath)
+
+                tempfiles = ['~', '._']
+                probchars = ['&', '$', '*', '?']
+                smartquotes = ['“', '”', '’']
+
+                if any (t in path for t in tempfiles):
+                    data.append("Potential temp file")
+                    wr_revlog.writerow(data)
+                if any (c in path for c in probchars):
+                    data.append("Path contains special characters")
+                    wr_revlog.writerow(data)
+                if any (q in path for q in smartquotes):
+                    data.append("Path contains smart quotes or apostrophes")
+                    wr_revlog.writerow(data)
+
+                # Check the path length to see if it exceeds the Windows max path length
+                if len(path) > 260:
+                    data.append("Path exceeds 260 characters")
+                    wr_revlog.writerow(data)
+    
     # If "compare" argument, locate the existing manifest and turn it into a pandas dataframe
     if start_compare == "compare":
         print('\nDeletion log will be saved to the accession folder. Working...')
