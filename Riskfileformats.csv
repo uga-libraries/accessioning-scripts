@@ -1,5 +1,10 @@
 ﻿FITS_FORMAT,NOTES
+Cascading Style Sheet, Indicates saved web page
+CD-ROM
+DOS/Windows executable, Indicates potentially unwanted software
 GZIP, Archive format
+Microsoft Cabinet Archive Data, Archive format
+Microsoft Windows Autorun file, Indicates potentially unwanted software
 StuffIt Archive, Archive format
 ZIP, Archive format
 ZIP Format, Archive format
