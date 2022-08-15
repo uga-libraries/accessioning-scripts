@@ -68,8 +68,9 @@ def check_configuration():
 
 
 def update_fits():
-    """Deletes any files in the FITS folder that do not have a corresponding file in the accession folder.
-    This is used when the script is run again after doing some appraisal."""
+    """Deletes any files in the FITS folder that do not have a corresponding file in the accession folder
+    and makes a FITS file for anything in the accession folder that doesn't have one.
+    This is used when the script is run again after doing some appraisal and/or file renaming."""
 
     # Makes a dataframe with the file paths from the accession folder.
     accession_paths = []
@@ -83,7 +84,6 @@ def update_fits():
     fits_data = {"fits_name": [], "fits_path": []}
     for file in os.listdir(fits_output):
         fits_data["fits_name"].append(file)
-
         tree = ET.parse(os.path.join(fits_output, file))
         root = tree.getroot()
         ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
@@ -93,7 +93,7 @@ def update_fits():
     fits_df = pd.DataFrame(fits_data)
 
     # Makes a list of any files in the FITS folder but not the accession folder.
-    # Deletes the FITS files that aren't in the accession folder.
+    # Deletes the FITS files without a corresponding file in the accession folder.
     compare_df = fits_df.merge(accession_df, left_on="fits_path", right_on="accession_path", how="left")
     fits_only_df = compare_df[compare_df["accession_path"].isnull()]
     fits_only_list = fits_only_df["fits_name"].to_list()
@@ -101,7 +101,7 @@ def update_fits():
         os.remove(os.path.join(fits_output, fits))
 
     # Makes a list of any files in the accession folder but not in the FITs folder.
-    # Creates a FITS file for any that do not have one.
+    # Creates a FITS file for any files in the accession folder that do not have one.
     compare_df = fits_df.merge(accession_df, left_on="fits_path", right_on="accession_path", how="right")
     acc_only_df = compare_df[compare_df["fits_path"].isnull()]
     acc_only_list = acc_only_df["accession_path"].to_list()
@@ -156,7 +156,7 @@ def fits_to_csv(fits_file):
         except AttributeError:
             return None
 
-    # Read the fits.xml file. If there is a read error, prints the filename and continues the script.
+    # Reads the fits.xml file. If there is a read error (rare), prints the filename and continues the script.
     try:
         tree = ET.parse(fits_file)
         root = tree.getroot()
@@ -169,25 +169,25 @@ def fits_to_csv(fits_file):
     # FITS namespace. All elements in the fits.xml are part of this namespace.
     ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
 
-    # Get the data from the desired elements and save to a list which will be the row in the CSV.
+    # Gets the data from the desired elements and saves it to a list, which will be the row in the CSV.
     # Selects the parent element (identity, fileinfo, and filestatus) from root first
     # to have consistent paths regardless of the XML hierarchy.
 
-    # There can be more than one format identity for the same file, so make a dictionary.
+    # There can be more than one format identity for the same file, so makes a dictionary with this information.
     # The key is name+version (to keep unique) and the value is a dictionary with all the data points.
     # Doesn't include identifications that aren't useful (e.g., name+version same but only one has PUID).
     formats_dictionary = {}
     for identity in root.find("fits:identification", ns):
         format_data = {"name": identity.get("format"), "version": get_text(identity, "version")}
 
-        # If there is a PUID, add the PRONOM URL so it will match the NARA Preservation Action Plan CSV.
+        # If there is a PUID, adds the PRONOM URL so it will match the NARA Preservation Action Plan CSV.
         # The value of PUID is None if there is no PUID in the FITs.
         puid = get_text(identity, "externalIdentifier[@type='puid']")
         if puid:
             puid = "https://www.nationalarchives.gov.uk/pronom/" + puid
         format_data["puid"] = puid
 
-        # For each tool, need to combine attributes with the name and version.
+        # For each tool, combines attributes with the name and version.
         tools = ""
         tools_list = identity.findall("fits:tool", ns)
         for tool in tools_list:
@@ -198,8 +198,8 @@ def fits_to_csv(fits_file):
                 tools += f"; {tool_name}"
         format_data["tools"] = tools
 
-        # The rest of the loop adds format information to the formats dictionary unless it meets one of the criteria
-        # used to simplify format identifications.
+        # The rest of the loop adds format information to the formats dictionary
+        # unless it meets one of the criteria used to simplify format identifications.
         format_key = format_data["name"] + format_data["version"]
 
         # Don't include a format identification if there is an identical name+version that has a PUID.
@@ -218,12 +218,12 @@ def fits_to_csv(fits_file):
             formats_dictionary[format_key] = format_data
 
     # The information from fileinfo and filestatus is never repeated.
-    # It is saved to its own list and added to each format list before saving it to the CSV.
+    # It is saved to a list and added to each format identification before saving the format id to the CSV.
     # If information does not need reformatting, it is found and appended to the list in the same line.
     # If the information is reformatted or used to calculate additional information, it is saved to a variable first.
     file_data = []
 
-    # Tests if there are multiple IDs for this format, based on how many format lists are in formats_list.
+    # Calculates if there are multiple IDs for this format, based on how many items are in the formats_dictionary.
     if len(formats_dictionary) == 1:
         file_data.append(False)
     else:
@@ -231,13 +231,13 @@ def fits_to_csv(fits_file):
 
     fileinfo = root.find("fits:fileinfo", ns)
 
-    # Convert from a timestamp to something that is human readable.
-    # Only use the first 10 digits to get year, month, and day. Will be formatted YYYY-MM-DD.
+    # Converts the date last modified from a timestamp to something that is human readable.
+    # Only uses the first 10 digits to get year, month, and day. Will be formatted YYYY-MM-DD.
     timestamp = get_text(fileinfo, "fslastmodified")
     date = datetime.date.fromtimestamp(int(timestamp[:10]))
     file_data.append(date)
 
-    # Convert size from bytes to KB to be easier to read.
+    # Converts size from bytes to KB to be easier to read.
     # Rounded to 3 decimal places unless that will make it 0.
     size = get_text(fileinfo, "size")
     size = float(size) / 1000
@@ -253,8 +253,8 @@ def fits_to_csv(fits_file):
     file_data.append(get_text(filestatus, "well-formed"))
     file_data.append(get_text(filestatus, "message"))
 
-    # Create the CSV rows by combining each list in format_list with the file path and file_data.
-    # Save each row to the CSV.
+    # Creates the CSV rows by combining each identification from formats_dictionary with the file path and file_data.
+    # Saves each row to the CSV.
     file_open = open(f"{collection_folder}/{accession_number}_fits.csv", "a", newline="")
     file_write = csv.writer(file_open)
     for format_id in formats_dictionary:
@@ -292,7 +292,7 @@ def match_nara_risk():
     nara_columns = ["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL", "NARA_Risk Level",
                     "NARA_Proposed Preservation Plan", "format_lower", "exts_lower"]
 
-    # PRONOM Identifier is a match.
+    # Technique 1: PRONOM Identifier is a match.
     # Have to filter for PUID is not null or it will match unrelated formats with no PUID.
     df_to_match = pd.merge(df_fits[df_fits["FITS_PUID"].notnull()], df_nara[nara_columns], left_on="FITS_PUID",
                            right_on="NARA_PRONOM URL", how="left")
@@ -305,7 +305,7 @@ def match_nara_risk():
     # This dataframe will be updated after every attempted match with the ones that still aren't matched.
     df_unmatched = pd.concat([df_fits[df_fits["FITS_PUID"].isnull()], df_unmatched])
 
-    # Name, and version if it has one, is an exact match (case insensitive).
+    # Technique 2: Name, and version if it has one, is an exact match (case insensitive).
     # Uses a pattern of "format_name version" since that is most common in NARA.
     # If the format name and version are combined in another way, this will not match it.
     df_to_match = pd.merge(df_unmatched, df_nara[nara_columns], left_on="name_version", right_on="format_lower",
@@ -315,7 +315,7 @@ def match_nara_risk():
     df_format = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
     df_format = df_format.assign(NARA_Match_Type="Format Name")
 
-    # Name and version is a fuzzy match.
+    # Technique 3: Name and version is a fuzzy match.
     # Allows for some difference in how a name is formatted and how the version is included.
     # It needs a function for error handling if there isn't a close enough match.
     def match(value, column, score):
@@ -332,7 +332,7 @@ def match_nara_risk():
     df_fuzzy_format.drop(["key"], inplace=True, axis=1)
     df_unmatched.drop(["key"], inplace=True, axis=1)
 
-    # Extension is a match (case insensitive).
+    # Technique 4: Extension is a match (case insensitive).
     # Makes an expanded version of the NARA dataframe for one row per possible extension per format.
     # NARA has pipe separated string of extensions if a format has more than one.
     df_nara_expanded = df_nara[nara_columns].copy()
@@ -449,10 +449,11 @@ if len(configuration_errors) > 0:
 
 # Calculates the accession number, which is the name of the last folder in the accession_folder path,
 # and the collection folder, which is everything in the accession_folder path except the accession folder.
+# These are only for naming file outputs, so it will not cause an error if they aren't named as expected.
 collection_folder, accession_number = os.path.split(accession_folder)
 
 # If there is already a folder with FITS format identification information in the collection folder,
-# updates the folder by deleting any files that are no longer in accession folder.
+# updates the folder to match the contents of the accession folder.
 # Otherwise, runs FITS to generate the format identification information.
 # Prints to the terminal which mode the script is using so the archivist can stop the script if there is an error.
 fits_output = f"{collection_folder}/{accession_number}_FITS"
@@ -478,7 +479,7 @@ for fits_xml in os.listdir(fits_output):
     fits_to_csv(f"{accession_folder}_FITS/{fits_xml}")
 
 # If an encode errors text file was made during the previous step, removes any duplicate files.
-# Files are duplicated if they have more than one format identification.
+# Files are duplicated in encode_errors.txt if they have more than one format identification.
 if os.path.exists(f"{collection_folder}/{accession_number}_encode_errors.txt"):
     error_df = pd.read_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=None)
     error_df.drop_duplicates(inplace=True)
@@ -491,7 +492,7 @@ df_ita = csv_to_dataframe(c.ITA)
 df_risk = csv_to_dataframe(c.RISK)
 df_nara = csv_to_dataframe(c.NARA)
 
-# Adds prefix to the FITS and NARA dataframes so the source of the data is clear when data is combined.
+# Adds a prefix to the FITS and NARA dataframes so the source of the data is clear when the data is combined.
 df_fits = df_fits.add_prefix("FITS_")
 df_nara = df_nara.add_prefix("NARA_")
 
