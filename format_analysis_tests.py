@@ -113,13 +113,13 @@ def test_format_subtotal():
 
 
 def test_nara_risk_subtotal():
-    """Tests the NARa risk subtotals, which is based on NARA_Risk Level."""
+    """Tests the NARA risk subtotals, which is based on NARA_Risk Level."""
 
     # Makes a dataframe as input.
     # It contains a subset of the columns that the real dataframe has to simplify testing.
-    rows = [["Executable file", 1.23, "High Risk"],
-            ["Executable file", 2.34, "High Risk"],
-            ["Executable file", 3.45, "High Risk"],
+    rows = [["DOS/Windows Executable", 1.23, "High Risk"],
+            ["DOS/Windows Executable", 2.34, "High Risk"],
+            ["DOS/Windows Executable", 3.45, "High Risk"],
             ["JPEG EXIF", 13.563, "Low Risk"],
             ["JPEG EXIF", 14.1, "Low Risk"],
             ["Open Office XML Workbook", 19.316, "Low Risk"],
@@ -150,6 +150,43 @@ def test_nara_risk_subtotal():
     compare_dataframes("NARA_Risk_Subtotals", subtotals, expected)
 
 
+def test_technical_appraisal_subtotal():
+    """Tests the technical appraisal subtotals, which is based on technical appraisal criteria and FITS_Format_Name."""
+
+    # Makes a dataframe as input.
+    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    rows = [["Format", "DOS/Windows Executable", 100.23],
+            ["Format", "DOS/Windows Executable", 200.34],
+            ["Format", "PE32 executable", 300.45],
+            ["Format", "Unknown Binary", 0],
+            ["Format", "Unknown Binary", 50],
+            ["Trash", "JPEG EXIF", 130.563],
+            ["Trash", "JPEG EXIF", 140.1],
+            ["Trash", "Open Office XML Workbook", 190.316]]
+    column_names = ["Criteria", "FITS_Format_Name", "FITS_Size_KB"]
+    df = pd.DataFrame(rows, columns=column_names)
+
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
+    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+
+    # Runs the subtotal() function for this subtotal.
+    subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
+
+    # Makes a dataframe with the expected values.
+    # The index values for the dataframes made by subtotal() are column values here so that they
+    # are visible in the results from comparing the dataframes as a label of values with errors.
+    expected = pd.DataFrame([["Format", "DOS/Windows Executable", 2, 25, 0.301, 27.068],
+                             ["Format", "PE32 executable", 1, 12.5, 0.300, 26.978],
+                             ["Format", "Unknown Binary", 2, 25, 0.05, 4.496],
+                             ["Trash", "JPEG EXIF", 2, 25, 0.271, 24.371],
+                             ["Trash", "Open Office XML Workbook", 1, 12.5, 0.19, 17.086]],
+                            columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Tech_Appraisal_Subtotals", subtotals, expected)
+
+
 # Makes the output directory (the only script argument) the current directory for easier saving.
 # If the argument is missing or not a valid directory, ends the script.
 try:
@@ -165,5 +202,6 @@ except (IndexError, FileNotFoundError):
 test_subtotal_function()
 test_format_subtotal()
 test_nara_risk_subtotal()
+test_technical_appraisal_subtotal()
 
 print("\nThe script is complete.")
