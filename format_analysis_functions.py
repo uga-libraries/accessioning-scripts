@@ -348,7 +348,7 @@ def subtotal(df, criteria, totals):
 
     # Calculates each subtotal and reformats the numbers.
     # All numbers are 3 decimal places and the size is in MB.
-    files = round(df.groupby(criteria, dropna=False)["FITS_Format_Name"].count(), 3)
+    files = df.groupby(criteria, dropna=False)["FITS_Format_Name"].count()
     files_percent = round((files / totals["Files"]) * 100, 3)
     size = round(df.groupby(criteria, dropna=False)["FITS_Size_KB"].sum()/1000, 3)
     size_percent = round((size / totals["MB"]) * 100, 3)
