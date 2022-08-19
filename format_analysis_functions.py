@@ -357,11 +357,6 @@ def subtotal(df, criteria, totals):
     subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
     subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
-    # If the dataframe is empty (no files met the criteria), adds an explanatory note.
-    # If this was not done, there would be an IndexError when saving the dataframe to the spreadsheet.
-    if subtotals.empty:
-        subtotals = pd.DataFrame(["There are no files of this type"], columns=["Message"])
-
     return subtotals
 
 
