@@ -71,9 +71,45 @@ def test_subtotal_function():
                                 columns=["Multiple_IDs", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
 
     # Compares the script output for each input scenario to the expected values.
-    print("\nResults from testing the subtotal() function.")
-    compare_dataframes("One_Criteria", one, one_expected)
-    compare_dataframes("Two_Criteria", two, two_expected)
+    compare_dataframes("Subtotal_Function_One_Criteria", one, one_expected)
+    compare_dataframes("Subtotal_Function_Two_Criteria", two, two_expected)
+
+
+def test_format_subtotal():
+    """Tests the format subtotals, which is based on FITS_Format_Name and NARA_Risk Level."""
+
+    # Makes a dataframe as input.
+    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    rows = [["JPEG EXIF", 13.563, "Low Risk"],
+            ["JPEG EXIF", 14.1, "Low Risk"],
+            ["Open Office XML Workbook", 19.316, "Low Risk"],
+            ["Unknown Binary", 0, np.NaN],
+            ["Unknown Binary", 1, np.NaN],
+            ["Unknown Binary", 5, np.NaN],
+            ["XLSX", 19.316, "Low Risk"],
+            ["Zip Format", 2.792, "Moderate Risk"]]
+    column_names = ["FITS_Format_Name", "FITS_Size_KB", "NARA_Risk Level"]
+    df = pd.DataFrame(rows, columns=column_names)
+
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
+    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+
+    # Runs the subtotal() function for this subtotal.
+    format_subtotals = subtotal(df, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
+
+    # Makes a dataframe with the expected values.
+    # The index values for the dataframes made by subtotal() are column values here so that they
+    # are visible in the results from comparing the dataframes as a label of values with errors.
+    format_expected = pd.DataFrame([["JPEG EXIF", "Low Risk", 2, 25, 0.028, 37.29],
+                                    ["Unknown Binary", np.NaN, 3, 37.5, 0.006, 7.991],
+                                    ["Zip Format", "Moderate Risk", 1, 12.5, 0.003, 3.995],
+                                    ["Open Office XML Workbook", "Low Risk", 1, 12.5, 0.019, 25.304],
+                                    ["XLSX", "Low Risk", 1, 12.5, 0.019, 25.304]],
+                                   columns=["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Format_Subtotals", format_subtotals, format_expected)
 
 
 # Makes the output directory (the only script argument) the current directory for easier saving.
@@ -89,5 +125,6 @@ except (IndexError, FileNotFoundError):
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and details saved to the output folder.
 test_subtotal_function()
+test_format_subtotal()
 
 print("\nThe script is complete.")
