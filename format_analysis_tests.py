@@ -187,6 +187,44 @@ def test_technical_appraisal_subtotal():
     compare_dataframes("Tech_Appraisal_Subtotals", subtotals, expected)
 
 
+def test_other_risk_subtotal():
+    """Tests the technical appraisal subtotals, which is based on other risk criteria and FITS_Format_Name."""
+
+    # Makes a dataframe as input.
+    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    rows = [[False, "DOS/Windows Executable", 100.23],
+            [False, "DOS/Windows Executable", 200.34],
+            [False, "JPEG EXIF", 1300.563],
+            [False, "JPEG EXIF", 1400.1],
+            [False, "JPEG EXIF", 1900.316],
+            [True, "Cascading Style Sheet", 10000],
+            [True, "Zip Format", 20000],
+            [True, "Zip Format", 20000],
+            [True, "Zip Format", 30000],
+            [True, "Zip Format", 30000]]
+    column_names = ["Criteria", "FITS_Format_Name", "FITS_Size_KB"]
+    df = pd.DataFrame(rows, columns=column_names)
+
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
+    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+
+    # Runs the subtotal() function for this subtotal.
+    subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
+
+    # Makes a dataframe with the expected values.
+    # The index values for the dataframes made by subtotal() are column values here so that they
+    # are visible in the results from comparing the dataframes as a label of values with errors.
+    expected = pd.DataFrame([[False, "DOS/Windows Executable", 2, 20, 0.301, 0.262],
+                             [False, "JPEG EXIF", 3, 30, 4.601, 4.004],
+                             [True, "Cascading Style Sheet", 1, 10, 10, 8.703],
+                             [True, "ZIP Format", 4, 40, 100, 87.031]],
+                            columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Other_Risk_Subtotals", subtotals, expected)
+
+
 # Makes the output directory (the only script argument) the current directory for easier saving.
 # If the argument is missing or not a valid directory, ends the script.
 try:
@@ -203,5 +241,6 @@ test_subtotal_function()
 test_format_subtotal()
 test_nara_risk_subtotal()
 test_technical_appraisal_subtotal()
+test_other_risk_subtotal()
 
 print("\nThe script is complete.")
