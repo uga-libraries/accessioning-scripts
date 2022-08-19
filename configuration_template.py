@@ -1,7 +1,7 @@
 # Constants used in other scripts that depend on the local environment.
 # To use, save this file as configuration.py in the accessioning-scripts repo.
 
-# For format-analysis.py
+# For format_analysis.py
 
 # Path to fits.bat (Windows) or fits.sh (Mac/Linux).
 FITS = r""
