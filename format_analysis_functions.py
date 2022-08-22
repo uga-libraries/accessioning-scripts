@@ -1,12 +1,12 @@
 import csv
 import datetime
+import numpy as np
 import os
 import pandas as pd
 import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
-from fuzzywuzzy import process
 
 # Configuration is made by the user on each new machine the script is installed on, so it could be missing.
 try:
@@ -321,6 +321,9 @@ def match_nara_risk(df_fits, df_nara):
 
     # Removes columns that are just used for FITS and NARA comparisons from all dataframes.
     df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
+
+    # Resets the index back to a single sequential number so that row indexes are unique.
+    df_matched.index = np.arange(len(df_matched))
 
     return df_matched
 
