@@ -52,26 +52,26 @@ def test_subtotal_function():
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for each input scenario.
-    one = subtotal(df, ["NARA_Risk Level"], totals_dict)
-    two = subtotal(df, ["Multiple_IDs", "FITS_Format_Name"], totals_dict)
+    df_one = subtotal(df, ["NARA_Risk Level"], totals_dict)
+    df_two = subtotal(df, ["Multiple_IDs", "FITS_Format_Name"], totals_dict)
 
     # Makes dataframes with the expected values for each input scenario.
     # The index values for the dataframes made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    one_expected = pd.DataFrame([["Low Risk", 4, 50, 0.066, 87.898],
-                                 ["Moderate Risk", 1, 12.5, .003, 3.995],
-                                 [np.NaN, 3, 37.5, 0.006, 7.991]],
-                                columns=["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
-    two_expected = pd.DataFrame([[False, "JPEG EXIF", 2, 25, 0.028, 37.29],
-                                 [False, "Unknown Binary", 3, 37.5, 0.006, 7.991],
-                                 [False, "Zip Format", 1, 12.5, 0.003, 3.995],
-                                 [True, "Open Office XML Workbook", 1, 12.5, 0.019, 25.304],
-                                 [True, "XLSX", 1, 12.5, 0.019, 25.304]],
-                                columns=["Multiple_IDs", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+    df_one_expected = pd.DataFrame([["Low Risk", 4, 50, 0.066, 87.898],
+                                    ["Moderate Risk", 1, 12.5, .003, 3.995],
+                                    [np.NaN, 3, 37.5, 0.006, 7.991]],
+                                   columns=["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
+    df_two_expected = pd.DataFrame([[False, "JPEG EXIF", 2, 25, 0.028, 37.29],
+                                    [False, "Unknown Binary", 3, 37.5, 0.006, 7.991],
+                                    [False, "Zip Format", 1, 12.5, 0.003, 3.995],
+                                    [True, "Open Office XML Workbook", 1, 12.5, 0.019, 25.304],
+                                    [True, "XLSX", 1, 12.5, 0.019, 25.304]],
+                                   columns=["Multiple_IDs", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
 
     # Compares the script output for each input scenario to the expected values.
-    compare_dataframes("Subtotal_Function_One_Criteria", one, one_expected)
-    compare_dataframes("Subtotal_Function_Two_Criteria", two, two_expected)
+    compare_dataframes("Subtotal_Function_One_Criteria", df_one, df_one_expected)
+    compare_dataframes("Subtotal_Function_Two_Criteria", df_two, df_two_expected)
 
 
 def test_format_subtotal():
@@ -96,20 +96,20 @@ def test_format_subtotal():
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    subtotals = subtotal(df, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
+    df_subtotals = subtotal(df, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframe made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    expected = pd.DataFrame([["JPEG EXIF", "Low Risk", 2, 25, 0.028, 37.29],
-                             ["Unknown Binary", np.NaN, 3, 37.5, 0.006, 7.991],
-                             ["Zip Format", "Moderate Risk", 1, 12.5, 0.003, 3.995],
-                             ["Open Office XML Workbook", "Low Risk", 1, 12.5, 0.019, 25.304],
-                             ["XLSX", "Low Risk", 1, 12.5, 0.019, 25.304]],
-                            columns=["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
+    df_expected = pd.DataFrame([["JPEG EXIF", "Low Risk", 2, 25, 0.028, 37.29],
+                                ["Unknown Binary", np.NaN, 3, 37.5, 0.006, 7.991],
+                                ["Zip Format", "Moderate Risk", 1, 12.5, 0.003, 3.995],
+                                ["Open Office XML Workbook", "Low Risk", 1, 12.5, 0.019, 25.304],
+                                ["XLSX", "Low Risk", 1, 12.5, 0.019, 25.304]],
+                               columns=["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
 
     # Compares the script output to the expected values.
-    compare_dataframes("Format_Subtotals", subtotals, expected)
+    compare_dataframes("Format_Subtotals", df_subtotals, df_expected)
 
 
 def test_nara_risk_subtotal():
@@ -135,19 +135,19 @@ def test_nara_risk_subtotal():
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    subtotals = subtotal(df, ["NARA_Risk Level"], totals_dict)
+    df_subtotals = subtotal(df, ["NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index value for the dataframe made by subtotal() is a column value here
     # so that it is visible in the comparison dataframe to label errors.
-    expected = pd.DataFrame([["Low Risk", 4, 40, 0.066, 81.374],
-                             ["Moderate Risk", 1, 10, 0.003, 3.699],
-                             ["High Risk", 3, 30, 0.007, 8.631],
-                             [np.NaN, 2, 20, 0.005, 6.165]],
-                            columns=["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
+    df_expected = pd.DataFrame([["Low Risk", 4, 40, 0.066, 81.374],
+                                ["Moderate Risk", 1, 10, 0.003, 3.699],
+                                ["High Risk", 3, 30, 0.007, 8.631],
+                                [np.NaN, 2, 20, 0.005, 6.165]],
+                               columns=["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
 
     # Compares the script output to the expected values.
-    compare_dataframes("NARA_Risk_Subtotals", subtotals, expected)
+    compare_dataframes("NARA_Risk_Subtotals", df_subtotals, df_expected)
 
 
 def test_technical_appraisal_subtotal():
@@ -171,20 +171,20 @@ def test_technical_appraisal_subtotal():
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
+    df_subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    expected = pd.DataFrame([["Format", "DOS/Windows Executable", 2, 25, 0.301, 27.068],
-                             ["Format", "PE32 executable", 1, 12.5, 0.300, 26.978],
-                             ["Format", "Unknown Binary", 2, 25, 0.05, 4.496],
-                             ["Trash", "JPEG EXIF", 2, 25, 0.271, 24.371],
-                             ["Trash", "Open Office XML Workbook", 1, 12.5, 0.19, 17.086]],
-                            columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+    df_expected = pd.DataFrame([["Format", "DOS/Windows Executable", 2, 25, 0.301, 27.068],
+                                ["Format", "PE32 executable", 1, 12.5, 0.300, 26.978],
+                                ["Format", "Unknown Binary", 2, 25, 0.05, 4.496],
+                                ["Trash", "JPEG EXIF", 2, 25, 0.271, 24.371],
+                                ["Trash", "Open Office XML Workbook", 1, 12.5, 0.19, 17.086]],
+                               columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
 
     # Compares the script output to the expected values.
-    compare_dataframes("Tech_Appraisal_Subtotals", subtotals, expected)
+    compare_dataframes("Tech_Appraisal_Subtotals", df_subtotals, df_expected)
 
 
 def test_other_risk_subtotal():
@@ -210,20 +210,20 @@ def test_other_risk_subtotal():
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
+    df_subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    expected = pd.DataFrame([[False, "DOS/Windows Executable", 1, 10, 0.1, 0.087],
-                             [False, "JPEG EXIF", 3, 30, 4.601, 4.004],
-                             [False, "PE32 Executable", 1, 10, 0.2, 0.174],
-                             [True, "Cascading Style Sheet", 1, 10, 10, 8.703],
-                             [True, "ZIP Format", 4, 40, 100, 87.031]],
-                            columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+    df_expected = pd.DataFrame([[False, "DOS/Windows Executable", 1, 10, 0.1, 0.087],
+                                [False, "JPEG EXIF", 3, 30, 4.601, 4.004],
+                                [False, "PE32 Executable", 1, 10, 0.2, 0.174],
+                                [True, "Cascading Style Sheet", 1, 10, 10, 8.703],
+                                [True, "ZIP Format", 4, 40, 100, 87.031]],
+                               columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
 
     # Compares the script output to the expected values.
-    compare_dataframes("Other_Risk_Subtotals", subtotals, expected)
+    compare_dataframes("Other_Risk_Subtotals", df_subtotals, df_expected)
 
 
 # Makes the output directory (the only script argument) the current directory for easier saving.
