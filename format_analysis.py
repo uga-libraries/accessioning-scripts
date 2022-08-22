@@ -111,12 +111,17 @@ else:
     # A new column Match_Type is added to identify which technique produced a match.
     df_results = match_nara_risk(df_fits, df_nara)
 
-    # Adds two columns for technical appraisal information, one by format and on by if the file is in a trash folder.
+    # Adds a column for technical appraisal information, which will indicate the category (in a trash folder or
+    # matches a format in ITAfileformats.csv) or default text if it is neither category.
     # re.escape is used to escape any unusual characters in the filename that have regex meanings.
     # Matches are case insensitive and will match partial strings.
+    # Trash matches include the "\" on either size to match entire folder names.
     ta_list = df_ita["FITS_FORMAT"].tolist()
-    df_results["Technical Appraisal_Format"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False)
-    df_results["Technical Appraisal_Trash"] = df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False)
+    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
+                   "Technical_Appraisal"] = "Format"
+    df_results.loc[df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False),
+                   "Technical_Appraisal"] = "Trash"
+    df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
 
     # Adds other risk information.
     # Creates a column with True or False for if that FITs format identification indicates a possible risk.
@@ -186,7 +191,7 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
     nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
     technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
-    other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
+    #other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
     media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
