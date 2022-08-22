@@ -111,11 +111,12 @@ else:
     # A new column Match_Type is added to identify which technique produced a match.
     df_results = match_nara_risk(df_fits, df_nara)
 
-    # Adds a column for technical appraisal information, which will indicate the category (in a trash folder or
-    # matches a format in ITAfileformats.csv) or default text if it is neither category.
-    # re.escape is used to escape any unusual characters in the filename that have regex meanings.
+    # Adds technical appraisal information.
+    # Creates a column to indicate the appraisal category: in a trash folder or matches a format in ITAfileformats.csv.
     # Matches are case insensitive and will match partial strings.
-    # Trash matches include the "\" on either size to match entire folder names.
+    # If a format matches both categories, it will be put in the trash category.
+    # re.escape is used to escape any unusual characters in the filename that have regex meanings.
+    # Trash matches include the "\" on either side to match entire folder names.
     ta_list = df_ita["FITS_FORMAT"].tolist()
     df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
                    "Technical_Appraisal"] = "Format"
@@ -124,10 +125,18 @@ else:
     df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
 
     # Adds other risk information.
-    # Creates a column with True or False for if that FITs format identification indicates a possible risk.
+    # Creates a column to indicate the risk category: NARA low risk/transform or the format risk criteria.
     # Matches are case insensitive and will match partial strings.
+    # If a format matches NARA and a format risk criteria, it will be put in the risk criteria category.
+    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") & (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")),
+                   "Other_Risk"] = "NARA Low/Transform"
     risk_list = df_risk["FITS_FORMAT"].tolist()
-    df_results["Other Risk Indicator"] = df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)
+    indexes = df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)].index
+    for index in indexes:
+        format_name = df_results.loc[index, "FITS_Format_Name"].lower()
+        risk_criteria = df_risk[df_risk["FITS_FORMAT"].str.lower() == format_name]["RISK_CRITERIA"].values[0]
+        df_results.loc[index, "Other_Risk"] = risk_criteria
+    df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
 
     # Saves the information in df_results to a CSV for archivist review.
     df_results.to_csv(csv_path, index=False)
