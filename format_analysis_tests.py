@@ -1,5 +1,5 @@
-"""Purpose: tests for each function and analysis component in the format_analysis.py script.
-Each test produces input, runs the code, and compares it to the expected output.
+"""Purpose: tests for each function and analysis component (each subset and subtotal) in the format_analysis.py script.
+Each test creates simplified input, runs the code, and compares it to the expected output.
 Test results are saved to a directory specified with the script argument.
 Comment out any test you do not wish to run.
 
@@ -13,17 +13,17 @@ from format_analysis_functions import *
 
 
 def compare_dataframes(test_name, df_actual, df_expected):
-    """Compares two dataframes, the actual script output and the expected values.
-    Prints if they match (test passes) or not and saves failed tests to a CSV for review."""
+    """Compares two dataframes, one with the actual script output and one with the expected values.
+    Prints if they match (test passes) or not (test fails) and saves failed tests to a CSV for review."""
 
-    # Makes a new dataframe that merges the values of the two.
+    # Makes a new dataframe that merges the values of the two dataframes.
     df_comparison = df_actual.merge(df_expected, indicator=True, how="outer")
 
     # Makes a dataframe with just the errors (merge value isn't both).
     df_errors = df_comparison[df_comparison["_merge"] != "both"]
 
-    # If the merged dataframe is empty (everything matched), prints the test passed.
-    # Otherwise, saves the dataframe with all the matches to a CSV in the output (current) directory.
+    # If the merged dataframe is empty (everything matched), prints that the test passes.
+    # Otherwise, saves the dataframe with the complete merge (including matches) to a CSV in the output directory.
     if len(df_errors) == 0:
         print("Test passes: ", test_name)
     else:
@@ -32,11 +32,10 @@ def compare_dataframes(test_name, df_actual, df_expected):
 
 
 def test_subtotal_function():
-    """Tests both input scenarios for this function: one or two initial criteria.
-    Both scenarios include single-instance values and multi-instance values that need to be combined."""
+    """Tests both input scenarios for this function: one or two initial criteria."""
 
-    # Makes a dataframe as input for both of the scenarios.
-    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    # Makes a dataframe to use for input for both of the scenarios.
+    # Data variation: unique rows, rows that will be added together for subtotals.
     rows = [["JPEG EXIF", 13.563, False, "Low Risk"],
             ["JPEG EXIF", 14.1, False, "Low Risk"],
             ["Open Office XML Workbook", 19.316, True, "Low Risk"],
@@ -56,9 +55,9 @@ def test_subtotal_function():
     one = subtotal(df, ["NARA_Risk Level"], totals_dict)
     two = subtotal(df, ["Multiple_IDs", "FITS_Format_Name"], totals_dict)
 
-    # Makes a dataframe with the expected values for each input scenario.
-    # The index values for the dataframes made by subtotal() are column values here so that they
-    # are visible in the results from comparing the dataframes as a label of values with errors.
+    # Makes dataframes with the expected values for each input scenario.
+    # The index values for the dataframes made by subtotal() are column values here
+    # so that they are visible in the comparison dataframe to label errors.
     one_expected = pd.DataFrame([["Low Risk", 4, 50, 0.066, 87.898],
                                  ["Moderate Risk", 1, 12.5, .003, 3.995],
                                  [np.NaN, 3, 37.5, 0.006, 7.991]],
@@ -78,8 +77,9 @@ def test_subtotal_function():
 def test_format_subtotal():
     """Tests the format subtotals, which is based on FITS_Format_Name and NARA_Risk Level."""
 
-    # Makes a dataframe as input.
-    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    # Makes a dataframe to use as input for the subtotal() function.
+    # Data variation: formats with one row, formats with multiple rows, one format with a NARA risk level,
+    # multiple formats with a NARA risk level, blank in NARA risk level.
     rows = [["JPEG EXIF", 13.563, "Low Risk"],
             ["JPEG EXIF", 14.1, "Low Risk"],
             ["Open Office XML Workbook", 19.316, "Low Risk"],
@@ -99,8 +99,8 @@ def test_format_subtotal():
     subtotals = subtotal(df, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
-    # The index values for the dataframes made by subtotal() are column values here so that they
-    # are visible in the results from comparing the dataframes as a label of values with errors.
+    # The index values for the dataframe made by subtotal() are column values here
+    # so that they are visible in the comparison dataframe to label errors.
     expected = pd.DataFrame([["JPEG EXIF", "Low Risk", 2, 25, 0.028, 37.29],
                              ["Unknown Binary", np.NaN, 3, 37.5, 0.006, 7.991],
                              ["Zip Format", "Moderate Risk", 1, 12.5, 0.003, 3.995],
@@ -115,8 +115,8 @@ def test_format_subtotal():
 def test_nara_risk_subtotal():
     """Tests the NARA risk subtotals, which is based on NARA_Risk Level."""
 
-    # Makes a dataframe as input.
-    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    # Makes a dataframe to use as input for the subtotal() function.
+    # Data variation: one format with a NARA risk level, multiple formats with a NARA risk level, blanks.
     rows = [["DOS/Windows Executable", 1.23, "High Risk"],
             ["DOS/Windows Executable", 2.34, "High Risk"],
             ["DOS/Windows Executable", 3.45, "High Risk"],
@@ -138,8 +138,8 @@ def test_nara_risk_subtotal():
     subtotals = subtotal(df, ["NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
-    # The index values for the dataframes made by subtotal() are column values here so that they
-    # are visible in the results from comparing the dataframes as a label of values with errors.
+    # The index value for the dataframe made by subtotal() is a column value here
+    # so that it is visible in the comparison dataframe to label errors.
     expected = pd.DataFrame([["Low Risk", 4, 40, 0.066, 81.374],
                              ["Moderate Risk", 1, 10, 0.003, 3.699],
                              ["High Risk", 3, 30, 0.007, 8.631],
@@ -153,8 +153,8 @@ def test_nara_risk_subtotal():
 def test_technical_appraisal_subtotal():
     """Tests the technical appraisal subtotals, which is based on technical appraisal criteria and FITS_Format_Name."""
 
-    # Makes a dataframe as input.
-    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    # Makes a dataframe to use as input for the subtotal() function.
+    # Data variation: for both criteria, has a unique format and duplicated formats.
     rows = [["Format", "DOS/Windows Executable", 100.23],
             ["Format", "DOS/Windows Executable", 200.34],
             ["Format", "PE32 executable", 300.45],
@@ -174,8 +174,8 @@ def test_technical_appraisal_subtotal():
     subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
-    # The index values for the dataframes made by subtotal() are column values here so that they
-    # are visible in the results from comparing the dataframes as a label of values with errors.
+    # The index values for the dataframes made by subtotal() are column values here
+    # so that they are visible in the comparison dataframe to label errors.
     expected = pd.DataFrame([["Format", "DOS/Windows Executable", 2, 25, 0.301, 27.068],
                              ["Format", "PE32 executable", 1, 12.5, 0.300, 26.978],
                              ["Format", "Unknown Binary", 2, 25, 0.05, 4.496],
@@ -188,15 +188,15 @@ def test_technical_appraisal_subtotal():
 
 
 def test_other_risk_subtotal():
-    """Tests the technical appraisal subtotals, which is based on other risk criteria and FITS_Format_Name."""
+    """Tests the other risk subtotals, which is based on other risk criteria and FITS_Format_Name."""
 
-    # Makes a dataframe as input.
-    # It contains a subset of the columns that the real dataframe has to simplify testing.
+    # Makes a dataframe to use as input for the subtotal() function.
+    # Data variation: for each of the values for other risk, has unique formats and duplicated formats.
     rows = [[False, "DOS/Windows Executable", 100.23],
-            [False, "DOS/Windows Executable", 200.34],
             [False, "JPEG EXIF", 1300.563],
             [False, "JPEG EXIF", 1400.1],
             [False, "JPEG EXIF", 1900.316],
+            [False, "PE32 Executable", 200.34],
             [True, "Cascading Style Sheet", 10000],
             [True, "Zip Format", 20000],
             [True, "Zip Format", 20000],
@@ -213,10 +213,11 @@ def test_other_risk_subtotal():
     subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
-    # The index values for the dataframes made by subtotal() are column values here so that they
-    # are visible in the results from comparing the dataframes as a label of values with errors.
-    expected = pd.DataFrame([[False, "DOS/Windows Executable", 2, 20, 0.301, 0.262],
+    # The index values for the dataframes made by subtotal() are column values here
+    # so that they are visible in the comparison dataframe to label errors.
+    expected = pd.DataFrame([[False, "DOS/Windows Executable", 1, 10, 0.1, 0.087],
                              [False, "JPEG EXIF", 3, 30, 4.601, 4.004],
+                             [False, "PE32 Executable", 1, 10, 0.2, 0.174],
                              [True, "Cascading Style Sheet", 1, 10, 10, 8.703],
                              [True, "ZIP Format", 4, 40, 100, 87.031]],
                             columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
