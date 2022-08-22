@@ -56,11 +56,13 @@ def test_match_technical_appraisal():
 
     # Adds the format technical appraisal category (defined in ITAfileformats.csv).
     ta_list = df_ita["FITS_FORMAT"].tolist()
-    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False), "Technical_Appraisal"] = "Format"
+    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
+                   "Technical_Appraisal"] = "Format"
 
     # Adds the trash folder technical appraisal category.
     # If something is both format and trash, Trash will overwrite Format.
-    df_results.loc[df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False), "Technical_Appraisal"] = "Trash"
+    df_results.loc[df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False),
+                   "Technical_Appraisal"] = "Trash"
 
     # Adds default text for formats that aren't in either technical appraisal category.
     df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
@@ -106,7 +108,8 @@ def test_match_other_risk():
     df_risk = csv_to_dataframe(c.RISK)
 
     # Adds the NARA other risk category (defined in ITAfileformats.csv).
-    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") & (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")), "Other_Risk"] = "NARA Low/Transform"
+    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") & (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")),
+                   "Other_Risk"] = "NARA Low/Transform"
 
     # Adds the format risk categories (defined in Riskfileformats.csv).
     # If something is both NARA and format, the format category will overwrite NARA.
@@ -343,13 +346,13 @@ except (IndexError, FileNotFoundError):
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and details saved to the output folder.
-#test_match_technical_appraisal()
+test_match_technical_appraisal()
 test_match_other_risk()
 
-# test_subtotal_function()
-# test_format_subtotal()
-# test_nara_risk_subtotal()
-# test_technical_appraisal_subtotal()
-# test_other_risk_subtotal()
+test_subtotal_function()
+test_format_subtotal()
+test_nara_risk_subtotal()
+test_technical_appraisal_subtotal()
+test_other_risk_subtotal()
 
 print("\nThe script is complete.")
