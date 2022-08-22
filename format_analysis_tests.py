@@ -31,6 +31,55 @@ def compare_dataframes(test_name, df_actual, df_expected):
         df_comparison.to_csv(f"{test_name}_comparison_results.csv", index=False)
 
 
+def test_match_technical_appraisal():
+    """Tests adding technical appraisal categories to df_results,
+    which will already have information from FITS and NARA.
+    In format_analysis.py, this is done in the main body of the script."""
+
+    # Makes a dataframe to use as input.
+    # Data variation: examples that match both, one, or neither of the technical appraisal categories,
+    # with identical cases and different cases (match is case-insensitive).
+    rows = [[r"C:\CD1\Flower.JPG", "JPEG EXIF"],
+            [r"C:\CD1\Trashes\Flower1.JPG", "JPEG EXIF"],
+            [r"C:\CD2\Script\config.pyc", "unknown binary"],
+            [r"C:\CD2\Trash Data\data.zip", "ZIP Format"],
+            [r"C:\CD2\trash\New Document.txt", "Plain text"],
+            [r"C:\CD2\Trash\New Text.txt", "Plain text"],
+            [r"C:\FD1\empty.txt", "empty"],
+            [r"C:\FD1\trashes\program.dll", "PE32 executable"]]
+    column_names = ["FITS_File_Path", "FITS_Format_Name"]
+    df_results = pd.DataFrame(rows, columns=column_names)
+
+    # Reads the CSV with formats that indicate technical appraisal into the dataframe.
+    # In format_analysis.py, this is done a little earlier in the script.
+    df_ita = csv_to_dataframe(c.ITA)
+
+    # Adds the format technical appraisal category (defined in ITAfileformats.csv).
+    ta_list = df_ita["FITS_FORMAT"].tolist()
+    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False), "Technical_Appraisal"] = "Format"
+
+    # Adds the trash folder technical appraisal category.
+    # If something is both format and trash, Trash will overwrite Format.
+    df_results.loc[df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False), "Technical_Appraisal"] = "Trash"
+
+    # Adds default text for formats that aren't in either technical appraisal category.
+    df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
+
+    # Makes a dataframe with the expected values.
+    df_expected = pd.DataFrame([[r"C:\CD1\Flower.JPG", "JPEG EXIF", "Not for TA"],
+                                [r"C:\CD1\Trashes\Flower1.JPG", "JPEG EXIF", "Trash"],
+                                [r"C:\CD2\Script\config.pyc", "unknown binary", "Format"],
+                                [r"C:\CD2\Trash Data\data.zip", "ZIP Format", "Not for TA"],
+                                [r"C:\CD2\trash\New Document.txt", "Plain text", "Trash"],
+                                [r"C:\CD2\Trash\New Text.txt", "Plain text", "Trash"],
+                                [r"C:\FD1\empty.txt", "empty", "Format"],
+                                [r"C:\FD1\trashes\program.dll", "PE32 executable", "Trash"]],
+                               columns=["FITS_File_Path", "FITS_Format_Name", "Technical Appraisal"])
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Match_TA", df_results, df_expected)
+
+
 def test_subtotal_function():
     """Tests both input scenarios for this function: one or two initial criteria."""
 
@@ -238,6 +287,8 @@ except (IndexError, FileNotFoundError):
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and details saved to the output folder.
+test_match_technical_appraisal()
+
 test_subtotal_function()
 test_format_subtotal()
 test_nara_risk_subtotal()
