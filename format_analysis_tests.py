@@ -221,6 +221,38 @@ def test_match_other_risk():
     compare_dataframes("Match_Other", df_results, df_expected)
 
 
+def test_template_subset():
+    """Tests the NAME subset, which is based on COLUMN(S)."""
+
+    # Makes a dataframe to use as input.
+    # Data variation: .
+    rows = [[],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []]
+    column_names = []
+    df_results = pd.DataFrame(rows, columns=column_names)
+
+    # Calculates the subset.
+    # In format_analysis.py, this is done in the main body of the script.
+    df_subset = "INSERT CODE FROM MAIN SCRIPT"
+
+    # Makes a dataframe with the expected values.
+    df_expected = pd.DataFrame([[],
+                                [],
+                                [],
+                                [],
+                                []],
+                               columns=column_names)
+
+    # Compares the script output to the expected values.
+    compare_dataframes("NAME_Subset", df_subset, df_expected)
+
+
 def test_subtotal_function():
     """Tests both input scenarios for this function: one or two initial criteria."""
 
@@ -436,13 +468,13 @@ except (IndexError, FileNotFoundError):
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and details saved to the output folder.
 test_match_nara_risk_function()
-# test_match_technical_appraisal()
-# test_match_other_risk()
-#
-# test_subtotal_function()
-# test_format_subtotal()
-# test_nara_risk_subtotal()
-# test_technical_appraisal_subtotal()
-# test_other_risk_subtotal()
+test_match_technical_appraisal()
+test_match_other_risk()
+
+test_subtotal_function()
+test_format_subtotal()
+test_nara_risk_subtotal()
+test_technical_appraisal_subtotal()
+test_other_risk_subtotal()
 
 print("\nThe script is complete.")
