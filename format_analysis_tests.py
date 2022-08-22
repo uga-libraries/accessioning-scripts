@@ -80,6 +80,62 @@ def test_match_technical_appraisal():
     compare_dataframes("Match_TA", df_results, df_expected)
 
 
+def test_match_other_risk():
+    """Tests adding other risk categories to df_results,
+    which will already have information from FITS, NARA, and technical appraisal.
+    In format_analysis.py, this is done in the main body of the script."""
+
+    # Makes a dataframe to use as input.
+    # Data variation: examples that match both, one, or neither of the other risk categories,
+    # with identical cases and different cases (match is case-insensitive),
+    # and at least one each of the format risk criteria.
+    rows = [["Adobe Photoshop file", "Moderate Risk", "Transform to TIFF or JPEG2000"],
+            ["Cascading Style Sheet", "Low Risk", "Retain"],
+            ["CorelDraw Drawing", "High Risk", "Transform to a TBD format, possibly PDF or TIFF"],
+            ["empty", np.NaN, np.NaN],
+            ["Encapsulated Postscript File", "Low Risk", "Transform to TIFF or JPEG2000"],
+            ["iCalendar", "Low Risk", "Transform to CSV"],
+            ["MBOX Email Format", "Low Risk", "Transform to EML but also retain MBOX"],
+            ["Plain text", "Low Risk", "Retain"],
+            ["zip format", "Low Risk", "Retain"]]
+    column_names = ["FITS_Format_Name", "NARA_Risk Level", "NARA_Proposed Preservation Plan"]
+    df_results = pd.DataFrame(rows, columns=column_names)
+
+    # Reads the CSV with formats that indicate other risk into the dataframe.
+    # In format_analysis.py, this is done a little earlier in the script.
+    df_risk = csv_to_dataframe(c.RISK)
+
+    # Adds the NARA other risk category (defined in ITAfileformats.csv).
+    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") & (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")), "Other_Risk"] = "NARA Low/Transform"
+
+    # Adds the format risk categories (defined in Riskfileformats.csv).
+    # If something is both NARA and format, the format category will overwrite NARA.
+    risk_list = df_risk["FITS_FORMAT"].tolist()
+    indexes = df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)].index
+    for index in indexes:
+        format_name = df_results.loc[index, "FITS_Format_Name"].lower()
+        risk_criteria = df_risk[df_risk["FITS_FORMAT"].str.lower() == format_name]["RISK_CRITERIA"].values[0]
+        df_results.loc[index, "Other_Risk"] = risk_criteria
+
+    # Adds default text for formats that aren't in either other risk category.
+    df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
+
+    # Makes a dataframe with the expected values.
+    df_expected = pd.DataFrame([["Adobe Photoshop file", "Moderate Risk", "Transform to TIFF or JPEG2000", "Layered image file"],
+                                ["Cascading Style Sheet", "Low Risk", "Retain", "Possible saved web page"],
+                                ["CorelDraw Drawing", "High Risk", "Transform to a TBD format, possibly PDF or TIFF", "Layered image file"],
+                                ["empty", np.NaN, np.NaN, "Not for Other"],
+                                ["Encapsulated Postscript File", "Low Risk", "Transform to TIFF or JPEG2000", "Layered image file"],
+                                ["iCalendar", "Low Risk", "Transform to CSV", "NARA Low/Transform"],
+                                ["MBOX Email Format", "Low Risk", "Transform to EML but also retain MBOX", "NARA Low/Transform"],
+                                ["Plain text", "Low Risk", "Retain", "Not for Other"],
+                                ["zip format", "Low Risk", "Retain", "Archive format"]],
+                               columns=["FITS_Format_Name", "NARA_Risk Level", "NARA_Proposed Preservation Plan", "Other_Risk"])
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Match_Other", df_results, df_expected)
+
+
 def test_subtotal_function():
     """Tests both input scenarios for this function: one or two initial criteria."""
 
@@ -287,12 +343,13 @@ except (IndexError, FileNotFoundError):
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and details saved to the output folder.
-test_match_technical_appraisal()
+#test_match_technical_appraisal()
+test_match_other_risk()
 
-test_subtotal_function()
-test_format_subtotal()
-test_nara_risk_subtotal()
-test_technical_appraisal_subtotal()
-test_other_risk_subtotal()
+# test_subtotal_function()
+# test_format_subtotal()
+# test_nara_risk_subtotal()
+# test_technical_appraisal_subtotal()
+# test_other_risk_subtotal()
 
 print("\nThe script is complete.")
