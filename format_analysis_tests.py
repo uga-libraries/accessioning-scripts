@@ -68,15 +68,16 @@ def test_match_technical_appraisal():
     df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
 
     # Makes a dataframe with the expected values.
-    df_expected = pd.DataFrame([[r"C:\CD1\Flower.JPG", "JPEG EXIF", "Not for TA"],
-                                [r"C:\CD1\Trashes\Flower1.JPG", "JPEG EXIF", "Trash"],
-                                [r"C:\CD2\Script\config.pyc", "unknown binary", "Format"],
-                                [r"C:\CD2\Trash Data\data.zip", "ZIP Format", "Not for TA"],
-                                [r"C:\CD2\trash\New Document.txt", "Plain text", "Trash"],
-                                [r"C:\CD2\Trash\New Text.txt", "Plain text", "Trash"],
-                                [r"C:\FD1\empty.txt", "empty", "Format"],
-                                [r"C:\FD1\trashes\program.dll", "PE32 executable", "Trash"]],
-                               columns=["FITS_File_Path", "FITS_Format_Name", "Technical Appraisal"])
+    rows = [[r"C:\CD1\Flower.JPG", "JPEG EXIF", "Not for TA"],
+            [r"C:\CD1\Trashes\Flower1.JPG", "JPEG EXIF", "Trash"],
+            [r"C:\CD2\Script\config.pyc", "unknown binary", "Format"],
+            [r"C:\CD2\Trash Data\data.zip", "ZIP Format", "Not for TA"],
+            [r"C:\CD2\trash\New Document.txt", "Plain text", "Trash"],
+            [r"C:\CD2\Trash\New Text.txt", "Plain text", "Trash"],
+            [r"C:\FD1\empty.txt", "empty", "Format"],
+            [r"C:\FD1\trashes\program.dll", "PE32 executable", "Trash"]]
+    column_names = ["FITS_File_Path", "FITS_Format_Name", "Technical Appraisal"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
     compare_dataframes("Match_TA", df_results, df_expected)
@@ -108,7 +109,8 @@ def test_match_other_risk():
     df_risk = csv_to_dataframe(c.RISK)
 
     # Adds the NARA other risk category (defined in ITAfileformats.csv).
-    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") & (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")),
+    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") &
+                   (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")),
                    "Other_Risk"] = "NARA Low/Transform"
 
     # Adds the format risk categories (defined in Riskfileformats.csv).
@@ -124,16 +126,17 @@ def test_match_other_risk():
     df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
 
     # Makes a dataframe with the expected values.
-    df_expected = pd.DataFrame([["Adobe Photoshop file", "Moderate Risk", "Transform to TIFF or JPEG2000", "Layered image file"],
-                                ["Cascading Style Sheet", "Low Risk", "Retain", "Possible saved web page"],
-                                ["CorelDraw Drawing", "High Risk", "Transform to a TBD format, possibly PDF or TIFF", "Layered image file"],
-                                ["empty", np.NaN, np.NaN, "Not for Other"],
-                                ["Encapsulated Postscript File", "Low Risk", "Transform to TIFF or JPEG2000", "Layered image file"],
-                                ["iCalendar", "Low Risk", "Transform to CSV", "NARA Low/Transform"],
-                                ["MBOX Email Format", "Low Risk", "Transform to EML but also retain MBOX", "NARA Low/Transform"],
-                                ["Plain text", "Low Risk", "Retain", "Not for Other"],
-                                ["zip format", "Low Risk", "Retain", "Archive format"]],
-                               columns=["FITS_Format_Name", "NARA_Risk Level", "NARA_Proposed Preservation Plan", "Other_Risk"])
+    rows = [["Adobe Photoshop file", "Moderate Risk", "Transform to TIFF or JPEG2000", "Layered image file"],
+            ["Cascading Style Sheet", "Low Risk", "Retain", "Possible saved web page"],
+            ["CorelDraw Drawing", "High Risk", "Transform to a TBD format, possibly PDF or TIFF", "Layered image file"],
+            ["empty", np.NaN, np.NaN, "Not for Other"],
+            ["Encapsulated Postscript File", "Low Risk", "Transform to TIFF or JPEG2000", "Layered image file"],
+            ["iCalendar", "Low Risk", "Transform to CSV", "NARA Low/Transform"],
+            ["MBOX Email Format", "Low Risk", "Transform to EML but also retain MBOX", "NARA Low/Transform"],
+            ["Plain text", "Low Risk", "Retain", "Not for Other"],
+            ["zip format", "Low Risk", "Retain", "Archive format"]]
+    column_names = ["FITS_Format_Name", "NARA_Risk Level", "NARA_Proposed Preservation Plan", "Other_Risk"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
     compare_dataframes("Match_Other", df_results, df_expected)
@@ -166,16 +169,19 @@ def test_subtotal_function():
     # Makes dataframes with the expected values for each input scenario.
     # The index values for the dataframes made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    df_one_expected = pd.DataFrame([["Low Risk", 4, 50, 0.066, 87.898],
-                                    ["Moderate Risk", 1, 12.5, .003, 3.995],
-                                    [np.NaN, 3, 37.5, 0.006, 7.991]],
-                                   columns=["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
-    df_two_expected = pd.DataFrame([[False, "JPEG EXIF", 2, 25, 0.028, 37.29],
-                                    [False, "Unknown Binary", 3, 37.5, 0.006, 7.991],
-                                    [False, "Zip Format", 1, 12.5, 0.003, 3.995],
-                                    [True, "Open Office XML Workbook", 1, 12.5, 0.019, 25.304],
-                                    [True, "XLSX", 1, 12.5, 0.019, 25.304]],
-                                   columns=["Multiple_IDs", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+    rows = [["Low Risk", 4, 50, 0.066, 87.898],
+            ["Moderate Risk", 1, 12.5, .003, 3.995],
+            [np.NaN, 3, 37.5, 0.006, 7.991]]
+    column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
+    df_one_expected = pd.DataFrame(rows, columns=column_names)
+
+    rows = [[False, "JPEG EXIF", 2, 25, 0.028, 37.29],
+            [False, "Unknown Binary", 3, 37.5, 0.006, 7.991],
+            [False, "Zip Format", 1, 12.5, 0.003, 3.995],
+            [True, "Open Office XML Workbook", 1, 12.5, 0.019, 25.304],
+            [True, "XLSX", 1, 12.5, 0.019, 25.304]]
+    column_names = ["Multiple_IDs", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
+    df_two_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output for each input scenario to the expected values.
     compare_dataframes("Subtotal_Function_One_Criteria", df_one, df_one_expected)
@@ -209,12 +215,13 @@ def test_format_subtotal():
     # Makes a dataframe with the expected values.
     # The index values for the dataframe made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    df_expected = pd.DataFrame([["JPEG EXIF", "Low Risk", 2, 25, 0.028, 37.29],
-                                ["Unknown Binary", np.NaN, 3, 37.5, 0.006, 7.991],
-                                ["Zip Format", "Moderate Risk", 1, 12.5, 0.003, 3.995],
-                                ["Open Office XML Workbook", "Low Risk", 1, 12.5, 0.019, 25.304],
-                                ["XLSX", "Low Risk", 1, 12.5, 0.019, 25.304]],
-                               columns=["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
+    rows = [["JPEG EXIF", "Low Risk", 2, 25, 0.028, 37.29],
+            ["Unknown Binary", np.NaN, 3, 37.5, 0.006, 7.991],
+            ["Zip Format", "Moderate Risk", 1, 12.5, 0.003, 3.995],
+            ["Open Office XML Workbook", "Low Risk", 1, 12.5, 0.019, 25.304],
+            ["XLSX", "Low Risk", 1, 12.5, 0.019, 25.304]]
+    column_names = ["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
     compare_dataframes("Format_Subtotals", df_subtotals, df_expected)
@@ -248,11 +255,12 @@ def test_nara_risk_subtotal():
     # Makes a dataframe with the expected values.
     # The index value for the dataframe made by subtotal() is a column value here
     # so that it is visible in the comparison dataframe to label errors.
-    df_expected = pd.DataFrame([["Low Risk", 4, 40, 0.066, 81.374],
-                                ["Moderate Risk", 1, 10, 0.003, 3.699],
-                                ["High Risk", 3, 30, 0.007, 8.631],
-                                [np.NaN, 2, 20, 0.005, 6.165]],
-                               columns=["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"])
+    rows = [["Low Risk", 4, 40, 0.066, 81.374],
+            ["Moderate Risk", 1, 10, 0.003, 3.699],
+            ["High Risk", 3, 30, 0.007, 8.631],
+            [np.NaN, 2, 20, 0.005, 6.165]]
+    column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
     compare_dataframes("NARA_Risk_Subtotals", df_subtotals, df_expected)
@@ -284,12 +292,13 @@ def test_technical_appraisal_subtotal():
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    df_expected = pd.DataFrame([["Format", "DOS/Windows Executable", 2, 25, 0.301, 27.068],
-                                ["Format", "PE32 executable", 1, 12.5, 0.300, 26.978],
-                                ["Format", "Unknown Binary", 2, 25, 0.05, 4.496],
-                                ["Trash", "JPEG EXIF", 2, 25, 0.271, 24.371],
-                                ["Trash", "Open Office XML Workbook", 1, 12.5, 0.19, 17.086]],
-                               columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+    rows = [["Format", "DOS/Windows Executable", 2, 25, 0.301, 27.068],
+            ["Format", "PE32 executable", 1, 12.5, 0.300, 26.978],
+            ["Format", "Unknown Binary", 2, 25, 0.05, 4.496],
+            ["Trash", "JPEG EXIF", 2, 25, 0.271, 24.371],
+            ["Trash", "Open Office XML Workbook", 1, 12.5, 0.19, 17.086]]
+    column_names = ["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
+    df_expected = pd.DataFrame(rows, columns= column_names)
 
     # Compares the script output to the expected values.
     compare_dataframes("Tech_Appraisal_Subtotals", df_subtotals, df_expected)
@@ -323,12 +332,13 @@ def test_other_risk_subtotal():
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    df_expected = pd.DataFrame([[False, "DOS/Windows Executable", 1, 10, 0.1, 0.087],
-                                [False, "JPEG EXIF", 3, 30, 4.601, 4.004],
-                                [False, "PE32 Executable", 1, 10, 0.2, 0.174],
-                                [True, "Cascading Style Sheet", 1, 10, 10, 8.703],
-                                [True, "ZIP Format", 4, 40, 100, 87.031]],
-                               columns=["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"])
+    rows = [[False, "DOS/Windows Executable", 1, 10, 0.1, 0.087],
+            [False, "JPEG EXIF", 3, 30, 4.601, 4.004],
+            [False, "PE32 Executable", 1, 10, 0.2, 0.174],
+            [True, "Cascading Style Sheet", 1, 10, 10, 8.703],
+            [True, "ZIP Format", 4, 40, 100, 87.031]]
+    column_names = ["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
     compare_dataframes("Other_Risk_Subtotals", df_subtotals, df_expected)
