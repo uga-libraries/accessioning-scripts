@@ -300,24 +300,7 @@ def match_nara_risk(df_fits, df_nara):
     df_format = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
     df_format = df_format.assign(NARA_Match_Type="Format Name")
 
-    # Technique 3: Name and version is a fuzzy match.
-    # Allows for some difference in how a name is formatted and how the version is included.
-    # It needs a function for error handling if there isn't a close enough match.
-    def match(value, column, score):
-        try:
-            return process.extractOne(value, column, score_cutoff=score)[0]
-        except TypeError:
-            return None
-
-    df_unmatched['key'] = df_unmatched.name_lower.apply(lambda x: match(x, df_nara.format_lower, 90))
-    df_fuzzy_format = df_unmatched.dropna(subset=["key"]).merge(df_nara[nara_columns],
-                                                                left_on='key', right_on='format_lower')
-    df_fuzzy_format = df_fuzzy_format.assign(NARA_Match_Type="Fuzzy Format Name")
-    df_unmatched = df_unmatched[df_unmatched["key"].isnull()]
-    df_fuzzy_format.drop(["key"], inplace=True, axis=1)
-    df_unmatched.drop(["key"], inplace=True, axis=1)
-
-    # Technique 4: Extension is a match (case insensitive).
+    # Technique 3: Extension is a match (case insensitive).
     # Makes an expanded version of the NARA dataframe for one row per possible extension per format.
     # NARA has pipe separated string of extensions if a format has more than one.
     df_nara_expanded = df_nara[nara_columns].copy()
@@ -334,7 +317,7 @@ def match_nara_risk(df_fits, df_nara):
     df_unmatched = df_unmatched.assign(NARA_Match_Type="No NARA Match")
 
     # Combines the dataframes with different matches to save to spreadsheet.
-    df_matched = pd.concat([df_puid, df_format, df_fuzzy_format, df_ext, df_unmatched])
+    df_matched = pd.concat([df_puid, df_format, df_ext, df_unmatched])
 
     # Removes columns that are just used for FITS and NARA comparisons from all dataframes.
     df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
