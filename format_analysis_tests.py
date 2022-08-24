@@ -253,10 +253,10 @@ def test_template_subset():
     compare_dataframes("NAME_Subset", df_subset, df_expected)
 
 
-def test_subtotal_function():
-    """Tests both input scenarios for this function: one or two initial criteria."""
+def test_subtotal_function_one():
+    """Tests the subtotal function based on one column."""
 
-    # Makes a dataframe to use for input for both of the scenarios.
+    # Makes a dataframe to use for input.
     # Data variation: unique rows, rows that will be added together for subtotals.
     rows = [["JPEG EXIF", 13.563, False, "Low Risk"],
             ["JPEG EXIF", 14.1, False, "Low Risk"],
@@ -273,30 +273,58 @@ def test_subtotal_function():
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
-    # Runs the subtotal() function for each input scenario.
-    df_one = subtotal(df, ["NARA_Risk Level"], totals_dict)
-    df_two = subtotal(df, ["Multiple_IDs", "FITS_Format_Name"], totals_dict)
+    # Runs the subtotal() function.
+    df_subtotal = subtotal(df, ["NARA_Risk Level"], totals_dict)
 
-    # Makes dataframes with the expected values for each input scenario.
-    # The index values for the dataframes made by subtotal() are column values here
-    # so that they are visible in the comparison dataframe to label errors.
+    # Makes a dataframe with the expected values for each input scenario.
+    # The index value for the dataframe made by subtotal() is a column value here
+    # so that it is visible in the comparison dataframe to label errors.
     rows = [["Low Risk", 4, 50, 0.066, 87.898],
             ["Moderate Risk", 1, 12.5, .003, 3.995],
             [np.NaN, 3, 37.5, 0.006, 7.991]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
-    df_one_expected = pd.DataFrame(rows, columns=column_names)
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Compares the script output to the expected values.
+    compare_dataframes("Subtotal_Function_One_Criteria", df_subtotal, df_expected)
+
+
+def test_subtotal_function_two():
+    """Tests the subtotal function based on two columns."""
+
+    # Makes a dataframe to use for input.
+    # Data variation: unique rows, rows that will be added together for subtotals.
+    rows = [["JPEG EXIF", 13.563, False, "Low Risk"],
+            ["JPEG EXIF", 14.1, False, "Low Risk"],
+            ["Open Office XML Workbook", 19.316, True, "Low Risk"],
+            ["Unknown Binary", 0, False, np.NaN],
+            ["Unknown Binary", 1, False, np.NaN],
+            ["Unknown Binary", 5, False, np.NaN],
+            ["XLSX", 19.316, True, "Low Risk"],
+            ["Zip Format", 2.792, False, "Moderate Risk"]]
+    column_names = ["FITS_Format_Name", "FITS_Size_KB", "Multiple_IDs", "NARA_Risk Level"]
+    df = pd.DataFrame(rows, columns=column_names)
+
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
+    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+
+    # Runs the subtotal() function.
+    df_subtotal = subtotal(df, ["Multiple_IDs", "FITS_Format_Name"], totals_dict)
+
+    # Makes a dataframe with the expected values.
+    # The index values for the dataframe made by subtotal() are column values here
+    # so that they are visible in the comparison dataframe to label errors.
     rows = [[False, "JPEG EXIF", 2, 25, 0.028, 37.29],
             [False, "Unknown Binary", 3, 37.5, 0.006, 7.991],
             [False, "Zip Format", 1, 12.5, 0.003, 3.995],
             [True, "Open Office XML Workbook", 1, 12.5, 0.019, 25.304],
             [True, "XLSX", 1, 12.5, 0.019, 25.304]]
     column_names = ["Multiple_IDs", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
-    df_two_expected = pd.DataFrame(rows, columns=column_names)
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
-    # Compares the script output for each input scenario to the expected values.
-    compare_dataframes("Subtotal_Function_One_Criteria", df_one, df_one_expected)
-    compare_dataframes("Subtotal_Function_Two_Criteria", df_two, df_two_expected)
+    # Compares the script output to the expected values.
+    compare_dataframes("Subtotal_Function_Two_Criteria", df_subtotal, df_expected)
 
 
 def test_format_subtotal():
@@ -471,7 +499,8 @@ test_match_nara_risk_function()
 test_match_technical_appraisal()
 test_match_other_risk()
 
-test_subtotal_function()
+test_subtotal_function_one()
+test_subtotal_function_two()
 test_format_subtotal()
 test_nara_risk_subtotal()
 test_technical_appraisal_subtotal()
