@@ -146,8 +146,13 @@ else:
 df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 df_results.drop_duplicates(inplace=True)
 
-# # Makes subsets based on different risk factors.
-# nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
+# Makes subsets based on different risk factors and removes any columns not typically needed for review.
+
+nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
+nara_at_risk.drop(["FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
+                   "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"],
+                  inplace=True, axis=1)
+
 # multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].iloc[:, 0:18].copy()
 # multiple_ids.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 # multiple_ids.drop_duplicates(inplace=True)
@@ -196,13 +201,13 @@ df_results.drop_duplicates(inplace=True)
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
-# with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
+with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
 #     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
 #     nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
 #     technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
 #     other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
 #     media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
-#     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
+    nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
 #     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
 #     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
 #     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
