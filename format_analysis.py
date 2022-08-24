@@ -146,31 +146,24 @@ else:
 df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 df_results.drop_duplicates(inplace=True)
 
-# Makes subsets based on different risk factors and removes any columns not typically needed for review.
+# The next several code blocks make different subsets of the data based on different risk factors
+# and removes any columns not typically needed for review.
 
 nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
 nara_at_risk.drop(["FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
                    "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"],
                   inplace=True, axis=1)
 
-# multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].iloc[:, 0:18].copy()
-# multiple_ids.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
-# multiple_ids.drop_duplicates(inplace=True)
-# validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
-#                               (df_results["FITS_Status_Message"].notnull())].copy()
+multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].copy()
+multiple_ids.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 
-# # Makes a subset of files that meet one of the technical appraisal criteria (format or trash folder),
-# # including adding a column for which criteria was used.
-# # Removes duplicate rows, which are caused by multiple matches to NARA risk criteria.
-# columns_list = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
-#                 "FITS_Multiple_IDs", "FITS_Size_KB", "FITS_Creating_Application"]
-# tech_format = df_results[df_results["Technical Appraisal_Format"] == True][columns_list].copy()
-# tech_format.insert(0, "Criteria", "Format")
-# tech_trash = df_results[df_results["Technical Appraisal_Trash"] == True][columns_list].copy()
-# tech_trash.insert(0, "Criteria", "Trash Folder")
-# tech_appraisal = pd.concat([tech_format, tech_trash])
-# tech_appraisal.drop_duplicates(inplace=True)
-#
+validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
+                              (df_results["FITS_Status_Message"].notnull())].copy()
+
+tech_appraisal = df_results[df_results["Technical_Appraisal"] != "Not for TA"].copy()
+tech_appraisal.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Valid", "FITS_Well-Formed",
+                     "FITS_Status_Message"], inplace=True, axis=1)
+
 # # Makes a subset of files that meet one of the "other risk" criteria (format or NARA low risk but transform),
 # # including adding a column for which criteria was used.
 # other_format = df_results[df_results["Other Risk Indicator"] == True][columns_list].copy()
@@ -208,8 +201,8 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
 #     other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
 #     media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
-#     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
+    tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
 #     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
-#     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
+    multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
 #     df_duplicates.to_excel(result, sheet_name="Duplicates", index=False)
 #     validation_error.to_excel(result, sheet_name="Validation", index=False)
