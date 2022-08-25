@@ -393,7 +393,7 @@ def test_technical_appraisal_subtotal():
             ["Trash", "JPEG EXIF", 130.563],
             ["Trash", "JPEG EXIF", 140.1],
             ["Trash", "Open Office XML Workbook", 190.316]]
-    column_names = ["Criteria", "FITS_Format_Name", "FITS_Size_KB"]
+    column_names = ["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"]
     df = pd.DataFrame(rows, columns=column_names)
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
@@ -401,7 +401,7 @@ def test_technical_appraisal_subtotal():
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
+    df_subtotals = subtotal(df, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
@@ -411,8 +411,8 @@ def test_technical_appraisal_subtotal():
             ["Format", "Unknown Binary", 2, 25, 0.05, 4.496],
             ["Trash", "JPEG EXIF", 2, 25, 0.271, 24.371],
             ["Trash", "Open Office XML Workbook", 1, 12.5, 0.19, 17.086]]
-    column_names = ["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
-    df_expected = pd.DataFrame(rows, columns= column_names)
+    column_names = ["Technical_Appraisal", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
     compare_dataframes("Tech_Appraisal_Subtotals", df_subtotals, df_expected)
