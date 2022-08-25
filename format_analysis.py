@@ -57,7 +57,6 @@ collection_folder, accession_number = os.path.split(accession_folder)
 # If there is already a folder with FITS format identification information in the collection folder,
 # updates the folder to match the contents of the accession folder.
 # Otherwise, runs FITS to generate the format identification information.
-# Prints to the terminal which mode the script is using so the archivist can stop the script if there is an error.
 fits_output = f"{collection_folder}/{accession_number}_FITS"
 if os.path.exists(fits_output):
     print("\nUpdating the report using existing FITS format identification information.")
@@ -67,25 +66,8 @@ else:
     os.mkdir(fits_output)
     subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
-# Makes a CSV in the collection folder, with a header row, for combined FITS information.
-header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-          "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application",
-          "Valid", "Well-Formed", "Status_Message"]
-csv_open = open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="")
-csv_write = csv.writer(csv_open)
-csv_write.writerow(header)
-csv_open.close()
-
-# Extracts select format information for each file, with some data reformatting, and saves to the FITS CSV.
-for fits_xml in os.listdir(fits_output):
-    fits_to_csv(f"{accession_folder}_FITS/{fits_xml}", collection_folder, accession_number)
-
-# If an encode errors text file was made during the previous step, removes any duplicate files.
-# Files are duplicated in encode_errors.txt if they have more than one format identification.
-if os.path.exists(f"{collection_folder}/{accession_number}_encode_errors.txt"):
-    df_error = pd.read_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=None)
-    df_error.drop_duplicates(inplace=True)
-    df_error.to_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=False, index=False)
+# Combines the FITS data into a CSV. If one is already present, will replace it.
+make_fits_csv(fits_output, accession_folder, collection_folder, accession_number)
 
 # Read the CSVs with data [FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA]
 # into pandas for analysis and summarizing, and prints a warning if encoding errors have to be ignored.

@@ -52,6 +52,27 @@ def check_configuration():
     return errors
 
 
+def csv_to_dataframe(csv_file):
+    """Reads a CSV into a dataframe and returns the result. If the dataframe must be read by ignoring encoding
+    errors, also prints a message to the terminal to alert users that something was wrong. This happens when there
+    are special characters in the CSV. """
+
+    try:
+        df = pd.read_csv(csv_file)
+    except UnicodeDecodeError:
+        print("UnicodeDecodeError when trying to read:", csv_file)
+        print("CSV was read with ignore encoding errors, so data may not be complete.")
+        df = pd.read_csv(csv_file, encoding_errors="ignore")
+
+    # Adds a prefix to the FITS and NARA dataframes so the source of the data is clear when the data is combined.
+    if "fits" in csv_file:
+        df = df.add_prefix("FITS_")
+    elif "NARA" in csv_file:
+        df = df.add_prefix("NARA_")
+
+    return df
+
+
 def update_fits(accession_folder, fits_output, collection_folder, accession_number):
     """Deletes any files in the FITS folder that do not have a corresponding file in the accession folder
     and makes a FITS file for anything in the accession folder that doesn't have one.
@@ -96,30 +117,9 @@ def update_fits(accession_folder, fits_output, collection_folder, accession_numb
                        shell=True)
 
 
-def csv_to_dataframe(csv_file):
-    """Reads a CSV into a dataframe and returns the result. If the dataframe must be read by ignoring encoding
-    errors, also prints a message to the terminal to alert users that something was wrong. This happens when there
-    are special characters in the CSV. """
-
-    try:
-        df = pd.read_csv(csv_file)
-    except UnicodeDecodeError:
-        print("UnicodeDecodeError when trying to read:", csv_file)
-        print("CSV was read with ignore encoding errors, so data may not be complete.")
-        df = pd.read_csv(csv_file, encoding_errors="ignore")
-
-    # Adds a prefix to the FITS and NARA dataframes so the source of the data is clear when the data is combined.
-    if "fits" in csv_file:
-        df = df.add_prefix("FITS_")
-    elif "NARA" in csv_file:
-        df = df.add_prefix("NARA_")
-
-    return df
-
-
-def fits_to_csv(fits_file, collection_folder, accession_number):
-    """Extracts desired fields from a FITS XML file, reformats when necessary,
-    and saves each format identification as a separate row in a CSV. Returns nothing."""
+def fits_row(fits_file):
+    """Extracts desired fields from a FITS XML file, reformatting when necessary, for each format identification.
+    Returns a list of lists, where each list is the information for a single format identification."""
 
     def get_text(parent, element):
         """Returns a single value, regardless of if the element is missing, appears once, or repeats.
@@ -244,23 +244,51 @@ def fits_to_csv(fits_file, collection_folder, accession_number):
     file_data.append(get_text(filestatus, "well-formed"))
     file_data.append(get_text(filestatus, "message"))
 
-    # Creates the CSV rows by combining each identification from formats_dictionary with the file path and file_data.
-    # Saves each row to the CSV.
-    file_open = open(f"{collection_folder}/{accession_number}_fits.csv", "a", newline="")
-    file_write = csv.writer(file_open)
+    # Creates a list for each format identification by combining info from formats_dictionary, file path, and file_data.
+    # and saves that list to the list which this function will return.
+    fits_rows = []
     for format_id in formats_dictionary:
         row = [get_text(fileinfo, "filepath"), formats_dictionary[format_id]["name"],
                formats_dictionary[format_id]["version"], formats_dictionary[format_id]["puid"],
                formats_dictionary[format_id]["tools"]]
         row.extend(file_data)
-        # If there is a character (usually in the filepath) that cannot be read,
-        # saves it to a text file to use for renaming.
-        try:
-            file_write.writerow(row)
-        except UnicodeEncodeError:
-            with open(f"{collection_folder}/{accession_number}_encode_errors.txt", "a", encoding="utf-8") as text:
-                text.write(get_text(fileinfo, "filepath") + "\n")
-    file_open.close()
+        fits_rows.append(row)
+
+    return fits_rows
+
+
+def make_fits_csv(fits_output, accession_folder, collection_folder, accession_number):
+    """Makes a single CSV with FITS information for all files in the accession.
+    Each row in the CSV is a single format identification. A file may have multiple identifications."""
+
+    # Makes a CSV in the collection folder, with a header row, for combined FITS information.
+    header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+              "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
+    csv_open = open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="")
+    csv_write = csv.writer(csv_open)
+    csv_write.writerow(header)
+
+    # Extracts select format information for each FITS file, with some data reformatting, and saves to a CSV.
+    # If it cannot save due to an encoding error, saves the filepath to a text file.
+    encode_error = False
+    for fits_xml in os.listdir(fits_output):
+        rows_list = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        for row in rows_list:
+            try:
+                csv_write.writerow(row)
+            except UnicodeEncodeError:
+                encode_error = True
+                with open(f"{collection_folder}/{accession_number}_encode_errors.txt", "a", encoding="utf-8") as text:
+                    text.write(row[0] + "\n")
+
+    csv_open.close()
+
+    # If there were encoding errors, removes any duplicate files.
+    # Files are duplicated in encode_errors.txt if they have more than one format identification.
+    if encode_error:
+        df_error = pd.read_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=None)
+        df_error.drop_duplicates(inplace=True)
+        df_error.to_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=False, index=False)
 
 
 def match_nara_risk(df_fits, df_nara):
