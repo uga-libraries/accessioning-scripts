@@ -313,8 +313,9 @@ def match_nara_risk(df_fits, df_nara):
     df_ext = df_to_match[df_to_match["NARA_Risk Level"].notnull()].copy()
     df_ext = df_ext.assign(NARA_Match_Type="File Extension")
 
-    # Adds match type of "No NARA Match" for any that are still unmatched.
-    df_unmatched = df_unmatched.assign(NARA_Match_Type="No NARA Match")
+    # Adds default text for risk and match type for any that are still unmatched.
+    df_unmatched["NARA_Risk Level"] = "No Match"
+    df_unmatched["NARA_Match_Type"] = "No NARA Match"
 
     # Combines the dataframes with different matches to save to spreadsheet.
     df_matched = pd.concat([df_puid, df_format, df_ext, df_unmatched])
@@ -375,7 +376,7 @@ def media_subtotal(df, accession_folder):
     # Fills any empty cells with a 0 to make blanks easier to read.
     media = pd.concat([files, size, high, moderate, low, unknown, technical_appraisal, other], axis=1)
     media.columns = ["File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
-                     "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
+                     "NARA Low Risk (File Count)", "No NARA Match (File Count)",
                      "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
     media.fillna(0, inplace=True)
 

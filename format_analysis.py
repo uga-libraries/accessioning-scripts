@@ -139,11 +139,11 @@ else:
     df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
 
     # Saves the information in df_results to a CSV for archivist review.
-    df_results.to_csv(csv_path, index_label="Index")
+    df_results.to_csv(csv_path, index=False)
 
 # Removes duplicates in df_results from multiple NARA matches with the same risk and proposed preservation plan.
 # This information is saved in the accession's full risk data CSV if matches need to be checked.
-df_results.drop(["Index", "NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
+df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 df_results.drop_duplicates(inplace=True)
 
 # The next several code blocks make different subsets of the data based on different risk factors
@@ -178,8 +178,8 @@ totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].
 # Calculates file and size subtotals based on different criteria.
 format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
 nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
-technical_appraisal_subtotals = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
-other_risk_subtotals = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+technical_appraisal_subtotals = subtotal(tech_appraisal, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+other_risk_subtotals = subtotal(other_risk, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 media_subtotals = media_subtotal(df_results, accession_folder)
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
