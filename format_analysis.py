@@ -164,15 +164,9 @@ tech_appraisal = df_results[df_results["Technical_Appraisal"] != "Not for TA"].c
 tech_appraisal.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Valid", "FITS_Well-Formed",
                      "FITS_Status_Message"], inplace=True, axis=1)
 
-# # Makes a subset of files that meet one of the "other risk" criteria (format or NARA low risk but transform),
-# # including adding a column for which criteria was used.
-# other_format = df_results[df_results["Other Risk Indicator"] == True][columns_list].copy()
-# other_format.insert(0, "Criteria", "Format")
-# other_nara_transform = df_results[(df_results["NARA_Risk Level"] == "Low Risk") &
-#                                   df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")][columns_list].copy()
-# other_nara_transform.insert(0, "Criteria", "NARA Low Risk/Transform")
-# other_risk = pd.concat([other_format, other_nara_transform])
-# other_risk.drop_duplicates(inplace=True)
+other_risk = df_results[df_results["Other_Risk"] != "Not for Other"].copy()
+other_risk.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Creating_Application", "FITS_Valid",
+                 "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 
 # # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
 # # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
@@ -202,7 +196,7 @@ with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xls
 #     media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
-#     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
+    other_risk.to_excel(result, sheet_name="Other Risks", index=False)
     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
 #     df_duplicates.to_excel(result, sheet_name="Duplicates", index=False)
-#     validation_error.to_excel(result, sheet_name="Validation", index=False)
+    validation_error.to_excel(result, sheet_name="Validation", index=False)
