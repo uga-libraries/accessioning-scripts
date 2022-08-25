@@ -83,9 +83,9 @@ for fits_xml in os.listdir(fits_output):
 # If an encode errors text file was made during the previous step, removes any duplicate files.
 # Files are duplicated in encode_errors.txt if they have more than one format identification.
 if os.path.exists(f"{collection_folder}/{accession_number}_encode_errors.txt"):
-    error_df = pd.read_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=None)
-    error_df.drop_duplicates(inplace=True)
-    error_df.to_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=False, index=False)
+    df_error = pd.read_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=None)
+    df_error.drop_duplicates(inplace=True)
+    df_error.to_csv(f"{collection_folder}/{accession_number}_encode_errors.txt", header=False, index=False)
 
 # Read the CSVs with data [FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA]
 # into pandas for analysis and summarizing, and prints a warning if encoding errors have to be ignored.
@@ -149,24 +149,24 @@ df_results.drop_duplicates(inplace=True)
 # The next several code blocks make different subsets of the data based on different risk factors
 # and removes any columns not typically needed for review.
 
-nara_at_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
-nara_at_risk.drop(["FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
+df_nara_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
+df_nara_risk.drop(["FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
                    "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"],
                   inplace=True, axis=1)
 
-multiple_ids = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
-multiple_ids.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
+df_multiple = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
+df_multiple.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 
-validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
-                              (df_results["FITS_Status_Message"].notnull())].copy()
+df_validation = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
+                           (df_results["FITS_Status_Message"].notnull())].copy()
 
-tech_appraisal = df_results[df_results["Technical_Appraisal"] != "Not for TA"].copy()
-tech_appraisal.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Valid", "FITS_Well-Formed",
-                     "FITS_Status_Message"], inplace=True, axis=1)
+df_tech_appraisal = df_results[df_results["Technical_Appraisal"] != "Not for TA"].copy()
+df_tech_appraisal.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Valid", "FITS_Well-Formed",
+                        "FITS_Status_Message"], inplace=True, axis=1)
 
-other_risk = df_results[df_results["Other_Risk"] != "Not for Other"].copy()
-other_risk.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Creating_Application", "FITS_Valid",
-                 "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
+df_other_risk = df_results[df_results["Other_Risk"] != "Not for Other"].copy()
+df_other_risk.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Creating_Application", "FITS_Valid",
+                    "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 
 df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
 df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
@@ -176,23 +176,23 @@ df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", ke
 totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum()/1000}
 
 # Calculates file and size subtotals based on different criteria.
-format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
-nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
-technical_appraisal_subtotals = subtotal(tech_appraisal, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
-other_risk_subtotals = subtotal(other_risk, ["Other_Risk", "FITS_Format_Name"], totals_dict)
-media_subtotals = media_subtotal(df_results, accession_folder)
+df_format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
+df_nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
+df_tech_appraisal_subtotals = subtotal(df_tech_appraisal, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+df_other_risk_subtotals = subtotal(df_other_risk, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+df_media_subtotals = media_subtotal(df_results, accession_folder)
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
-    format_subtotals.to_excel(result, sheet_name="Format Subtotals")
-    nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
-    technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
-    other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
-    media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
-    nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
-    tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
-    other_risk.to_excel(result, sheet_name="Other Risks", index=False)
-    multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
+    df_format_subtotals.to_excel(result, sheet_name="Format Subtotals")
+    df_nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
+    df_tech_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
+    df_other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
+    df_media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
+    df_nara_risk.to_excel(result, sheet_name="NARA Risk", index=False)
+    df_tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
+    df_other_risk.to_excel(result, sheet_name="Other Risks", index=False)
+    df_multiple.to_excel(result, sheet_name="Multiple Formats", index=False)
     df_duplicates.to_excel(result, sheet_name="Duplicates", index=False)
-    validation_error.to_excel(result, sheet_name="Validation", index=False)
+    df_validation.to_excel(result, sheet_name="Validation", index=False)
