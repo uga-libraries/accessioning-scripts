@@ -102,13 +102,19 @@ def csv_to_dataframe(csv_file):
     are special characters in the CSV. """
 
     try:
-        dataframe = pd.read_csv(csv_file)
+        df = pd.read_csv(csv_file)
     except UnicodeDecodeError:
         print("UnicodeDecodeError when trying to read:", csv_file)
         print("CSV was read with ignore encoding errors, so data may not be complete.")
-        dataframe = pd.read_csv(csv_file, encoding_errors="ignore")
+        df = pd.read_csv(csv_file, encoding_errors="ignore")
 
-    return dataframe
+    # Adds a prefix to the FITS and NARA dataframes so the source of the data is clear when the data is combined.
+    if "fits" in csv_file:
+        df = df.add_prefix("FITS_")
+    elif "NARA" in csv_file:
+        df = df.add_prefix("NARA_")
+
+    return df
 
 
 def fits_to_csv(fits_file, collection_folder, accession_number):

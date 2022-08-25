@@ -94,10 +94,6 @@ df_ita = csv_to_dataframe(c.ITA)
 df_other = csv_to_dataframe(c.RISK)
 df_nara = csv_to_dataframe(c.NARA)
 
-# Adds a prefix to the FITS and NARA dataframes so the source of the data is clear when the data is combined.
-df_fits = df_fits.add_prefix("FITS_")
-df_nara = df_nara.add_prefix("NARA_")
-
 # If there is already a spreadsheet with combined FITs and risk information from a previous iteration of the script,
 # reads that into a dataframe for additional analysis. This lets the archivist manually adjust the risk matches.
 # Otherwise, combines FITS, NARA, technical appraisal, and other risk data to a dataframe and saves it as a CSV.
