@@ -99,9 +99,8 @@ df_results.drop_duplicates(inplace=True)
 # and removes any columns not typically needed for review.
 
 df_nara_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
-df_nara_risk.drop(["FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
-                   "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"],
-                  inplace=True, axis=1)
+df_nara_risk.drop(["FITS_PUID", "FITS_Identifying_Tool(s)", "FITS_Creating_Application",
+                   "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 
 df_multiple = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
 df_multiple.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
