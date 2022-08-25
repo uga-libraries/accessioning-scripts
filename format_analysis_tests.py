@@ -418,6 +418,24 @@ def test_technical_appraisal_subtotal():
     compare_dataframes("Tech_Appraisal_Subtotals", df_subtotals, df_expected)
 
 
+def test_technical_appraisal_subtotal_empty():
+    """Tests the technical appraisal subtotals when there are no files in the input
+    which meet technical appraisal criteria."""
+
+    # Makes an empty dataframe to use as input for the subtotal() function.
+    df = pd.DataFrame(columns=["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"])
+
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
+    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+
+    # Runs the subtotal() function for this subtotal.
+    df_subtotals = subtotal(df, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+
+    # Makes a dataframe with the expected values.
+    # TODO: not sure what these are, if anything.
+
+
 def test_other_risk_subtotal():
     """Tests the other risk subtotals, which is based on other risk criteria and FITS_Format_Name."""
 
@@ -479,6 +497,7 @@ test_subtotal_function_two()
 test_format_subtotal()
 test_nara_risk_subtotal()
 test_technical_appraisal_subtotal()
+test_technical_appraisal_subtotal_empty()
 test_other_risk_subtotal()
 
 print("\nThe script is complete.")
