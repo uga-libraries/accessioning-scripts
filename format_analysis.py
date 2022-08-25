@@ -154,7 +154,7 @@ nara_at_risk.drop(["FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS
                    "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"],
                   inplace=True, axis=1)
 
-multiple_ids = df_results[df_results["FITS_Multiple_IDs"] == True].copy()
+multiple_ids = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
 multiple_ids.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 
 validation_error = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
