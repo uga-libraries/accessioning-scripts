@@ -52,12 +52,11 @@ def test_match_nara_risk_function():
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID"]
     df_fits = pd.DataFrame(rows, columns=column_names)
 
-    # Reads the NARA risk CSV and adds a prefix to every column.
+    # Reads the NARA risk CSV into a dataframe.
     # In format_analysis.py, this is done in the main body of the script before the function is called.
     df_nara = csv_to_dataframe(c.NARA)
-    df_nara = df_nara.add_prefix("NARA_")
 
-    # Runs the function.
+    # Runs the function being tested.
     df_results = match_nara_risk(df_fits, df_nara)
 
     # Makes a dataframe with the expected values.
@@ -97,9 +96,9 @@ def test_match_nara_risk_function():
              "https://www.nationalarchives.gov.uk/pronom/fmt/41", "Low Risk", "Retain", "File Extension"],
             [r"C:\Ext\Multi\img.jpg", "JPEG", "1", np.NaN, "JPEG unspecified version", "jpg|jpeg", np.NaN,
              "Low Risk", "Retain", "File Extension"],
-            [r"C:\Unmatched\file.new", "Brand New Format", np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+            [r"C:\Unmatched\file.new", "Brand New Format", np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, "No Match",
              np.NaN, "No NARA Match"],
-            [r"C:\Unmatched\file.none", "empty", np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+            [r"C:\Unmatched\file.none", "empty", np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, "No Match", np.NaN,
              "No NARA Match"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID",
                     "NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL", "NARA_Risk Level",
@@ -129,22 +128,12 @@ def test_match_technical_appraisal():
     column_names = ["FITS_File_Path", "FITS_Format_Name"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Reads the CSV with formats that indicate technical appraisal into the dataframe.
-    # In format_analysis.py, this is done a little earlier in the script.
+    # Reads the technical appraisal CSV into a dataframe.
+    # In format_analysis.py, this is done in the main body of the script before the function is called.
     df_ita = csv_to_dataframe(c.ITA)
 
-    # Adds the format technical appraisal category (defined in ITAfileformats.csv).
-    ta_list = df_ita["FITS_FORMAT"].tolist()
-    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
-                   "Technical_Appraisal"] = "Format"
-
-    # Adds the trash folder technical appraisal category.
-    # If something is both format and trash, Trash will overwrite Format.
-    df_results.loc[df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False),
-                   "Technical_Appraisal"] = "Trash"
-
-    # Adds default text for formats that aren't in either technical appraisal category.
-    df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
+    # Runs the function being tested.
+    df_results = match_technical_appraisal(df_results, df_ita)
 
     # Makes a dataframe with the expected values.
     rows = [[r"C:\CD1\Flower.JPG", "JPEG EXIF", "Not for TA"],
@@ -183,26 +172,12 @@ def test_match_other_risk():
     column_names = ["FITS_Format_Name", "NARA_Risk Level", "NARA_Proposed Preservation Plan"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Reads the CSV with formats that indicate other risk into the dataframe.
-    # In format_analysis.py, this is done a little earlier in the script.
-    df_risk = csv_to_dataframe(c.RISK)
+    # Reads the risk file formats CSV into a dataframe.
+    # In format_analysis.py, this is done in the main body of the script before the function is called.
+    df_other = csv_to_dataframe(c.RISK)
 
-    # Adds the NARA other risk category (defined in ITAfileformats.csv).
-    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") &
-                   (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")),
-                   "Other_Risk"] = "NARA Low/Transform"
-
-    # Adds the format risk categories (defined in Riskfileformats.csv).
-    # If something is both NARA and format, the format category will overwrite NARA.
-    risk_list = df_risk["FITS_FORMAT"].tolist()
-    indexes = df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)), case=False)].index
-    for index in indexes:
-        format_name = df_results.loc[index, "FITS_Format_Name"].lower()
-        risk_criteria = df_risk[df_risk["FITS_FORMAT"].str.lower() == format_name]["RISK_CRITERIA"].values[0]
-        df_results.loc[index, "Other_Risk"] = risk_criteria
-
-    # Adds default text for formats that aren't in either other risk category.
-    df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
+    # Runs the function being tested.
+    df_results = match_other_risk(df_results, df_other)
 
     # Makes a dataframe with the expected values.
     rows = [["Adobe Photoshop file", "Moderate Risk", "Transform to TIFF or JPEG2000", "Layered image file"],
