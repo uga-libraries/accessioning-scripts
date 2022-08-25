@@ -1,12 +1,13 @@
 """File Manifest and Deletion Log Generator
 
-This script generates a CSV manifest of all the digital files received in an accession. 
-It also identifies file paths that may break other scripts and saves those paths to a 
-separate log for review.
+This script generates a CSV manifest of all the digital files received in an accession,
+including the file name, relevant dates, and MD5 hash. It also identifies file paths 
+that may break other scripts and saves those paths to a separate log for review.
 
 Using the "compare" argument compares the initial manifest to the files left in the 
 accession after technical appraisal and generates an additional CSV log of any files 
-that were deleted in the process. 
+that were deleted in the process. The script can be run multiple times with this 
+argument and any additional deletions will be added to the existing log.
 
 This script requires an installation of 'pandas' in your Python environment.
 
@@ -68,6 +69,27 @@ def find_init_manifest(dirpath):
                 init_manifest = entry.path
                 return str(init_manifest)
 
+def find_deletion_log(dirpath):
+    """Scans a directory and identifies a CSV deletion log created by this script
+    
+    Parameters
+    -----------
+    dirpath : str
+        The file path of the directory to scan
+
+    Returns
+    -----------
+    string
+        The file path of the CSV deletion log in the directory
+    """
+
+    with os.scandir(dirpath) as d:
+        for entry in d:
+            fname = str(entry)
+            if 'deletionlog' in fname:
+                del_log = entry.path
+                return str(del_log)
+
 def get_file_info(entry):
     """Aggregates relevant attributes from the os.DirEntry object for a file and generates its MD5 hash
         Description of the chained stat() method: https://docs.python.org/3/library/os.html#os.DirEntry.stat
@@ -105,6 +127,8 @@ def get_file_info(entry):
     return data
 
 if __name__ == "__main__":
+
+    log_docs = ['deletionlog_', 'initialmanifest_', 'filestoreview_']
     
     # Check for a "compare" arugment provided by the user
     try:
@@ -114,6 +138,7 @@ if __name__ == "__main__":
             start_compare = None
             print(f'\nERROR: "{sys.argv[2]}" is an unrecognized argument\n\nScript usage: python /path/to/script /path/to/accession/directory [compare]')
             quit()
+
     except IndexError: 
         start_compare = None
     
@@ -139,10 +164,15 @@ if __name__ == "__main__":
             wr_initman.writerow(header)
             wr_revlog.writerow(header)
 
-            # Scan through the full directory tree and write the relevant file information to the log
+            # Scan through the full directory tree and write the relevant file information to the manifest
             for entry in scan_full_dir(dir_to_log):
                 data = get_file_info(entry)
-                wr_initman.writerow(data)
+
+                # Skip over log documents
+                if any(x in data[0] for x in log_docs):
+                    continue
+                else:
+                    wr_initman.writerow(data)
 
                 # Look at the file path and check for any problematic characters
                 filepath = data[0]
@@ -152,6 +182,7 @@ if __name__ == "__main__":
                 probchars = ['&', '$', '*', '?']
                 smartquotes = ['“', '”', '’']
 
+                # If the path contains any of these substrings, write the relevant file info to the review log and include the reason
                 if any (t in path for t in tempfiles):
                     data.append("Potential temp file")
                     wr_revlog.writerow(data)
@@ -167,35 +198,67 @@ if __name__ == "__main__":
                     data.append("Path exceeds 260 characters")
                     wr_revlog.writerow(data)
     
-    # If "compare" argument, locate the existing manifest and turn it into a pandas dataframe
+    # If there's a "compare" argument, scan the directory and put current file information into a new dataframe
     if start_compare == "compare":
+        new_df = pd.DataFrame(columns=header[:-1])
+        for entry in scan_full_dir(dir_to_log):
+            data = get_file_info(entry)
+
+            # Skip over log docs
+            if any(x in data[0] for x in log_docs):
+                    continue
+            else:
+                new_df.loc[len(new_df)] = data
+
         print('\nDeletion log will be saved to the accession folder. Working...')
+
+        # Find the initial file manifest and read it to a pandas dataframe
         man_df = pd.DataFrame(columns = header)
         man = find_init_manifest(dir_to_log)
         df = pd.read_csv(man)
         man_df = pd.concat([man_df, df], axis=0)
 
-        # Scan the directory and put current file information into a separate dataframe
-        new_df = pd.DataFrame(columns=header[:-1])
-        for entry in scan_full_dir(dir_to_log):
-            data = get_file_info(entry)
-            new_df.loc[len(new_df)] = data
-        
-        # Exclude any existing manifests or deletion logs
-        new_df[~new_df['File'].str.contains('deletionlog_|initialmanifest')]
-        
-        # Compare the two dataframes
+        # Concatenate the two dataframes and exclude logs
         deleted = pd.concat([man_df, new_df], ignore_index=True)
-
-        # Compare the file name and parent folder from the file paths in each dataframe to identify overlap
+        deleted[~deleted['File'].str.contains('|'.join(log_docs))]
+        
+        # Compare the file name and parent folder from the file paths in each dataframe to identify and drop any duplicates
         deleted['FName'] = deleted['File'].astype(str).str.split('\\', -2).str[-1].str.strip()
         deleted = deleted.drop_duplicates('FName', keep=False)
+
+        # Add a "Date Deleted" column with today's date
         deleted.drop(['DateModified'], axis=1, inplace=True)
         deleted.insert(3, 'DateDeleted', datetime.now().strftime("%Y-%m-%d"))
         deleted.drop(['FName'], axis=1, inplace=True)
+
+        # Check to see if a deletion log already exists
+        del_log = find_deletion_log(dir_to_log)
+        if del_log:
+            logfile = del_log.rsplit('\\', 1)[-1]
+            print(f'\nA file called "{logfile}" already exists in this location. If any additional deletions are found, they will be added to this file.')
+            del_df = pd.read_csv(del_log)
+
+            # Concatenate the two dataframes and exlude logs
+            new_deletions = pd.concat([deleted,del_df], ignore_index=True)
+            new_deletions[~new_deletions['File'].str.contains('|'.join(log_docs))]
+
+            # Compare the file name and parent folder from the file paths in each dataframe to identify and drop any duplicates
+            new_deletions['FName'] = new_deletions['File'].astype(str).str.split('\\', -2).str[-1].str.strip()
+            new_deletions = new_deletions.drop_duplicates('FName', keep=False)
+            new_deletions['DateDeleted'] = datetime.now().strftime("%Y-%m-%d")
+            new_deletions.drop(['FName'], axis=1, inplace=True)
+
+            # Append new deletion information to the existing CSV
+            new_deletions.to_csv(del_log, mode='a', header=False, index=False)
+
+            # Update CSV file name with today's date
+            split_fn = del_log.rsplit('_', 1)[0]
+            updated_fn = (f'{split_fn}_{date}.csv')
+            os.rename(del_log, updated_fn)
         
-        # Write the dataframe of deleted files to a new CSV
-        deleted.to_csv(f'{dir_to_log}\\deletionlog_{date}.csv', encoding="utf-8", index=False)
+        # If no existing deletion log, write the dataframe of deleted files to a new CSV
+        else:
+            deleted.to_csv(f'{dir_to_log}\\deletionlog_{date}.csv', encoding="utf-8", index=False)
 
     print(f'\nScript is finished running.')
                 
