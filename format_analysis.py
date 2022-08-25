@@ -143,7 +143,7 @@ else:
 
 # Removes duplicates in df_results from multiple NARA matches with the same risk and proposed preservation plan.
 # This information is saved in the accession's full risk data CSV if matches need to be checked.
-df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
+df_results.drop(["Index", "NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 df_results.drop_duplicates(inplace=True)
 
 # The next several code blocks make different subsets of the data based on different risk factors
