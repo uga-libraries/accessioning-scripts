@@ -329,6 +329,67 @@ def match_nara_risk(df_fits, df_nara):
     return df_matched
 
 
+def match_technical_appraisal(df_results, df_ita):
+    """Adds technical appraisal to the results dataframe, which will already have FITS and NARA information.
+    Technical appraisal candidates include formats specified in the ITA spreadsheet and files in trash folders.
+    Returns an updated results dataframe."""
+
+    # Makes a list of FITS formats that are typically deleted during technical appraisal.
+    ta_list = df_ita["FITS_FORMAT"].tolist()
+
+    # Makes a column Technical_Appraisal and puts the value "Format" in any row with a FITS_Format_Name
+    # that matches any formats in the ta_list. The match is case insensitive and will match partial strings.
+    # re.escape prevents errors from characters in the format name that have regex meanings.
+    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
+                   "Technical_Appraisal"] = "Format"
+
+    # Puts the value "Trash" in any row with a complete folder name of Trash, trash, Trashes, or trashes
+    # in the FITS file path. Including the \ before and after the search term ensures it matches a complete name.
+    # If the row already has "Format", it will be replaced with "Trash".
+    df_results.loc[df_results["FITS_File_Path"].str.contains("\\\\trash\\\\|\\\\trashes\\\\", case=False),
+                   "Technical_Appraisal"] = "Trash"
+
+    # Puts a default value in any row that is blank because it didn't match either type of technical appraisal.
+    df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
+
+    return df_results
+
+
+def match_other_risk(df_results, df_other):
+    """Adds other risks to the results dataframe, which will already have FITS, NARA, and technical
+    appraisal information. Other risk candidates include formats specified in the risk spreadsheet
+    and formats with NARA low risk but a preservation plan to transform. Returns an updated results dataframe."""
+
+    # Makes a column Other_Risk and puts the value "NARA Low/Transform" in any row with a NARA risk level of low
+    # and a NARA proposed preservation plan that starts with the word Transform.
+    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") &
+                   (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")),
+                   "Other_Risk"] = "NARA Low/Transform"
+
+    # Makes a list of FITS formats that typically indicate a risk.
+    risk_list = df_other["FITS_FORMAT"].tolist()
+
+    # Gets a list of the row index for any row where the FITS_Format_Name matches a format on the risk list.
+    # The match is case insensitive and will match partial strings.
+    # re.escape prevents errors from characters in the format name that have regex meanings.
+    indexes = df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)),
+                                                                         case=False)].index
+
+    # For each index in the list, gets the FITS format name for that row and looks it up in the risk spreadsheet.
+    # The match to the risk spreadsheet is case insensitive by converting values to lower case.
+    # Puts the risk criteria from the risk spreadsheet in the Other_Risk column.
+    # If the row already has "NARA Low/Transform", it will be replaced with the criteria.
+    for index in indexes:
+        format_name = df_results.loc[index, "FITS_Format_Name"].lower()
+        risk_criteria = df_other[df_other["FITS_FORMAT"].str.lower() == format_name]["RISK_CRITERIA"].values[0]
+        df_results.loc[index, "Other_Risk"] = risk_criteria
+
+    # Puts a default value in any row that is blank because it didn't match either type of other risk.
+    df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
+
+    return df_results
+
+
 def subtotal(df, criteria, totals):
     """Returns a dataframe with file and size subtotals based on the provided criteria.
     If no files meet the criteria, adds an explanatory message to the dataframe instead."""
