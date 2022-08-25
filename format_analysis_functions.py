@@ -360,24 +360,20 @@ def media_subtotal(df, accession_folder):
     size = round(df.groupby("Media")["FITS_Size_KB"].sum() / 1000, 3)
 
     # Calculates the number of files of each NARA risk level in each media folder.
-    high_risk = df[df["NARA_Risk Level"] == "High Risk"].groupby("Media")["FITS_File_Path"].count()
-    moderate_risk = df[df["NARA_Risk Level"] == "Moderate Risk"].groupby("Media")[
-        "FITS_File_Path"].count()
-    low_risk = df[df["NARA_Risk Level"] == "Low Risk"].groupby("Media")["FITS_File_Path"].count()
-    unknown_risk = df[df["NARA_Match_Type"] == "No NARA Match"].groupby("Media")[
-        "FITS_File_Path"].count()
+    high = df[df["NARA_Risk Level"] == "High Risk"].groupby("Media")["FITS_File_Path"].count()
+    moderate = df[df["NARA_Risk Level"] == "Moderate Risk"].groupby("Media")["FITS_File_Path"].count()
+    low = df[df["NARA_Risk Level"] == "Low Risk"].groupby("Media")["FITS_File_Path"].count()
+    unknown = df[df["NARA_Match_Type"] == "No NARA Match"].groupby("Media")["FITS_File_Path"].count()
 
     # Calculates the number of files for the other risk categories in each media folder.
     # Technical appraisal is by format and doesn't include files in trash folders.
     # Other risk is by format and doesn't include files with low NARA risk but a transformation recommendation.
-    technical_appraisal = df[df["Technical Appraisal_Format"] == True].groupby("Media")[
-        "FITS_File_Path"].count()
-    other = df[df["Other Risk Indicator"] == True].groupby("Media")["FITS_File_Path"].count()
+    technical_appraisal = df[df["Technical_Appraisal"] != "Not for TA"].groupby("Media")["FITS_File_Path"].count()
+    other = df[df["Other_Risk"] != "Not for Other"].groupby("Media")["FITS_File_Path"].count()
 
     # Combines all the data into a single dataframe, with labeled columns.
     # Fills any empty cells with a 0 to make blanks easier to read.
-    media = pd.concat([files, size, high_risk, moderate_risk, low_risk, unknown_risk, technical_appraisal, other],
-                      axis=1)
+    media = pd.concat([files, size, high, moderate, low, unknown, technical_appraisal, other], axis=1)
     media.columns = ["File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                      "NARA Low Risk (File Count)", "No NARA Match: Risk Unknown (File Count)",
                      "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]

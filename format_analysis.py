@@ -168,35 +168,31 @@ other_risk = df_results[df_results["Other_Risk"] != "Not for Other"].copy()
 other_risk.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Creating_Application", "FITS_Valid",
                  "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 
-# # Makes a subset of files that are duplicates based on MD5, keeping only a few of the columns.
-# # Removes multiple rows for the same file (based on filepath) caused by multiple format identifications
-# # or multiple matches to NARA.
-# df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
-# df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
-# df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
+df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
+df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
+df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
 
+# Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum()/1000}
 
-# # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
-# totals_dict = {"Files": len(df_results_dedup.index), "MB": df_results_dedup["FITS_Size_KB"].sum()/1000}
-#
-# # Calculates file and size subtotals based on different criteria.
-# format_subtotals = subtotal(df_results_dedup, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
-# nara_risk_subtotals = subtotal(df_results_dedup, ["NARA_Risk Level"], totals_dict)
-# technical_appraisal_subtotals = subtotal(tech_appraisal, ["Criteria", "FITS_Format_Name"], totals_dict)
-# other_risk_subtotals = subtotal(other_risk, ["Criteria", "FITS_Format_Name"], totals_dict)
-# media_subtotals = media_subtotal(df_results_dedup, accession_folder)
+# Calculates file and size subtotals based on different criteria.
+format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
+nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
+technical_appraisal_subtotals = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+other_risk_subtotals = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+media_subtotals = media_subtotal(df_results, accession_folder)
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
-#     format_subtotals.to_excel(result, sheet_name="Format Subtotals")
-#     nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
-#     technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
-#     other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
-#     media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
+    format_subtotals.to_excel(result, sheet_name="Format Subtotals")
+    nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
+    technical_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
+    other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
+    media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
     nara_at_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
     other_risk.to_excel(result, sheet_name="Other Risks", index=False)
     multiple_ids.to_excel(result, sheet_name="Multiple Formats", index=False)
-#     df_duplicates.to_excel(result, sheet_name="Duplicates", index=False)
+    df_duplicates.to_excel(result, sheet_name="Duplicates", index=False)
     validation_error.to_excel(result, sheet_name="Validation", index=False)
