@@ -345,15 +345,15 @@ def test_nara_risk_subtotal():
     """Tests the NARA risk subtotals, which is based on NARA_Risk Level."""
 
     # Makes a dataframe to use as input for the subtotal() function.
-    # Data variation: one format with a NARA risk level, multiple formats with a NARA risk level, blanks.
+    # Data variation: one format with a NARA risk level, multiple formats with a NARA risk level, all 4 risk levels.
     rows = [["DOS/Windows Executable", 1.23, "High Risk"],
             ["DOS/Windows Executable", 2.34, "High Risk"],
             ["DOS/Windows Executable", 3.45, "High Risk"],
             ["JPEG EXIF", 13.563, "Low Risk"],
             ["JPEG EXIF", 14.1, "Low Risk"],
             ["Open Office XML Workbook", 19.316, "Low Risk"],
-            ["Unknown Binary", 0, np.NaN],
-            ["Unknown Binary", 5, np.NaN],
+            ["Unknown Binary", 0, "No Match"],
+            ["Unknown Binary", 5, "No Match"],
             ["XLSX", 19.316, "Low Risk"],
             ["Zip Format", 2.792, "Moderate Risk"]]
     column_names = ["FITS_Format_Name", "FITS_Size_KB", "NARA_Risk Level"]
@@ -372,7 +372,7 @@ def test_nara_risk_subtotal():
     rows = [["Low Risk", 4, 40, 0.066, 81.374],
             ["Moderate Risk", 1, 10, 0.003, 3.699],
             ["High Risk", 3, 30, 0.007, 8.631],
-            [np.NaN, 2, 20, 0.005, 6.165]]
+            ["No Match", 2, 20, 0.005, 6.165]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_expected = pd.DataFrame(rows, columns=column_names)
 
