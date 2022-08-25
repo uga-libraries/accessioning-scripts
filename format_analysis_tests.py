@@ -423,17 +423,17 @@ def test_other_risk_subtotal():
 
     # Makes a dataframe to use as input for the subtotal() function.
     # Data variation: for each of the values for other risk, has unique formats and duplicated formats.
-    rows = [[False, "DOS/Windows Executable", 100.23],
-            [False, "JPEG EXIF", 1300.563],
-            [False, "JPEG EXIF", 1400.1],
-            [False, "JPEG EXIF", 1900.316],
-            [False, "PE32 Executable", 200.34],
-            [True, "Cascading Style Sheet", 10000],
-            [True, "Zip Format", 20000],
-            [True, "Zip Format", 20000],
-            [True, "Zip Format", 30000],
-            [True, "Zip Format", 30000]]
-    column_names = ["Criteria", "FITS_Format_Name", "FITS_Size_KB"]
+    rows = [["Not for Other", "DOS/Windows Executable", 100.23],
+            ["Not for Other", "JPEG EXIF", 1300.563],
+            ["Not for Other", "JPEG EXIF", 1400.1],
+            ["Not for Other", "JPEG EXIF", 1900.316],
+            ["Not for Other", "PE32 Executable", 200.34],
+            ["Possible saved web page", "Cascading Style Sheet", 10000],
+            ["Archive format", "Zip Format", 20000],
+            ["Archive format", "Zip Format", 20000],
+            ["Archive format", "Zip Format", 30000],
+            ["Archive format", "Zip Format", 30000]]
+    column_names = ["Other_Risk", "FITS_Format_Name", "FITS_Size_KB"]
     df = pd.DataFrame(rows, columns=column_names)
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
@@ -441,17 +441,17 @@ def test_other_risk_subtotal():
     totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["Criteria", "FITS_Format_Name"], totals_dict)
+    df_subtotals = subtotal(df, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
     # so that they are visible in the comparison dataframe to label errors.
-    rows = [[False, "DOS/Windows Executable", 1, 10, 0.1, 0.087],
-            [False, "JPEG EXIF", 3, 30, 4.601, 4.004],
-            [False, "PE32 Executable", 1, 10, 0.2, 0.174],
-            [True, "Cascading Style Sheet", 1, 10, 10, 8.703],
-            [True, "ZIP Format", 4, 40, 100, 87.031]]
-    column_names = ["Criteria", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
+    rows = [["Not for Other", "DOS/Windows Executable", 1, 10, 0.1, 0.087],
+            ["Not for Other", "JPEG EXIF", 3, 30, 4.601, 4.004],
+            ["Not for Other", "PE32 Executable", 1, 10, 0.2, 0.174],
+            ["Possible saved web page", "Cascading Style Sheet", 1, 10, 10, 8.703],
+            ["Archive format", "ZIP Format", 4, 40, 100, 87.031]]
+    column_names = ["Other_Risk", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
