@@ -120,6 +120,12 @@ df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy(
 df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
 df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
 
+# Adds default text to any subset dataframe if there were no files of this type and the dataframe is empty.
+# The first column has the message and the rest are filled with blank. The list must have a value for every column.
+for df in (df_nara_risk, df_multiple, df_validation, df_tech_appraisal, df_other_risk, df_duplicates):
+    if len(df) == 0:
+        df.loc[len(df)] = ["No data of this type"] + [np.NaN] * (len(df.columns) - 1)
+
 # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
 totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum()/1000}
 
