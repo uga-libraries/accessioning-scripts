@@ -420,7 +420,7 @@ def test_technical_appraisal_subtotal():
 
 def test_technical_appraisal_subtotal_empty():
     """Tests the technical appraisal subtotals when there are no files in the input
-    which meet technical appraisal criteria."""
+    which meet any technical appraisal criteria."""
 
     # Makes an empty dataframe to use as input for the subtotal() function.
     df = pd.DataFrame(columns=["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"])
@@ -433,7 +433,12 @@ def test_technical_appraisal_subtotal_empty():
     df_subtotals = subtotal(df, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
-    # TODO: not sure what these are, if anything.
+    rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
+    column_names = ["File Count", "File %", "Size (MB)", "Size %"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Tech_Appraisal_Subtotals_Empty", df_subtotals, df_expected)
 
 
 def test_other_risk_subtotal():
@@ -476,6 +481,28 @@ def test_other_risk_subtotal():
     compare_dataframes("Other_Risk_Subtotals", df_subtotals, df_expected)
 
 
+def test_other_risk_subtotal_empty():
+    """Tests the other risk subtotals when there are no files in the input which meet any other risk criteria."""
+
+    # Makes an empty dataframe to use as input for the subtotal() function.
+    df = pd.DataFrame(columns=["Other_Risk", "FITS_Format_Name", "FITS_Size_KB"])
+
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
+    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+
+    # Runs the subtotal() function for this subtotal.
+    df_subtotals = subtotal(df, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+
+    # Makes a dataframe with the expected values.
+    rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
+    column_names = ["File Count", "File %", "Size (MB)", "Size %"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Other_Risk_Subtotals_Empty", df_subtotals, df_expected)
+
+
 # Makes the output directory (the only script argument) the current directory for easier saving.
 # If the argument is missing or not a valid directory, ends the script.
 try:
@@ -499,5 +526,6 @@ test_nara_risk_subtotal()
 test_technical_appraisal_subtotal()
 test_technical_appraisal_subtotal_empty()
 test_other_risk_subtotal()
+test_other_risk_subtotal_empty()
 
 print("\nThe script is complete.")

@@ -436,10 +436,15 @@ def subtotal(df, criteria, totals):
     size_percent = round((size / totals["MB"]) * 100, 3)
 
     # Combines the subtotals to a single dataframe and labels the columns.
-    subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
-    subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
+    df_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
+    df_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
-    return subtotals
+    # Adds default text if there were no files of this type and the dataframe is empty.
+    # This shows it wasn't an error and prevents an error from trying to save an empty dataframe to Excel.
+    if len(df_subtotals) == 0:
+        df_subtotals.loc[len(df_subtotals)] = ["No data of this type", np.NaN, np.NaN, np.NaN]
+
+    return df_subtotals
 
 
 def media_subtotal(df, accession_folder):
@@ -462,8 +467,6 @@ def media_subtotal(df, accession_folder):
     unknown = df[df["NARA_Match_Type"] == "No NARA Match"].groupby("Media")["FITS_File_Path"].count()
 
     # Calculates the number of files for the other risk categories in each media folder.
-    # Technical appraisal is by format and doesn't include files in trash folders.
-    # Other risk is by format and doesn't include files with low NARA risk but a transformation recommendation.
     technical_appraisal = df[df["Technical_Appraisal"] != "Not for TA"].groupby("Media")["FITS_File_Path"].count()
     other = df[df["Other_Risk"] != "Not for Other"].groupby("Media")["FITS_File_Path"].count()
 
