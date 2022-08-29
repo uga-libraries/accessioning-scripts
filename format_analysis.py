@@ -59,7 +59,9 @@ collection_folder, accession_number = os.path.split(accession_folder)
 # Otherwise, runs FITS to generate the format identification information.
 fits_output = f"{collection_folder}/{accession_number}_FITS"
 if os.path.exists(fits_output):
-    print("\nUpdating the report using existing FITS format identification information.")
+    print("\nUpdating the XML files in the FITS folder to match files in the accession folder.")
+    print("This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.")
+    print("Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.")
     update_fits(accession_folder, fits_output, collection_folder, accession_number)
 else:
     print("\nGenerating new FITS format identification information.")
