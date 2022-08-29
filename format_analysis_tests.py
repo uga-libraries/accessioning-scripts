@@ -30,8 +30,30 @@ def compare_dataframes(test_name, df_actual, df_expected):
         df_comparison.to_csv(f"{test_name}_comparison_results.csv", index=False)
 
 
-def test_argument_tbd():
+def test_argument():
     """Tests error handling for a missing or incorrect script argument."""
+
+    # Calculates the path to the format_analysis.py script. sys.argv[0] is the path for format_analysis_tests.py.
+    script_path = sys.argv[0].replace("format_analysis_tests.py", "format_analysis.py")
+
+    # Runs the script without an argument and verifies the correct error message would printed.
+    no_argument = subprocess.run(f"python {script_path}", shell=True, stdout=subprocess.PIPE)
+    error_msg = b'\r\nThe required script argument (accession_folder) is missing.\r\nPlease run the script again.' \
+                b'\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n'
+    if no_argument.stdout == error_msg:
+        print("Test passes: Running script with no argument")
+    else:
+        print("Test fails:  Running script with no argument")
+
+    # Runs the script with an argument that isn't a valid path and verifies the correct error message would print.
+    wrong_argument = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
+    error_msg = b"\r\nThe provided accession folder 'C:/User/Wrong/Path' is not a valid directory." \
+                b"\r\nPlease run the script again." \
+                b"\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
+    if wrong_argument.stdout == error_msg:
+        print("Test passes: Running script with invalid path")
+    else:
+        print("Test fails:  Running script with invalid path")
 
 
 def test_check_configuration_function_tbd():
@@ -776,6 +798,7 @@ except (IndexError, FileNotFoundError):
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
+test_argument()
 
 test_update_fits_function()
 test_match_nara_risk_function()
