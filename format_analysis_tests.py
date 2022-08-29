@@ -30,6 +30,10 @@ def compare_dataframes(test_name, df_actual, df_expected):
         df_comparison.to_csv(f"{test_name}_comparison_results.csv", index=False)
 
 
+def test_argument_tbd():
+    """Tests error handling for a missing or incorrect script argument."""
+
+
 def test_check_configuration_function_tbd():
     """Tests error handling from missing configuration file, missing variables and variables with invalid paths."""
 
@@ -217,6 +221,14 @@ def test_match_other_risk_function():
 
 def test_media_subtotal_function_tbd():
     """Tests variations in subtotals."""
+
+
+def test_deduplicate_results_tbd():
+    """Tests that duplicates from multiple NARA matches with the same risk information are correctly removed."""
+
+    # Code to test:
+    # df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
+    # df_results.drop_duplicates(inplace=True)
 
 
 def test_nara_risk_subset():
@@ -661,6 +673,12 @@ def test_other_risk_subtotal_empty():
 
     # Compares the script output to the expected values.
     compare_dataframes("Other_Risk_Subtotals_Empty", df_subtotals, df_expected)
+
+
+def test_iteration_tbd():
+    """Tests that the script follows the correct logic based on the contents of the accession folder and
+    that the contents are updated correctly. Runs the script 3 times to check all iterations.
+    This may be enough for testing script output or may make a separate test."""
 
 
 # Makes the output directory (the only script argument) the current directory for easier saving.
