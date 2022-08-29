@@ -453,6 +453,7 @@ def media_subtotal(df, accession_folder):
     Returns a dataframe."""
 
     # Calculates the media folder names.
+    # If a file is not in a folder, it will have a value of NaN and be skipped when groups are calculated.
     df["Media"] = df["FITS_File_Path"].str.extract(fr'{re.escape(accession_folder)}\\(.*?)\\')
 
     # Calculates the total files and MB in each media folder.
@@ -464,10 +465,13 @@ def media_subtotal(df, accession_folder):
     high = df[df["NARA_Risk Level"] == "High Risk"].groupby("Media")["FITS_File_Path"].count()
     moderate = df[df["NARA_Risk Level"] == "Moderate Risk"].groupby("Media")["FITS_File_Path"].count()
     low = df[df["NARA_Risk Level"] == "Low Risk"].groupby("Media")["FITS_File_Path"].count()
-    unknown = df[df["NARA_Match_Type"] == "No NARA Match"].groupby("Media")["FITS_File_Path"].count()
+    unknown = df[df["NARA_Risk Level"] == "No Match"].groupby("Media")["FITS_File_Path"].count()
 
-    # Calculates the number of files for the other risk categories in each media folder.
-    technical_appraisal = df[df["Technical_Appraisal"] != "Not for TA"].groupby("Media")["FITS_File_Path"].count()
+    # Calculates the number of files with formats that indicate technical appraisal in each media folder.
+    # Does not include files in trash folders, which are always deleted.
+    technical_appraisal = df[df["Technical_Appraisal"] == "Format"].groupby("Media")["FITS_File_Path"].count()
+
+    # Calculates the number of files in the other risk categories in each media folder.
     other = df[df["Other_Risk"] != "Not for Other"].groupby("Media")["FITS_File_Path"].count()
 
     # Combines all the data into a single dataframe, with labeled columns.
