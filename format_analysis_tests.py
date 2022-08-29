@@ -30,6 +30,26 @@ def compare_dataframes(test_name, df_actual, df_expected):
         df_comparison.to_csv(f"{test_name}_comparison_results.csv", index=False)
 
 
+def test_check_configuration_function_tbd():
+    """Tests error handling from missing configuration file, missing variables and variables with invalid paths."""
+
+
+def test_csv_to_dataframe_function_tbd():
+    """Tests error handling for encoding errors and adding prefixes to FITS and NARA dataframes."""
+
+
+def test_update_fits_function_tbd():
+    """Tests removing FITS for deleted files and adding FITs for new files."""
+
+
+def test_fits_row_function_tbd():
+    """Tests all variations for FITS data extraction and reformatting."""
+
+
+def test_make_fits_csv_function_tbd():
+    """Tests encoding error handling and saving files with one and multiple FITS format ids to the CSV."""
+
+
 def test_match_nara_risk_function():
     """Tests combining NARA risk information with FITS information to produce df_results."""
 
@@ -108,7 +128,7 @@ def test_match_nara_risk_function():
     compare_dataframes("Match_NARA", df_results, df_expected)
 
 
-def test_match_technical_appraisal():
+def test_match_technical_appraisal_function():
     """Tests adding technical appraisal categories to df_results,
     which will already have information from FITS and NARA.
     In format_analysis.py, this is done in the main body of the script."""
@@ -150,7 +170,7 @@ def test_match_technical_appraisal():
     compare_dataframes("Match_TA", df_results, df_expected)
 
 
-def test_match_other_risk():
+def test_match_other_risk_function():
     """Tests adding other risk categories to df_results,
     which will already have information from FITS, NARA, and technical appraisal.
     In format_analysis.py, this is done in the main body of the script."""
@@ -193,6 +213,10 @@ def test_match_other_risk():
 
     # Compares the script output to the expected values.
     compare_dataframes("Match_Other", df_results, df_expected)
+
+
+def test_media_subtotal_function_tbd():
+    """Tests variations in subtotals."""
 
 
 def test_nara_risk_subset():
@@ -727,8 +751,8 @@ except (IndexError, FileNotFoundError):
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
 
 test_match_nara_risk_function()
-test_match_technical_appraisal()
-test_match_other_risk()
+test_match_technical_appraisal_function()
+test_match_other_risk_function()
 
 test_nara_risk_subset()
 test_multiple_subset()
