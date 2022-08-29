@@ -130,10 +130,13 @@ for df in (df_nara_risk, df_multiple, df_validation, df_tech_appraisal, df_other
 totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum()/1000}
 
 # Calculates file and size subtotals based on different criteria.
+# The input df for tech appraisal and other risk are filtered to exclude files which don't have that risk.
 df_format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
 df_nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
-df_tech_appraisal_subtotals = subtotal(df_tech_appraisal, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
-df_other_risk_subtotals = subtotal(df_other_risk, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+df_tech_appraisal_subtotals = subtotal(df_results[df_results["Technical_Appraisal"] != "Not for TA"],
+                                       ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+df_other_risk_subtotals = subtotal(df_results[df_results["Other_Risk"] != "Not for Other"],
+                                   ["Other_Risk", "FITS_Format_Name"], totals_dict)
 df_media_subtotals = media_subtotal(df_results, accession_folder)
 
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
