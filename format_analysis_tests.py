@@ -42,8 +42,46 @@ def test_csv_to_dataframe_function_tbd():
     """Tests error handling for encoding errors and adding prefixes to FITS and NARA dataframes."""
 
 
-def test_update_fits_function_tbd():
+def test_update_fits_function():
     """Tests removing FITS for deleted files and adding FITs for new files."""
+
+    # Makes an accession folder with test files to use for testing.
+    accession_folder = fr"{output}\accession"
+    os.makedirs(fr"{accession_folder}\folder")
+    paths = ["file.txt", "delete_one.txt", r"folder\delete_one.txt", r"folder\delete_too.txt",
+             r"folder\file.txt", r"folder\spare.txt"]
+    for file_path in paths:
+        with open(fr"accession\{file_path}", "w") as file:
+            file.write("Text")
+
+    # Makes FITS XML for those files to use for testing.
+    # In format_analysis.py, this is done in the main body of the script.
+    fits_output = fr"{output}\accession_fits"
+    os.mkdir(fits_output)
+    subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
+
+    # Deletes 2 files and adds 1 file to the accession folder.
+    os.remove(r"accession\delete_one.txt")
+    os.remove(r"accession\folder\delete_too.txt")
+    with open(r"accession\new_file.txt", "w") as file:
+        file.write("Text")
+
+    # Runs the function to update FITs files.
+    update_fits(accession_folder, fits_output, output, "accession")
+
+    # Makes a dataframe with the files which should be in the FITs folder.
+    expected = ["delete_one.txt-1.fits.xml", "file.txt.fits.xml", "file.txt-1.fits.xml", "new_file.txt.fits.xml",
+                "spare.txt.fits.xml"]
+    df_expected = pd.DataFrame(expected, columns=["Files"])
+
+    # Makes a dataframe with the files that are in the FITS folder.
+    fits_files = []
+    for root, dir, files in os.walk("accession_fits"):
+        fits_files.extend(files)
+    df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
+
+    # Compares the contents of the FITS folder to the expected values.
+    compare_dataframes("Update_FITS", df_fits_files, df_expected)
 
 
 def test_fits_row_function_tbd():
@@ -739,24 +777,25 @@ except (IndexError, FileNotFoundError):
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
 
-# test_match_nara_risk_function()
-# test_match_technical_appraisal_function()
-# test_match_other_risk_function()
+test_update_fits_function()
+test_match_nara_risk_function()
+test_match_technical_appraisal_function()
+test_match_other_risk_function()
 test_media_subtotal_function()
-#
-# test_nara_risk_subset()
-# test_multiple_subset()
-# test_validation_subset()
-# test_tech_appraisal_subset()
-# test_other_risk_subset()
-# test_duplicates_subset()
-# test_empty_subset()
-#
-# test_format_subtotal()
-# test_nara_risk_subtotal()
-# test_technical_appraisal_subtotal()
-# test_technical_appraisal_subtotal_empty()
-# test_other_risk_subtotal()
-# test_other_risk_subtotal_empty()
+
+test_nara_risk_subset()
+test_multiple_subset()
+test_validation_subset()
+test_tech_appraisal_subset()
+test_other_risk_subset()
+test_duplicates_subset()
+test_empty_subset()
+
+test_format_subtotal()
+test_nara_risk_subtotal()
+test_technical_appraisal_subtotal()
+test_technical_appraisal_subtotal_empty()
+test_other_risk_subtotal()
+test_other_risk_subtotal_empty()
 
 print("\nThe script is complete.")
