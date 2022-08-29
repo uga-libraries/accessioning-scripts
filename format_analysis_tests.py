@@ -462,80 +462,6 @@ def test_empty_subset():
     compare_dataframes("Empty_Duplicate_Subset", df_duplicates, df_duplicates_expected)
 
 
-def test_subtotal_function_one():
-    """Tests the subtotal function based on one column."""
-
-    # Makes a dataframe to use for input.
-    # Data variation: unique rows, rows that will be added together for subtotals.
-    rows = [["JPEG EXIF", 13.563, False, "Low Risk"],
-            ["JPEG EXIF", 14.1, False, "Low Risk"],
-            ["Open Office XML Workbook", 19.316, True, "Low Risk"],
-            ["Unknown Binary", 0, False, np.NaN],
-            ["Unknown Binary", 1, False, np.NaN],
-            ["Unknown Binary", 5, False, np.NaN],
-            ["XLSX", 19.316, True, "Low Risk"],
-            ["Zip Format", 2.792, False, "Moderate Risk"]]
-    column_names = ["FITS_Format_Name", "FITS_Size_KB", "Multiple_IDs", "NARA_Risk Level"]
-    df = pd.DataFrame(rows, columns=column_names)
-
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
-    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
-
-    # Runs the subtotal() function.
-    df_subtotal = subtotal(df, ["NARA_Risk Level"], totals_dict)
-
-    # Makes a dataframe with the expected values for each input scenario.
-    # The index value for the dataframe made by subtotal() is a column value here
-    # so that it is visible in the comparison dataframe to label errors.
-    rows = [["Low Risk", 4, 50, 0.066, 87.898],
-            ["Moderate Risk", 1, 12.5, .003, 3.995],
-            [np.NaN, 3, 37.5, 0.006, 7.991]]
-    column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
-    df_expected = pd.DataFrame(rows, columns=column_names)
-
-    # Compares the script output to the expected values.
-    compare_dataframes("Subtotal_Function_One_Criteria", df_subtotal, df_expected)
-
-
-def test_subtotal_function_two():
-    """Tests the subtotal function based on two columns."""
-
-    # Makes a dataframe to use for input.
-    # Data variation: unique rows, rows that will be added together for subtotals.
-    rows = [["JPEG EXIF", 13.563, False, "Low Risk"],
-            ["JPEG EXIF", 14.1, False, "Low Risk"],
-            ["Open Office XML Workbook", 19.316, True, "Low Risk"],
-            ["Unknown Binary", 0, False, np.NaN],
-            ["Unknown Binary", 1, False, np.NaN],
-            ["Unknown Binary", 5, False, np.NaN],
-            ["XLSX", 19.316, True, "Low Risk"],
-            ["Zip Format", 2.792, False, "Moderate Risk"]]
-    column_names = ["FITS_Format_Name", "FITS_Size_KB", "Multiple_IDs", "NARA_Risk Level"]
-    df = pd.DataFrame(rows, columns=column_names)
-
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
-    # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
-
-    # Runs the subtotal() function.
-    df_subtotal = subtotal(df, ["Multiple_IDs", "FITS_Format_Name"], totals_dict)
-
-    # Makes a dataframe with the expected values.
-    # The index values for the dataframe made by subtotal() are column values here
-    # so that they are visible in the comparison dataframe to label errors.
-    rows = [[False, "JPEG EXIF", 2, 25, 0.028, 37.29],
-            [False, "Unknown Binary", 3, 37.5, 0.006, 7.991],
-            [False, "Zip Format", 1, 12.5, 0.003, 3.995],
-            [True, "Open Office XML Workbook", 1, 12.5, 0.019, 25.304],
-            [True, "XLSX", 1, 12.5, 0.019, 25.304]]
-    column_names = ["Multiple_IDs", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
-    df_expected = pd.DataFrame(rows, columns=column_names)
-
-    # Compares the script output to the expected values.
-    compare_dataframes("Subtotal_Function_Two_Criteria", df_subtotal, df_expected)
-
-
 def test_format_subtotal():
     """Tests the format subtotals, which is based on FITS_Format_Name and NARA_Risk Level."""
 
@@ -762,8 +688,6 @@ test_other_risk_subset()
 test_duplicates_subset()
 test_empty_subset()
 
-test_subtotal_function_one()
-test_subtotal_function_two()
 test_format_subtotal()
 test_nara_risk_subtotal()
 test_technical_appraisal_subtotal()
