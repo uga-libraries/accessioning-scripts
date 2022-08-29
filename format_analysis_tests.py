@@ -489,14 +489,14 @@ def test_format_subtotal():
             ["XLSX", 19.316, "Low Risk"],
             ["Zip Format", 2.792, "Moderate Risk"]]
     column_names = ["FITS_Format_Name", "FITS_Size_KB", "NARA_Risk Level"]
-    df = pd.DataFrame(rows, columns=column_names)
+    df_results = pd.DataFrame(rows, columns=column_names)
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+    totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
+    df_format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframe made by subtotal() are column values here
@@ -510,7 +510,7 @@ def test_format_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Format_Subtotals", df_subtotals, df_expected)
+    compare_dataframes("Format_Subtotals", df_format_subtotals, df_expected)
 
 
 def test_nara_risk_subtotal():
@@ -529,14 +529,14 @@ def test_nara_risk_subtotal():
             ["XLSX", 19.316, "Low Risk"],
             ["Zip Format", 2.792, "Moderate Risk"]]
     column_names = ["FITS_Format_Name", "FITS_Size_KB", "NARA_Risk Level"]
-    df = pd.DataFrame(rows, columns=column_names)
+    df_results = pd.DataFrame(rows, columns=column_names)
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+    totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["NARA_Risk Level"], totals_dict)
+    df_nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index value for the dataframe made by subtotal() is a column value here
@@ -549,7 +549,7 @@ def test_nara_risk_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("NARA_Risk_Subtotals", df_subtotals, df_expected)
+    compare_dataframes("NARA_Risk_Subtotals", df_nara_risk_subtotals, df_expected)
 
 
 def test_technical_appraisal_subtotal():
@@ -566,14 +566,14 @@ def test_technical_appraisal_subtotal():
             ["Trash", "JPEG EXIF", 140.1],
             ["Trash", "Open Office XML Workbook", 190.316]]
     column_names = ["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"]
-    df = pd.DataFrame(rows, columns=column_names)
+    df_results = pd.DataFrame(rows, columns=column_names)
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+    totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+    df_tech_appraisal_subtotals = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
@@ -587,7 +587,7 @@ def test_technical_appraisal_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Tech_Appraisal_Subtotals", df_subtotals, df_expected)
+    compare_dataframes("Tech_Appraisal_Subtotals", df_tech_appraisal_subtotals, df_expected)
 
 
 def test_technical_appraisal_subtotal_empty():
@@ -595,14 +595,14 @@ def test_technical_appraisal_subtotal_empty():
     which meet any technical appraisal criteria."""
 
     # Makes an empty dataframe to use as input for the subtotal() function.
-    df = pd.DataFrame(columns=["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"])
+    df_results = pd.DataFrame(columns=["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"])
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+    totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+    df_tech_appraisal_subtotals = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
@@ -610,7 +610,7 @@ def test_technical_appraisal_subtotal_empty():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Tech_Appraisal_Subtotals_Empty", df_subtotals, df_expected)
+    compare_dataframes("Tech_Appraisal_Subtotals_Empty", df_tech_appraisal_subtotals, df_expected)
 
 
 def test_other_risk_subtotal():
@@ -629,14 +629,14 @@ def test_other_risk_subtotal():
             ["Archive format", "Zip Format", 30000],
             ["Archive format", "Zip Format", 30000]]
     column_names = ["Other_Risk", "FITS_Format_Name", "FITS_Size_KB"]
-    df = pd.DataFrame(rows, columns=column_names)
+    df_results = pd.DataFrame(rows, columns=column_names)
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+    totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+    df_other_risk_subtotals = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
@@ -650,21 +650,21 @@ def test_other_risk_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Other_Risk_Subtotals", df_subtotals, df_expected)
+    compare_dataframes("Other_Risk_Subtotals", df_other_risk_subtotals, df_expected)
 
 
 def test_other_risk_subtotal_empty():
     """Tests the other risk subtotals when there are no files in the input which meet any other risk criteria."""
 
     # Makes an empty dataframe to use as input for the subtotal() function.
-    df = pd.DataFrame(columns=["Other_Risk", "FITS_Format_Name", "FITS_Size_KB"])
+    df_results = pd.DataFrame(columns=["Other_Risk", "FITS_Format_Name", "FITS_Size_KB"])
 
     # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
-    totals_dict = {"Files": len(df.index), "MB": df["FITS_Size_KB"].sum() / 1000}
+    totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_subtotals = subtotal(df, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+    df_other_risk_subtotals = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
@@ -672,7 +672,7 @@ def test_other_risk_subtotal_empty():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Other_Risk_Subtotals_Empty", df_subtotals, df_expected)
+    compare_dataframes("Other_Risk_Subtotals_Empty", df_other_risk_subtotals, df_expected)
 
 
 def test_iteration_tbd():
