@@ -12,6 +12,7 @@ Script usage: python path/format_analysis.py accession_folder
 The accession_folder is the path to the folder with files to be analyzed.
 Script output is saved in the parent folder of the accession folder.
 """
+import sys
 
 from format_analysis_functions import *
 
@@ -66,7 +67,12 @@ if os.path.exists(fits_output):
 else:
     print("\nGenerating new FITS format identification information.")
     os.mkdir(fits_output)
-    subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
+    fits_status = subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"',
+                                 shell=True, stderr=subprocess.PIPE)
+    if fits_status.stderr == b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n':
+        print("Unable to generate FITS XML for this accession because FITS is in a different directory from the accession.")
+        print("Copy the FITS folder to the same letter directory as the accession files and run the script again.")
+        sys.exit()
 
 # Combines the FITS data into a CSV. If one is already present, will replace it.
 make_fits_csv(fits_output, accession_folder, collection_folder, accession_number)
