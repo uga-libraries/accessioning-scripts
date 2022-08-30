@@ -7,6 +7,7 @@ For any tests that do not import the function from format_analysis.py, sync the 
 If the input for any function or analysis changes, edit the test input and expected results."""
 
 # usage: python path/format_analysis_tests.py output_folder
+import os.path
 
 from format_analysis_functions import *
 
@@ -30,20 +31,20 @@ def compare_dataframes(test_name, df_actual, df_expected):
         df_comparison.to_csv(f"{test_name}_comparison_results.csv", index=False)
 
 
-def test_argument():
+def test_argument(repo_path):
     """Tests error handling for a missing or incorrect script argument."""
 
-    # Calculates the path to the format_analysis.py script. sys.argv[0] is the path for format_analysis_tests.py.
-    script_path = sys.argv[0].replace("format_analysis_tests.py", "format_analysis.py")
+    # Calculates the path to the format_analysis.py script.
+    script_path = os.path.join(repo_path, "format_analysis.py")
 
     # Runs the script without an argument and verifies the correct error message would printed.
     no_argument = subprocess.run(f"python {script_path}", shell=True, stdout=subprocess.PIPE)
     error_msg = b'\r\nThe required script argument (accession_folder) is missing.\r\nPlease run the script again.' \
                 b'\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n'
     if no_argument.stdout == error_msg:
-        print("Test passes: Running script with no argument")
+        print("Test passes: Error handling for running script with no argument")
     else:
-        print("Test fails:  Running script with no argument")
+        print("Test fails:  Error handling for running script with no argument")
 
     # Runs the script with an argument that isn't a valid path and verifies the correct error message would print.
     wrong_argument = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
@@ -51,13 +52,68 @@ def test_argument():
                 b"\r\nPlease run the script again." \
                 b"\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
     if wrong_argument.stdout == error_msg:
-        print("Test passes: Running script with invalid path")
+        print("Test passes: Error handling for running script with invalid path")
     else:
-        print("Test fails:  Running script with invalid path")
+        print("Test fails:  Error handling for running script with invalid path")
 
 
-def test_check_configuration_function_tbd():
+def test_check_configuration_function(repo_path):
     """Tests error handling from missing configuration file, missing variables and variables with invalid paths."""
+
+    # Renames the current configuration file so errors can be generated without losing the correct file.
+    os.rename(f"{repo_path}/configuration.py", f"{repo_path}/configuration_original.py")
+
+    # Runs the script with no configuration.py present, since it was just renamed.
+    no_config = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
+    error_msg = b'\r\nCould not run the script. Missing the required configuration.py file.' \
+                b'\r\nMake a configuration.py file using configuration_template.py and save it to the folder with the script.\r\n'
+    if no_config.stdout == error_msg:
+        print("Test passes: Error handling for running script with no configuration.py")
+    else:
+        print("Test fails:  Error handling for running script with no configuration.py")
+
+    # Makes a configuration file without any of the required variables to use for testing.
+    # Verifies that the check_configuration() function returns the expected error messages.
+    # Deletes the file after the test is complete.
+    with open(f"{repo_path}/configuration.py", "w") as config:
+        config.write('# Constants used for other scripts\nvariable = "value"\n')
+    no_var = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
+    error_msg = b'\r\nProblems detected with configuration.py:\r\n' \
+                b'   * FITS variable is missing from the configuration file.\r\n' \
+                b'   * ITA variable is missing from the configuration file.\r\n' \
+                b'   * RISK variable is missing from the configuration file.\r\n' \
+                b'   * NARA variable is missing from the configuration file.\r\n\r\n' \
+                b'Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n'
+    if no_var.stdout == error_msg:
+        print("Test passes: Error handling for configuration.py missing all variables")
+    else:
+        print("Test fails:  Error handling for configuration.py missing all variables")
+    os.remove(f"{repo_path}/configuration.py")
+
+    # Makes a configuration file with the required variables but all are incorrect file paths to use for testing.
+    # Verifies that the check_configuration() function returns the expected error messages.
+    # Deletes the file after the test is complete.
+    with open(f"{repo_path}/configuration.py", "w") as config:
+        config.write('# Constants used for other scripts\n')
+        config.write('FITS = "C:/Users/Error/fits.bat"\n')
+        config.write('ITA = "C:/Users/Error/ITAfileformats.csv"\n')
+        config.write('RISK = "C:/Users/Error/Riskfileformats.csv"\n')
+        config.write('NARA = "C:/Users/Error/NARA.csv"\n')
+    path_err = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
+    error_msg = b"\r\nProblems detected with configuration.py:\r\n" \
+                b"   * FITS path 'C:/Users/Error/fits.bat' is not correct.\r\n" \
+                b"   * ITAfileformats.csv path 'C:/Users/Error/ITAfileformats.csv' is not correct.\r\n" \
+                b"   * Riskfileformats.csv path 'C:/Users/Error/Riskfileformats.csv' is not correct.\r\n" \
+                b"   * NARA Preservation Action Plans CSV path 'C:/Users/Error/NARA.csv' is not correct.\r\n\r\n" \
+                b"Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n"
+    if path_err.stdout == error_msg:
+        print("Test passes: Error handling for configuration.py all variables path errors")
+    else:
+        print("Test fails:  Error handling for configuration.py all variables path errors")
+    os.remove(f"{repo_path}/configuration.py")
+
+    # Renames the correct configuration file back to configuration.py.
+    os.rename(f"{repo_path}/configuration_original.py", f"{repo_path}/configuration.py")
 
 
 def test_csv_to_dataframe_function_tbd():
@@ -795,10 +851,15 @@ except (IndexError, FileNotFoundError):
     print("\nThe required script argument (output folder) is missing or incorrect.")
     sys.exit()
 
+# Saves the path to the GitHub repo, which is used by a few of the tests.
+# sys.argv[0] is the path to format_analysis_tests.py
+repo = os.path.dirname(sys.argv[0])
+
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
-test_argument()
+test_argument(repo)
+test_check_configuration_function(repo)
 
 test_update_fits_function()
 test_match_nara_risk_function()
