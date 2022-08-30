@@ -70,8 +70,8 @@ else:
     fits_status = subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"',
                                  shell=True, stderr=subprocess.PIPE)
     if fits_status.stderr == b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n':
-        print("Unable to generate FITS XML for this accession because FITS is in a different directory from the accession.")
-        print("Copy the FITS folder to the same letter directory as the accession files and run the script again.")
+        print("Unable to generate FITS XML.")
+        print("Make sure that the FITS folder, the accession directory, and your current working directory are on the same letter drive.")
         sys.exit()
 
 # Combines the FITS data into a CSV. If one is already present, will replace it.
