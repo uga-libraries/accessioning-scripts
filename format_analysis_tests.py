@@ -136,18 +136,18 @@ def test_csv_to_dataframe_function():
     df_other = csv_to_dataframe(c.RISK)
     df_nara = csv_to_dataframe(c.NARA)
 
-    # For each CSV, tests the function worked by verifying the column names.
-    if df_fits.columns.to_list() == ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs"]:
+    # For each CSV, tests the function worked by verifying the column names and that the dataframe isn't empty.
+    if df_fits.columns.to_list() == ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs"] and len(df_fits) != 0:
         print("Test passes:  FITS csv to dataframe")
     else:
         print("Test fails:   FITS csv to dataframe")
 
-    if df_ita.columns.to_list() == ["FITS_FORMAT", "NOTES"]:
+    if df_ita.columns.to_list() == ["FITS_FORMAT", "NOTES"] and len(df_ita) != 0:
         print("Test passes:  ITA csv to dataframe")
     else:
         print("Test fails:   ITA csv to dataframe")
 
-    if df_other.columns.to_list() == ["FITS_FORMAT", "RISK_CRITERIA"]:
+    if df_other.columns.to_list() == ["FITS_FORMAT", "RISK_CRITERIA"] and len(df_other) != 0:
         print("Test passes:  Risk csv to dataframe")
     else:
         print("Test fails:   Risk csv to dataframe")
@@ -158,7 +158,7 @@ def test_csv_to_dataframe_function():
                     "NARA_Wikipedia URL", "NARA_docs.fileformat.com", "NARA_Other URL", "NARA_Notes", "NARA_Risk Level",
                     "NARA_Preservation Action", "NARA_Proposed Preservation Plan", "NARA_Description and Justification",
                     "NARA_Preferred Processing and Transformation Tool(s)"]
-    if df_nara.columns.to_list() == nara_columns:
+    if df_nara.columns.to_list() == nara_columns and len(df_nara) != 0:
         print("Test passes:  NARA csv to dataframe")
     else:
         print("Test fails:   NARA csv to dataframe")
@@ -1020,10 +1020,10 @@ test_argument(repo)
 test_check_configuration_function(repo)
 
 test_make_fits()
-test_fits_class_error()
+# test_fits_class_error()
 test_update_fits_function()
 test_csv_to_dataframe_function()
-test_csv_to_dataframe_function_errors()
+# test_csv_to_dataframe_function_errors()
 
 test_match_nara_risk_function()
 test_match_technical_appraisal_function()
