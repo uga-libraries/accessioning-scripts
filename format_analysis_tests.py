@@ -122,7 +122,7 @@ def test_csv_to_dataframe_function_tbd():
 
 
 def test_fits():
-    """Tests the command for making FITS files the first time, including error handling."""
+    """Tests the command for making FITS files the first time."""
 
     # Makes an accession folder with test files to use for testing.
     accession_folder = fr"{output}\accession"
@@ -136,33 +136,62 @@ def test_fits():
     fits_output = f"{output}/accession_FITS"
     os.mkdir(fits_output)
 
-    # Calls FITS which is located in a different directory to generate an error.
-    # Verifies the correct error message would be printed by the script.
-    # For this test to work, the fits.bat file must be in the specified location.
+    # Calls FITS with the correct location.
+    # In format_analysis.py, this is done in the main body of the script and also exits the script if there is an error.
+    fits_status = subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"',
+                                 shell=True, stderr=subprocess.PIPE)
+    if fits_status.stderr == b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n':
+        print("Unable to generate FITS XML for this accession because FITS is in a different directory from the accession.")
+        print("Copy the FITS folder to the same letter directory as the accession files and run the script again.")
+
+    # Makes a dataframe with the files that should be in the accession_fits folder based on the input.
+    df_expected = pd.DataFrame(["file.txt.fits.xml", "file.txt-1.fits.xml", "other.txt.fits.xml"], columns=["Files"])
+
+    # Makes a dataframe with the files that are actually in the accession_fits folder after running the test.
+    fits_files = []
+    for root, dir, files in os.walk("accession_fits"):
+        fits_files.extend(files)
+    df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
+
+    # Compares the contents of the FITS folder to the expected values.
+    compare_dataframes("Make_FITS", df_fits_files, df_expected)
+
+    # Deletes the test files.
+    shutil.rmtree(fr"{output}\accession")
+    shutil.rmtree(fr"{output}\accession_FITS")
+
+
+def test_fits_class_error():
+    """Tests the error handling for FITS when it is in a different directory than the source files."""
+
+    # Makes an accession folder with a test file to use for testing.
+    accession_folder = fr"{output}\accession"
+    os.mkdir(accession_folder)
+    with open(fr"accession\file.txt", "w") as file:
+        file.write("Text")
+
+    # Makes the directory for FITS files.
+    # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist.
+    fits_output = f"{output}/accession_FITS"
+    os.mkdir(fits_output)
+
+    # Makes a variable with a FITS file path in a different directory from the accession folder.
+    # For this test to work, the fits.bat file must be in this specified location.
+    # In format_analysis.py, the FITS file path is in the configuration.py file.
     fits_path = r"X:\test\fits.bat"
+
+    # Calls FITS which is located in a different directory to generate an error.
     fits_result = subprocess.run(f'"{fits_path}" -r -i "{accession_folder}" -o "{fits_output}"',
                                  shell=True, stderr=subprocess.PIPE)
+
+    # Verifies the correct error message would be printed by the script and prints the test result.
+    # In format_analysis.py, the error would also cause the script to exit.
     error_msg = b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n'
     if fits_result.stderr == error_msg:
         print("Test passes: Error handling for FITS in a different directory")
     else:
         print("Test fails:  Error handling for FITS in a different directory")
         print("For test to work, fits.bat needs to be in the location specified in the test function.\n")
-
-    # Calls FITS with the correct location and verifies that a FITS file is made for each file in the test accession.
-    fits_status = subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"',
-                                 shell=True, stderr=subprocess.PIPE)
-    if fits_status.stderr == b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n':
-        print("Unable to generate FITS XML for this accession because FITS is in a different directory from the accession.")
-        print("Copy the FITS folder to the same letter directory as the accession files and run the script again.")
-        sys.exit()
-
-    df_expected = pd.DataFrame(["file.txt.fits.xml", "file.txt-1.fits.xml", "other.txt.fits.xml"], columns=["Files"])
-    fits_files = []
-    for root, dir, files in os.walk("accession_fits"):
-        fits_files.extend(files)
-    df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
-    compare_dataframes("Make_FITS", df_fits_files, df_expected)
 
     # Deletes the test files.
     shutil.rmtree(fr"{output}\accession")
@@ -907,30 +936,32 @@ repo = os.path.dirname(sys.argv[0])
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
-# test_argument(repo)
-# test_check_configuration_function(repo)
+
+test_argument(repo)
+test_check_configuration_function(repo)
 
 test_fits()
-# test_update_fits_function()
-#
-# test_match_nara_risk_function()
-# test_match_technical_appraisal_function()
-# test_match_other_risk_function()
-# test_media_subtotal_function()
-#
-# test_nara_risk_subset()
-# test_multiple_subset()
-# test_validation_subset()
-# test_tech_appraisal_subset()
-# test_other_risk_subset()
-# test_duplicates_subset()
-# test_empty_subset()
-#
-# test_format_subtotal()
-# test_nara_risk_subtotal()
-# test_technical_appraisal_subtotal()
-# test_technical_appraisal_subtotal_empty()
-# test_other_risk_subtotal()
-# test_other_risk_subtotal_empty()
+test_fits_class_error()
+test_update_fits_function()
+
+test_match_nara_risk_function()
+test_match_technical_appraisal_function()
+test_match_other_risk_function()
+test_media_subtotal_function()
+
+test_nara_risk_subset()
+test_multiple_subset()
+test_validation_subset()
+test_tech_appraisal_subset()
+test_other_risk_subset()
+test_duplicates_subset()
+test_empty_subset()
+
+test_format_subtotal()
+test_nara_risk_subtotal()
+test_technical_appraisal_subtotal()
+test_technical_appraisal_subtotal_empty()
+test_other_risk_subtotal()
+test_other_risk_subtotal_empty()
 
 print("\nThe script is complete.")
