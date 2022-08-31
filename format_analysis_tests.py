@@ -43,9 +43,9 @@ def test_argument(repo_path):
     error_msg = b'\r\nThe required script argument (accession_folder) is missing.\r\nPlease run the script again.' \
                 b'\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n'
     if no_argument.stdout == error_msg:
-        print("Test passes: Error handling for running script with no argument")
+        print("Test passes:  Error handling for running script with no argument")
     else:
-        print("Test fails:  Error handling for running script with no argument")
+        print("Test fails:   Error handling for running script with no argument")
 
     # Runs the script with an argument that isn't a valid path and verifies the correct error message would print.
     wrong_argument = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
@@ -53,9 +53,9 @@ def test_argument(repo_path):
                 b"\r\nPlease run the script again." \
                 b"\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
     if wrong_argument.stdout == error_msg:
-        print("Test passes: Error handling for running script with invalid path")
+        print("Test passes:  Error handling for running script with invalid path")
     else:
-        print("Test fails:  Error handling for running script with invalid path")
+        print("Test fails:   Error handling for running script with invalid path")
 
 
 def test_check_configuration_function(repo_path):
@@ -69,9 +69,9 @@ def test_check_configuration_function(repo_path):
     error_msg = b'\r\nCould not run the script. Missing the required configuration.py file.' \
                 b'\r\nMake a configuration.py file using configuration_template.py and save it to the folder with the script.\r\n'
     if no_config.stdout == error_msg:
-        print("Test passes: Error handling for running script with no configuration.py")
+        print("Test passes:  Error handling for running script with no configuration.py")
     else:
-        print("Test fails:  Error handling for running script with no configuration.py")
+        print("Test fails:   Error handling for running script with no configuration.py")
 
     # Makes a configuration file without any of the required variables to use for testing.
     # Verifies that the check_configuration() function returns the expected error messages.
@@ -86,9 +86,9 @@ def test_check_configuration_function(repo_path):
                 b'   * NARA variable is missing from the configuration file.\r\n\r\n' \
                 b'Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n'
     if no_var.stdout == error_msg:
-        print("Test passes: Error handling for configuration.py missing all variables")
+        print("Test passes:  Error handling for configuration.py missing all variables")
     else:
-        print("Test fails:  Error handling for configuration.py missing all variables")
+        print("Test fails:   Error handling for configuration.py missing all variables")
     os.remove(f"{repo_path}/configuration.py")
 
     # Makes a configuration file with the required variables but all are incorrect file paths to use for testing.
@@ -108,20 +108,72 @@ def test_check_configuration_function(repo_path):
                 b"   * NARA Preservation Action Plans CSV path 'C:/Users/Error/NARA.csv' is not correct.\r\n\r\n" \
                 b"Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n"
     if path_err.stdout == error_msg:
-        print("Test passes: Error handling for configuration.py all variables path errors")
+        print("Test passes:  Error handling for configuration.py all variables path errors")
     else:
-        print("Test fails:  Error handling for configuration.py all variables path errors")
+        print("Test fails:   Error handling for configuration.py all variables path errors")
     os.remove(f"{repo_path}/configuration.py")
 
     # Renames the correct configuration file back to configuration.py.
     os.rename(f"{repo_path}/configuration_original.py", f"{repo_path}/configuration.py")
 
 
-def test_csv_to_dataframe_function_tbd():
-    """Tests error handling for encoding errors and adding prefixes to FITS and NARA dataframes."""
+def test_csv_to_dataframe_function():
+    """Tests reading all four CSVs into dataframes and adding prefixes to FITS and NARA dataframes."""
+
+    # Makes a FITS CSV with no special characters.
+    # In format_analysis.py, this would be made earlier in the script and has more columns.
+    # The other CSVs read by this function are already on on the local machine and paths are in configuration.py
+    with open("accession_fits.csv", "w") as file:
+        file_write = csv.writer(file)
+        file_write.writerow(["File_Path", "Format_Name", "Format_Version", "Multiple_IDs"])
+        file_write.writerow([r"C:\Coll\accession\CD001_Images\IMG1.JPG", "JPEG EXIF", "1.01", False])
+        file_write.writerow([r"C:\Coll\accession\CD002_Website\index.html", "Hypertext Markup Language", "4.01", True])
+        file_write.writerow([r"C:\Coll\accession\CD002_Website\index.html", "HTML Transitional", "HTML 4.01", True])
+
+    # Runs the function on all four CSVs.
+    df_fits = csv_to_dataframe("accession_fits.csv")
+    df_ita = csv_to_dataframe(c.ITA)
+    df_other = csv_to_dataframe(c.RISK)
+    df_nara = csv_to_dataframe(c.NARA)
+
+    # For each CSV, tests the function worked by verifying the column names.
+    if df_fits.columns.to_list() == ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs"]:
+        print("Test passes:  FITS csv to dataframe")
+    else:
+        print("Test fails:   FITS csv to dataframe")
+
+    if df_ita.columns.to_list() == ["FITS_FORMAT", "NOTES"]:
+        print("Test passes:  ITA csv to dataframe")
+    else:
+        print("Test fails:   ITA csv to dataframe")
+
+    if df_other.columns.to_list() == ["FITS_FORMAT", "RISK_CRITERIA"]:
+        print("Test passes:  Risk csv to dataframe")
+    else:
+        print("Test fails:   Risk csv to dataframe")
+
+    nara_columns = ["NARA_Format Name", "NARA_File Extension(s)", "NARA_Category/Plan(s)", "NARA_NARA Format ID",
+                    "NARA_MIME type(s)", "NARA_Specification/Standard URL", "NARA_PRONOM URL", "NARA_LOC URL",
+                    "NARA_British Library URL", "NARA_WikiData URL", "NARA_ArchiveTeam URL", "NARA_ForensicsWiki URL",
+                    "NARA_Wikipedia URL", "NARA_docs.fileformat.com", "NARA_Other URL", "NARA_Notes", "NARA_Risk Level",
+                    "NARA_Preservation Action", "NARA_Proposed Preservation Plan", "NARA_Description and Justification",
+                    "NARA_Preferred Processing and Transformation Tool(s)"]
+    if df_nara.columns.to_list() == nara_columns:
+        print("Test passes:  NARA csv to dataframe")
+    else:
+        print("Test fails:   NARA csv to dataframe")
+
+    # Deletes the test files.
+    shutil.rmtree(fr"{output}\accession")
+    shutil.rmtree(fr"{output}\accession_FITS")
+    os.remove("accession_fits.csv")
 
 
-def test_fits():
+def test_csv_to_dataframe_function_errors():
+    """Tests unicode error handling."""
+
+
+def test_make_fits():
     """Tests the command for making FITS files the first time."""
 
     # Makes an accession folder with test files to use for testing.
@@ -188,9 +240,9 @@ def test_fits_class_error():
     # In format_analysis.py, the error would also cause the script to exit.
     error_msg = b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n'
     if fits_result.stderr == error_msg:
-        print("Test passes: Error handling for FITS in a different directory")
+        print("Test passes:  Error handling for FITS in a different directory")
     else:
-        print("Test fails:  Error handling for FITS in a different directory")
+        print("Test fails:   Error handling for FITS in a different directory")
         print("For test to work, fits.bat needs to be in the location specified in the test function.\n")
 
     # Deletes the test files.
@@ -940,9 +992,10 @@ repo = os.path.dirname(sys.argv[0])
 test_argument(repo)
 test_check_configuration_function(repo)
 
-test_fits()
+test_make_fits()
 test_fits_class_error()
 test_update_fits_function()
+test_csv_to_dataframe_function()
 
 test_match_nara_risk_function()
 test_match_technical_appraisal_function()
