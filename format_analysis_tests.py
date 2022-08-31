@@ -123,7 +123,7 @@ def test_csv_to_dataframe_function():
     # Makes a FITS CSV with no special characters.
     # In format_analysis.py, this would be made earlier in the script and has more columns.
     # The other CSVs read by this function are already on on the local machine and paths are in configuration.py
-    with open("accession_fits.csv", "w") as file:
+    with open("accession_fits.csv", "w", newline="") as file:
         file_write = csv.writer(file)
         file_write.writerow(["File_Path", "Format_Name", "Format_Version", "Multiple_IDs"])
         file_write.writerow([r"C:\Coll\accession\CD001_Images\IMG1.JPG", "JPEG EXIF", "1.01", False])
@@ -171,6 +171,33 @@ def test_csv_to_dataframe_function():
 
 def test_csv_to_dataframe_function_errors():
     """Tests unicode error handling."""
+
+    # Makes a FITS CSV with special characters.
+    # In format_analysis.py, this would be made earlier in the script and has more columns.
+    with open("accession_fits.csv", "w", newline="") as file:
+        file_write = csv.writer(file)
+        file_write.writerow(["File_Path", "Format_Name", "Format_Version", "Multiple_IDs"])
+        file_write.writerow([r"C:\Coll\accession\CD001_Images\©Image.JPG", "JPEG EXIF", "1.01", False])
+        file_write.writerow([r"C:\Coll\accession\CD002_Website\indexé.html", "Hypertext Markup Language", "4.01", True])
+        file_write.writerow([r"C:\Coll\accession\CD002_Website\indexé.html", "HTML Transitional", "HTML 4.01", True])
+
+    # Runs the function.
+    # The function will print a note to the terminal.
+    df_fits = csv_to_dataframe("accession_fits.csv")
+
+    # Makes a dataframe with the expected values in df_fits after the CSV is read with encoding_errors="ignore".
+    # This causes characters to be skipped if they can't be read.
+    rows = [[r"C:\Coll\accession\CD001_Images\Image.JPG", "JPEG EXIF", "1.01", False],
+            [r"C:\Coll\accession\CD002_Website\index.html", "Hypertext Markup Language", "4.01", True],
+            [r"C:\Coll\accession\CD002_Website\index.html", "HTML Transitional", "HTML 4.01", True]]
+    column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
+
+    # Compares the contents of the FITS folder to the expected values.
+    compare_dataframes("CSV_Encoding", df_fits, df_expected)
+
+    # Deletes the test file.
+    os.remove("accession_fits.csv")
 
 
 def test_make_fits():
@@ -996,6 +1023,7 @@ test_make_fits()
 test_fits_class_error()
 test_update_fits_function()
 test_csv_to_dataframe_function()
+test_csv_to_dataframe_function_errors()
 
 test_match_nara_risk_function()
 test_match_technical_appraisal_function()
@@ -1009,12 +1037,12 @@ test_tech_appraisal_subset()
 test_other_risk_subset()
 test_duplicates_subset()
 test_empty_subset()
-
-test_format_subtotal()
-test_nara_risk_subtotal()
-test_technical_appraisal_subtotal()
-test_technical_appraisal_subtotal_empty()
-test_other_risk_subtotal()
-test_other_risk_subtotal_empty()
+#
+# test_format_subtotal()
+# test_nara_risk_subtotal()
+# test_technical_appraisal_subtotal()
+# test_technical_appraisal_subtotal_empty()
+# test_other_risk_subtotal()
+# test_other_risk_subtotal_empty()
 
 print("\nThe script is complete.")
