@@ -61,7 +61,7 @@ def csv_to_dataframe(csv_file):
         df = pd.read_csv(csv_file)
     except UnicodeDecodeError:
         print("UnicodeDecodeError when trying to read:", csv_file)
-        print("CSV was read with ignore encoding errors, so data may not be complete.")
+        print("CSV was read with ignore encoding errors, so characters causing encoding errors are omitted.")
         df = pd.read_csv(csv_file, encoding_errors="ignore")
 
     # Adds a prefix to the FITS and NARA dataframes so the source of the data is clear when the data is combined.
