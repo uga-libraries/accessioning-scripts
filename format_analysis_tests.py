@@ -315,12 +315,68 @@ def test_update_fits_function():
     compare_dataframes("Update_FITS", df_fits_files, df_expected)
 
 
-def test_fits_row_function_tbd():
+def test_make_fits_csv():
     """Tests all variations for FITS data extraction and reformatting."""
 
+    # Makes an accession folder with test files organized into 2 disks to use for testing.
+    # Formats included: csv, html, plain text, xlsx
+    # Variations: one and multiple format ids, with and without optional fields, one or multiple tools
+    accession_folder = fr"{output}\accession"
+    os.makedirs(fr"{accession_folder}\disk1")
+    df_spreadsheet = pd.DataFrame({"C1": ["text"*1000], "C2": ["text"*1000], "C3": ["text"*1000]})
+    df_spreadsheet = pd.concat([df_spreadsheet]*100, ignore_index=True)
+    df_spreadsheet.to_csv(r"accession\disk1\data.csv", index=False)
+    df_spreadsheet.to_excel(r"accession\disk1\data.xlsx", index=False)
+    df_spreadsheet["C3"] = "New Text"
+    df_spreadsheet.to_csv(r"accession\disk1\data_update.csv", index=False)
+    with open(r"accession\disk1\file.txt", "w") as file:
+        file.write("Text")
+    os.makedirs(fr"{accession_folder}\disk2")
+    with open(r"accession\disk2\file.txt", "w") as file:
+        file.write("Text" * 2)
+    with open(r"accession\disk2\error.html", "w") as file:
+        file.write("<body>This isn't really html</body>")
 
-def test_make_fits_csv_function_tbd():
-    """Tests encoding error handling and saving files with one and multiple FITS format ids to the CSV."""
+    # Runs the function being tested.
+    make_fits_csv(fr"{output}\accession_fits", accession_folder, output, "accession")
+
+    # Makes a dataframe with the expected values.
+    rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", "np.NaN", "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", "FALSE", "44805", "1200.41", "70ab34bf1e766f600ddfe2a8cb17dea3", "np.NaN", "np.NaN", "np.NaN", "np.NaN"],
+            [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", "2",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
+             "Droid version 6.4; file utility version 5.03; ffident version 0.2", "TRUE", "44805", "8.166",
+             "43212525b4d3ae350cb6621e92899240", "Microsoft Excel", "np.NaN", "np.NaN", "np.NaN"],
+            [fr"{output}\accession\disk1\data.xlsx", "XLSX", "np.NaN", "np.NaN",
+             "Exiftool version 11.54", "TRUE", "44805", "8.166", "43212525b4d3ae350cb6621e92899240", "Microsoft Excel",
+             "np.NaN", "np.NaN", "np.NaN"],
+            [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", "np.NaN", "np.NaN",
+             "Tika version 1.21", "TRUE", "44805", "8.166", "43212525b4d3ae350cb6621e92899240", "Microsoft Excel",
+             "np.NaN", "np.NaN", "np.NaN"],
+            [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", "np.NaN",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", "FALSE", "44805", "801.21",
+             "9b8dbe4ef9fa42c011df292f56288ebe", "np.NaN", "np.NaN", "np.NaN", "np.NaN"],
+            [fr"{output}\accession\disk1\file.txt", "Plain text", "np.NaN",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", "FALSE", "44805", "400",
+             "f8210444e9555e87156131a8bdd1d327", "np.NaN", "TRUE", "TRUE", "np.NaN"],
+            [fr"{output}\accession\disk2\file.txt", "Plain text", "np.NaN",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", "FALSE", "44805", "400",
+             "f8210444e9555e87156131a8bdd1d327", "np.NaN", "TRUE", "TRUE", "np.NaN"],
+            [fr"{output}\accession\disk2\error.html", "Extensible Markup Language", "1", "np.NaN",
+             "Jhove version 1.20.1", "FALSE", "44805", "0.035", "e080b3394eaeba6b118ed15453e49a34", "np.NaN", "TRUE",
+             "TRUE", "Not able to determine type of end of line severity=info"]]
+    column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs", "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed", "Status_Message"],
+    df_expected = pd.DataFrame(rows, columns=column_names)
+
+    # Reads the script output into a dataframe.
+    df_fits = pd.read_csv("accession_fits.csv", index=False)
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Match_NARA", df_fits, df_expected)
+
+def test_make_fits_csv_function_errors():
+    """Tests encoding error handling when saving FITS file data to the CSV."""
 
 
 def test_match_nara_risk_function():
@@ -1128,7 +1184,7 @@ def test_iteration(repo_path):
                     "Other Risk Indicator (File Count)"]
     df_media_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[r"C:\Users\hansona\Desktop\test\accession\disk2\disk1backup.zip", "ZIP Format", 2, False,
+    rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False,
              datetime.date.today().strftime('%Y-%m-%d'), 12.4, "Moderate Risk",
              "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs",
@@ -1136,14 +1192,14 @@ def test_iteration(repo_path):
                     "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_nara_risk_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[r"C:\Users\hansona\Desktop\test\accession\disk2\empty.txt", "empty", np.NaN, "file utility version 5.03",
+    rows = [[fr"{output}\accession\disk2\empty.txt", "empty", np.NaN, "file utility version 5.03",
              False, 0, np.NaN, "Low Risk", "Retain", "File Extension", "Format", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Size_KB", "FITS_Creating_Application", "NARA_Risk Level",
                     "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_for_technical_appraisal_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[r"C:\Users\hansona\Desktop\test\accession\disk2\disk1backup.zip", "ZIP Format", 2,
+    rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2,
              "Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21",
              False, 12.4, "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
@@ -1151,10 +1207,10 @@ def test_iteration(repo_path):
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_other_risks_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[r"C:\Users\hansona\Desktop\test\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN,
+    rows = [[fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN,
              "Exiftool version 11.54", True, datetime.date.today().strftime('%Y-%m-%d'), 8.2,
              "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
-            [r"C:\Users\hansona\Desktop\test\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
+            [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
              "Tika version 1.21", True, datetime.date.today().strftime('%Y-%m-%d'), 8.2,
              "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
@@ -1162,12 +1218,12 @@ def test_iteration(repo_path):
                     "NARA_Risk Level", "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_multiple_formats_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[r"C:\Users\hansona\Desktop\test\accession\disk2\duplicate_file.txt", 400, "f8210444e9555e87156131a8bdd1d327"],
-            [r"C:\Users\hansona\Desktop\test\accession\disk1\duplicate_file.txt", 400, "f8210444e9555e87156131a8bdd1d327"]]
+    rows = [[fr"{output}\accession\disk2\duplicate_file.txt", 400, "f8210444e9555e87156131a8bdd1d327"],
+            [fr"{output}\accession\disk1\duplicate_file.txt", 400, "f8210444e9555e87156131a8bdd1d327"]]
     column_names = ["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]
     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[r"C:\Users\hansona\Desktop\test\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN,
+    rows = [[fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN,
              "Jhove version 1.20.1", False, datetime.date.today().strftime('%Y-%m-%d'), 0.035, "e080b3394eaeba6b118ed15453e49a34",
              np.NaN, True, True, "Not able to determine type of end of line severity=info", "Low Risk", "Retain",
              "Format Name", "Not for TA", "Not for Other"]]
