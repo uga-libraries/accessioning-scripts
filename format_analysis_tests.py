@@ -488,61 +488,43 @@ def test_match_other_risk_function():
     compare_dataframes("Match_Other", df_results, df_expected)
 
 
-def test_media_subtotal_function():
-    """Tests variations in subtotals."""
-
-    # Makes a dataframe and accession_folder variable to use as input.
-    # Data variations: Disks with and without each risk type, unique values and values to add for subtotals.
-    accession_folder = r"C:\ACC"
-    rows = [[r"C:\ACC\Disk1\file.txt", 120, "Low Risk", "Not for TA", "Not for Other"],
-            [r"C:\ACC\Disk1\file2.txt", 130, "Low Risk", "Not for TA", "Not for Other"],
-            [r"C:\ACC\Disk1\file3.txt", 140, "Low Risk", "Not for TA", "Not for Other"],
-            [r"C:\ACC\Disk2\photo.jpg", 12345, "Low Risk", "Not for TA", "Not for Other"],
-            [r"C:\ACC\Disk2\file.psd", 15671, "Moderate Risk", "Not for TA", "Layered image file"],
-            [r"C:\ACC\Disk2\file1.psd", 15672, "Moderate Risk", "Not for TA", "Layered image file"],
-            [r"C:\ACC\Disk2\file2.psd", 15673, "Moderate Risk", "Not for TA", "Layered image file"],
-            [r"C:\ACC\Disk2\file.bak", 700, "High Risk", "Not for TA", "Not for Other"],
-            [r"C:\ACC\Disk2\empty.ext", 0, "No Match", "Format", "Not for Other"],
-            [r"C:\ACC\Disk2\empty1.ext", 0, "No Match", "Format", "Not for Other"],
-            [r"C:\ACC\Disk3\trash\file.bak", 700, "High Risk", "Trash", "Not for Other"],
-            [r"C:\ACC\Disk3\trash\empty.ext", 0, "No Match", "Trash", "Not for Other"],
-            [r"C:\ACC\Disk3\file.exe", 50, "High Risk", "Format", "Not for Other"],
-            [r"C:\ACC\Disk3\file.psd", 1567, "Moderate Risk", "Trash", "Layered image file"],
-            [r"C:\ACC\Disk4\file.css", 123, "Low Risk", "Not for TA", "Possible saved web page"],
-            [r"C:\ACC\Disk4\file.ics", 14455, "Low Risk", "Not for TA", "NARA Low/Transform"],
-            [r"C:\ACC\Disk4\draft\file.css", 125, "Low Risk", "Not for TA", "Possible saved web page"],
-            [r"C:\ACC\Disk4\draft\file.ics", 14457, "Low Risk", "Not for TA", "NARA Low/Transform"],
-            [r"C:\ACC\Disk4\draft\file.zip", 3399, "Moderate Risk", "Not for TA", "Archive format"],
-            [r"C:\ACC\Disk4\draft2\file.css", 145, "Low Risk", "Not for TA", "Possible saved web page"],
-            [r"C:\ACC\Disk4\draft2\file.ics", 116000, "Low Risk", "Not for TA", "NARA Low/Transform"],
-            [r"C:\ACC\log.txt", 12, "Low Risk", "Not for TA", "Not for Other"]]
-    column_names = ["FITS_File_Path", "FITS_Size_KB", "NARA_Risk Level", "Technical_Appraisal", "Other_Risk"]
-    df_results = pd.DataFrame(rows, columns=column_names)
-
-    # Runs the media_subtotal() function. Uses the output folder for the accession folder.
-    df_media_subtotals = media_subtotal(df_results, accession_folder)
-
-    # Makes a dataframe with the expected values.
-    rows = [["Disk1", 3, 0.39, 0, 0, 3, 0, 0, 0],
-            ["Disk2", 7, 60.061, 1, 3, 1, 2, 2, 3],
-            ["Disk3", 4, 2.317, 2, 1, 0, 1, 1, 1],
-            ["Disk4", 7, 148.704, 0, 1, 6, 0, 0, 7]]
-    column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)",
-                    "NARA Moderate Risk (File Count)", "NARA Low Risk (File Count)", "No NARA Match (File Count)",
-                    "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
-    df_expected = pd.DataFrame(rows, columns=column_names)
-    df_expected.set_index("Media")
-
-    # Compares the script output to the expected values.
-    compare_dataframes("Media_Subtotals", df_media_subtotals, df_expected)
-
-
-def test_deduplicate_results_tbd():
+def test_deduplicating_results():
     """Tests that duplicates from multiple NARA matches with the same risk information are correctly removed."""
 
-    # Code to test:
-    # df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
-    # df_results.drop_duplicates(inplace=True)
+    # Makes a dataframe to use as input, with a subset of the columns usually in df_results.
+    # Data variation: one FITS ID with one NARA match, multiple FITS IDs with one NARA match each,
+    # multiple NARA matches with the same risk, multiple NARA matches with different risks.
+    rows = [[r"C:\acc\disk1\data.csv", "Comma-Separated Values (CSV)", "Comma Separated Values", "csv", "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\data.xlsx", "Open Office XML Workbook", "Microsoft Excel Office Open XML", "xlsx", "https://www.nationalarchives.gov.uk/pronom/fmt/214", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\data.xlsx", "XLSX", "Microsoft Excel Office Open XML", "xlsx", "https://www.nationalarchives.gov.uk/pronom/fmt/214", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "ASCII 7-bit Text", "txt|asc|csv|tab", "https://www.nationalarchives.gov.uk/pronom/x-fmt/22", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "ASCII 8-bit Text", "txt|asc|csv|tab", "https://www.nationalarchives.gov.uk/pronom/x-fmt/283", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "JSON", "json|txt", "https://www.nationalarchives.gov.uk/pronom/fmt/817", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "Plain Text", "Plain_Text|txt|text|asc|rte", "https://www.nationalarchives.gov.uk/pronom/x-fmt/111", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format (PDF) version 1.7", "pdf", "https://www.nationalarchives.gov.uk/pronom/fmt/276", "Moderate Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format (PDF) version 2.0", "pdf", "https://www.nationalarchives.gov.uk/pronom/fmt/1129", "Moderate Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format/Archiving (PDF/A-1a) accessible", "pdf", "https://www.nationalarchives.gov.uk/pronom/fmt/95", "Low Risk", "Retain"]]
+    column_names = ["FITS_File_Path", "FITS_Format_Name", "NARA_Format Name", "NARA_File Extension(s)",
+                    "NARA_PRONOM URL", "NARA_Risk Level", "NARA_Proposed Preservation Plan"]
+    df_results = pd.DataFrame(rows, columns=column_names)
+
+    # Removes columns with NARA identification info and then removes duplicate rows.
+    # In format_analysis.py, this is done in the main body of the script.
+    df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
+    df_results.drop_duplicates(inplace=True)
+
+    # Makes a dataframe with the expected values.
+    rows = [[r"C:\acc\disk1\data.csv", "Comma-Separated Values (CSV)", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\data.xlsx", "Open Office XML Workbook", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\data.xlsx", "XLSX", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Moderate Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Low Risk", "Retain"]]
+    column_names = ["FITS_File_Path", "FITS_Format_Name", "NARA_Risk Level", "NARA_Proposed Preservation Plan"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Deduplicate_Results_DF", df_results, df_expected)
 
 
 def test_nara_risk_subset():
@@ -989,6 +971,55 @@ def test_other_risk_subtotal_empty():
     compare_dataframes("Other_Risk_Subtotals_Empty", df_other_risk_subtotals, df_expected)
 
 
+def test_media_subtotal_function():
+    """Tests variations in subtotals."""
+
+    # Makes a dataframe and accession_folder variable to use as input.
+    # Data variations: Disks with and without each risk type, unique values and values to add for subtotals.
+    accession_folder = r"C:\ACC"
+    rows = [[r"C:\ACC\Disk1\file.txt", 120, "Low Risk", "Not for TA", "Not for Other"],
+            [r"C:\ACC\Disk1\file2.txt", 130, "Low Risk", "Not for TA", "Not for Other"],
+            [r"C:\ACC\Disk1\file3.txt", 140, "Low Risk", "Not for TA", "Not for Other"],
+            [r"C:\ACC\Disk2\photo.jpg", 12345, "Low Risk", "Not for TA", "Not for Other"],
+            [r"C:\ACC\Disk2\file.psd", 15671, "Moderate Risk", "Not for TA", "Layered image file"],
+            [r"C:\ACC\Disk2\file1.psd", 15672, "Moderate Risk", "Not for TA", "Layered image file"],
+            [r"C:\ACC\Disk2\file2.psd", 15673, "Moderate Risk", "Not for TA", "Layered image file"],
+            [r"C:\ACC\Disk2\file.bak", 700, "High Risk", "Not for TA", "Not for Other"],
+            [r"C:\ACC\Disk2\empty.ext", 0, "No Match", "Format", "Not for Other"],
+            [r"C:\ACC\Disk2\empty1.ext", 0, "No Match", "Format", "Not for Other"],
+            [r"C:\ACC\Disk3\trash\file.bak", 700, "High Risk", "Trash", "Not for Other"],
+            [r"C:\ACC\Disk3\trash\empty.ext", 0, "No Match", "Trash", "Not for Other"],
+            [r"C:\ACC\Disk3\file.exe", 50, "High Risk", "Format", "Not for Other"],
+            [r"C:\ACC\Disk3\file.psd", 1567, "Moderate Risk", "Trash", "Layered image file"],
+            [r"C:\ACC\Disk4\file.css", 123, "Low Risk", "Not for TA", "Possible saved web page"],
+            [r"C:\ACC\Disk4\file.ics", 14455, "Low Risk", "Not for TA", "NARA Low/Transform"],
+            [r"C:\ACC\Disk4\draft\file.css", 125, "Low Risk", "Not for TA", "Possible saved web page"],
+            [r"C:\ACC\Disk4\draft\file.ics", 14457, "Low Risk", "Not for TA", "NARA Low/Transform"],
+            [r"C:\ACC\Disk4\draft\file.zip", 3399, "Moderate Risk", "Not for TA", "Archive format"],
+            [r"C:\ACC\Disk4\draft2\file.css", 145, "Low Risk", "Not for TA", "Possible saved web page"],
+            [r"C:\ACC\Disk4\draft2\file.ics", 116000, "Low Risk", "Not for TA", "NARA Low/Transform"],
+            [r"C:\ACC\log.txt", 12, "Low Risk", "Not for TA", "Not for Other"]]
+    column_names = ["FITS_File_Path", "FITS_Size_KB", "NARA_Risk Level", "Technical_Appraisal", "Other_Risk"]
+    df_results = pd.DataFrame(rows, columns=column_names)
+
+    # Runs the media_subtotal() function. Uses the output folder for the accession folder.
+    df_media_subtotals = media_subtotal(df_results, accession_folder)
+
+    # Makes a dataframe with the expected values.
+    rows = [["Disk1", 3, 0.39, 0, 0, 3, 0, 0, 0],
+            ["Disk2", 7, 60.061, 1, 3, 1, 2, 2, 3],
+            ["Disk3", 4, 2.317, 2, 1, 0, 1, 1, 1],
+            ["Disk4", 7, 148.704, 0, 1, 6, 0, 0, 7]]
+    column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)",
+                    "NARA Moderate Risk (File Count)", "NARA Low Risk (File Count)", "No NARA Match (File Count)",
+                    "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
+    df_expected = pd.DataFrame(rows, columns=column_names)
+    df_expected.set_index("Media")
+
+    # Compares the script output to the expected values.
+    compare_dataframes("Media_Subtotals", df_media_subtotals, df_expected)
+
+
 def test_iteration(repo_path):
     """Tests that the script follows the correct logic based on the contents of the accession folder and
     that the contents are updated correctly. Runs the script 3 times to check all iterations: start from scratch,
@@ -1180,6 +1211,7 @@ def test_iteration(repo_path):
     compare_dataframes("Iteration_Duplicates_Subset", df_duplicates, df_duplicates_expected)
     compare_dataframes("Iteration_Validation_Subset", df_validation, df_validation_expected)
 
+
 # Makes the output directory (the only script argument) the current directory for easier saving.
 # If the argument is missing or not a valid directory, ends the script.
 try:
@@ -1209,7 +1241,7 @@ test_csv_to_dataframe_function_errors()
 test_match_nara_risk_function()
 test_match_technical_appraisal_function()
 test_match_other_risk_function()
-test_media_subtotal_function()
+test_deduplicating_results()
 
 test_nara_risk_subset()
 test_multiple_subset()
@@ -1225,6 +1257,7 @@ test_technical_appraisal_subtotal()
 test_technical_appraisal_subtotal_empty()
 test_other_risk_subtotal()
 test_other_risk_subtotal_empty()
+test_media_subtotal_function()
 
 test_iteration(repo)
 
