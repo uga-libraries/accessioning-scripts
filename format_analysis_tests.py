@@ -182,11 +182,6 @@ def test_csv_to_dataframe_function():
         print("FAIL: NARA_CSV_DF is empty")
         FAILED_TESTS += 1
 
-    # Deletes the test files.
-    shutil.rmtree(fr"{output}\accession")
-    shutil.rmtree(fr"{output}\accession_FITS")
-    os.remove("accession_fits.csv")
-
 
 def test_csv_to_dataframe_function_errors():
     """Tests unicode error handling."""
@@ -309,7 +304,7 @@ def test_update_fits_function():
 
     # Makes FITS XML for those files to use for testing.
     # In format_analysis.py, this is done in the main body of the script.
-    fits_output = fr"{output}\accession_fits"
+    fits_output = fr"{output}\accession_FITS"
     os.mkdir(fits_output)
     subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
@@ -335,6 +330,10 @@ def test_update_fits_function():
 
     # Compares the contents of the FITS folder to the expected values.
     compare_dataframes("Update_FITS", df_fits_files, df_expected)
+
+    # Deletes the test files.
+    shutil.rmtree("accession")
+    shutil.rmtree("accession_FITS")
 
 
 def test_make_fits_csv():
@@ -1333,36 +1332,36 @@ FAILED_TESTS = 0
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
 
-# test_argument(repo)
-# test_check_configuration_function(repo)
-#
-# test_make_fits()
-# test_fits_class_error()
-# test_update_fits_function()
-# #test_make_fits_csv()
-# test_csv_to_dataframe_function()
-# test_csv_to_dataframe_function_errors()
-#
-# test_match_nara_risk_function()
-# test_match_technical_appraisal_function()
-# test_match_other_risk_function()
-# test_deduplicating_results()
-#
-# test_nara_risk_subset()
-# test_multiple_subset()
-# test_validation_subset()
-# test_tech_appraisal_subset()
-# test_other_risk_subset()
-# test_duplicates_subset()
-# test_empty_subset()
-#
-# test_format_subtotal()
-# test_nara_risk_subtotal()
-# test_technical_appraisal_subtotal()
-# test_technical_appraisal_subtotal_empty()
-# test_other_risk_subtotal()
-# test_other_risk_subtotal_empty()
-# test_media_subtotal_function()
+test_argument(repo)
+test_check_configuration_function(repo)
+
+test_make_fits()
+test_fits_class_error()
+test_update_fits_function()
+test_make_fits_csv()
+test_csv_to_dataframe_function()
+test_csv_to_dataframe_function_errors()
+
+test_match_nara_risk_function()
+test_match_technical_appraisal_function()
+test_match_other_risk_function()
+test_deduplicating_results()
+
+test_nara_risk_subset()
+test_multiple_subset()
+test_validation_subset()
+test_tech_appraisal_subset()
+test_other_risk_subset()
+test_duplicates_subset()
+test_empty_subset()
+
+test_format_subtotal()
+test_nara_risk_subtotal()
+test_technical_appraisal_subtotal()
+test_technical_appraisal_subtotal_empty()
+test_other_risk_subtotal()
+test_other_risk_subtotal_empty()
+test_media_subtotal_function()
 
 test_iteration(repo)
 
