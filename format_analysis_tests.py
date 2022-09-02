@@ -39,7 +39,7 @@ def compare_dataframes(test_name, df_actual, df_expected):
     if len(df_errors) == 0:
         print("Pass: ", test_name)
     else:
-        print("FAIL:  ", test_name)
+        print("FAIL: ", test_name)
         df_comparison.to_csv(f"{test_name}_comparison_results.csv", index=False)
 
 
@@ -330,50 +330,62 @@ def test_make_fits_csv():
     df_spreadsheet["C3"] = "New Text"
     df_spreadsheet.to_csv(r"accession\disk1\data_update.csv", index=False)
     with open(r"accession\disk1\file.txt", "w") as file:
-        file.write("Text")
+        file.write("Text" * 50)
     os.makedirs(fr"{accession_folder}\disk2")
     with open(r"accession\disk2\file.txt", "w") as file:
-        file.write("Text" * 2)
+        file.write("Text" * 55)
     with open(r"accession\disk2\error.html", "w") as file:
         file.write("<body>This isn't really html</body>")
 
+    # Makes FITS files using the test accession folder.
+    # In format_analysis.py, there is also error handling for if FITS has a load class error.
+    fits_output = f"{output}/accession_FITS"
+    os.mkdir(fits_output)
+    subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
+
     # Runs the function being tested.
-    make_fits_csv(fr"{output}\accession_fits", accession_folder, output, "accession")
+    make_fits_csv(fr"{output}\accession_FITS", accession_folder, output, "accession")
 
     # Makes a dataframe with the expected values.
-    rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", "np.NaN", "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", "FALSE", "44805", "1200.41", "70ab34bf1e766f600ddfe2a8cb17dea3", "np.NaN", "np.NaN", "np.NaN", "np.NaN"],
-            [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", "2",
-             "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
-             "Droid version 6.4; file utility version 5.03; ffident version 0.2", "TRUE", "44805", "8.166",
-             "43212525b4d3ae350cb6621e92899240", "Microsoft Excel", "np.NaN", "np.NaN", "np.NaN"],
-            [fr"{output}\accession\disk1\data.xlsx", "XLSX", "np.NaN", "np.NaN",
-             "Exiftool version 11.54", "TRUE", "44805", "8.166", "43212525b4d3ae350cb6621e92899240", "Microsoft Excel",
-             "np.NaN", "np.NaN", "np.NaN"],
-            [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", "np.NaN", "np.NaN",
-             "Tika version 1.21", "TRUE", "44805", "8.166", "43212525b4d3ae350cb6621e92899240", "Microsoft Excel",
-             "np.NaN", "np.NaN", "np.NaN"],
-            [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", "np.NaN",
-             "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", "FALSE", "44805", "801.21",
-             "9b8dbe4ef9fa42c011df292f56288ebe", "np.NaN", "np.NaN", "np.NaN", "np.NaN"],
-            [fr"{output}\accession\disk1\file.txt", "Plain text", "np.NaN",
-             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", "FALSE", "44805", "400",
-             "f8210444e9555e87156131a8bdd1d327", "np.NaN", "TRUE", "TRUE", "np.NaN"],
-            [fr"{output}\accession\disk2\file.txt", "Plain text", "np.NaN",
-             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", "FALSE", "44805", "400",
-             "f8210444e9555e87156131a8bdd1d327", "np.NaN", "TRUE", "TRUE", "np.NaN"],
-            [fr"{output}\accession\disk2\error.html", "Extensible Markup Language", "1", "np.NaN",
-             "Jhove version 1.20.1", "FALSE", "44805", "0.035", "e080b3394eaeba6b118ed15453e49a34", "np.NaN", "TRUE",
-             "TRUE", "Not able to determine type of end of line severity=info"]]
-    column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs", "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed", "Status_Message"],
+    # Does not include fixity because that changes every time XLSX and ZIP are made.
+    # Rounds size to 1 decimal because that varies every time XLSX and ZIP are made.
+    today = datetime.date.today().strftime('%Y-%m-%d')
+    rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
+             "Droid version 6.4", False, today, 1200.4, np.NaN, np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", 2, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
+             "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today, 6.4,
+             "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
+             6.4, "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN, "Tika version 1.21",
+             True, today, 6.4, "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
+             "Droid version 6.4", False, today, 801.2, np.NaN, np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk1\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.2, np.NaN, True, True, np.NaN],
+            [fr"{output}\accession\disk2\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.2, np.NaN, True, True, np.NaN],
+            [fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1",
+             False, today, 0, np.NaN, True, True, "Not able to determine type of end of line severity=info"]]
+    column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+                    "Date_Last_Modified", "Size_KB", "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Reads the script output into a dataframe.
-    df_fits = pd.read_csv("accession_fits.csv", index=False)
+    # Removes fixity because that changes every time XLSX and ZIP are made.
+    # Rounds size to 1 decimal because that varies every time XLSX and ZIP are made.
+    df_fits = pd.read_csv("accession_fits.csv")
+    df_fits = df_fits.drop("MD5", axis=1)
+    df_fits["Size_KB"] = df_fits["Size_KB"].round(decimals=1)
 
     # Compares the script output to the expected values.
     compare_dataframes("Match_NARA", df_fits, df_expected)
+
+    # Deletes the test files.
+    shutil.rmtree("accession")
+    shutil.rmtree("accession_FITS")
+    os.remove("accession_fits.csv")
+
 
 def test_make_fits_csv_function_errors():
     """Tests encoding error handling when saving FITS file data to the CSV."""
@@ -1291,6 +1303,7 @@ test_check_configuration_function(repo)
 test_make_fits()
 test_fits_class_error()
 test_update_fits_function()
+test_make_fits_csv()
 test_csv_to_dataframe_function()
 test_csv_to_dataframe_function_errors()
 
