@@ -175,7 +175,7 @@ def test_csv_to_dataframe_function():
                    "NARA_MIME type(s), NARA_Specification/Standard URL, NARA_PRONOM URL, NARA_LOC URL, " \
                    "NARA_British Library URL, NARA_WikiData URL, NARA_ArchiveTeam URL, NARA_ForensicsWiki URL, " \
                    "NARA_Wikipedia URL, NARA_docs.fileformat.com, NARA_Other URL, NARA_Notes, NARA_Risk Level, " \
-                   "NARA_Preservation Action, NARA_Proposed Preservation Plan, NARA Description and Justification, " \
+                   "NARA_Preservation Action, NARA_Proposed Preservation Plan, NARA_Description and Justification, " \
                    "NARA_Preferred Processing and Transformation Tool(s)"
         compare_strings("NARA_CSV_DF", ', '.join(df_nara.columns.to_list()), expected)
     else:
@@ -1128,20 +1128,19 @@ def test_iteration(repo_path):
         file.write("Trash Text " * 20001)
     with open(r"accession\disk1\trash\trash2.txt", "w") as file:
         file.write("Trash Text " * 20002)
-    df_spreadsheet = pd.DataFrame({"C1": ["text"*1000], "C2": ["text"*1000], "C3": ["text"*1000]})
-    df_spreadsheet = pd.concat([df_spreadsheet]*100, ignore_index=True)
+    df_spreadsheet = pd.DataFrame({"C1": ["text"*9000], "C2": ["text"*9000], "C3": ["text"*9000]})
+    df_spreadsheet = pd.concat([df_spreadsheet]*1000, ignore_index=True)
     df_spreadsheet.to_csv(r"accession\disk1\data.csv", index=False)
-    df_spreadsheet.to_excel(r"accession\disk1\data.xlsx", index=False)
-    df_spreadsheet["C3"] = "New Text"
+    df_spreadsheet[["C3", "C4", "C5", "C6"]] = "New Text" * 1000
     df_spreadsheet.to_csv(r"accession\disk1\data_update.csv", index=False)
-    df_spreadsheet["C4"] = "More More More Text"
-    df_spreadsheet.to_csv(r"accession\disk1\data_update_final.csv", index=False)
+    df_spreadsheet[["C7", "C8", "C9", "C19"]] = "More Text" * 1000
+    df_spreadsheet.to_excel(r"accession\disk1\data_update_final.xlsx", index=False)
     with open(r"accession\disk1\duplicate_file.txt", "w") as file:
-        file.write("Text" * 100000)
+        file.write("Text" * 900000)
     os.makedirs(fr"{accession_folder}\disk2")
     shutil.make_archive(r"accession\disk2\disk1backup", 'zip', r"accession\disk1")
     with open(r"accession\disk2\duplicate_file.txt", "w") as file:
-        file.write("Text" * 100000)
+        file.write("Text" * 900000)
     with open(r"accession\disk2\empty.txt", "w") as file:
         file.write("")
     with open(r"accession\disk2\error.html", "w") as file:
@@ -1174,7 +1173,7 @@ def test_iteration(repo_path):
 
     # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
     df_risk = pd.read_csv("accession_full_risk_data.csv")
-    df_risk.drop(index=[1, 11, 13, 14, 15], inplace=True)
+    df_risk.drop(index=[2, 10, 12, 13, 14], inplace=True)
     df_risk.to_csv("accession_full_risk_data.csv", index=False)
 
     # Runs the script again on the test accession folder.
@@ -1188,38 +1187,40 @@ def test_iteration(repo_path):
 
     # Makes dataframes with the expected values for each tab in format_analysis.xlsx.
     # Does not include the FITS_MD5 column for df with Excel or zip files, which are different each time they are made.
-    # Rounds FITS_Size_KB to 2 digits for df with Excel or zip files, which can vary by .001 each time they are made.
+    # Calculates date, which is when the file was generated, with datetime to keep the expected value accurate.
+    # Calculates size for df with XLSX and ZIP with os.path because they are different each time they are made.
+    today = datetime.date.today().strftime('%Y-%m-%d')
 
-    rows = [["Comma-Separated Values (CSV)", "Low Risk", 3, 27.273, 2.805, 74.728],
-            ["Extensible Markup Language", "Low Risk", 1, 9.091, 0, 0],
-            ["Office Open XML Workbook", "Low Risk", 1, 9.091, 0.008, 0.213],
-            ["Plain text", "Low Risk", 3, 27.273, 0.92, 24.51],
-            ["XLSX", "Low Risk", 1, 9.091, 0.008, 0.213],
-            ["ZIP Format", "Moderate Risk", 1, 9.091, 0.012, 0.32],
-            ["empty", "Low Risk", 1, 9.091, 0, 0]]
+    rows = [["Comma-Separated Values (CSV)", "Low Risk", 2, 20, 212, 96.5],
+            ["empty", "Low Risk", 1, 10, 0, 0],
+            ["Extensible Markup Language", "Low Risk", 1, 10, 0, 0],
+            ["Office Open XML Workbook", "Low Risk", 1, 10, 0, 0],
+            ["Plain text", "Low Risk", 3, 30, 7.3, 3.3],
+            ["XLSX", "Low Risk", 1, 10, 0, 0],
+            ["ZIP Format", "Moderate Risk", 1, 10, 0.3, 0.1]]
     column_names = ["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_format_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["Low Risk", 10, 90.909, 3.741, 99.664], ["Moderate Risk", 1, 9.091, 0.012, 0.32]]
+    rows = [["Low Risk", 9, 90, 219.4, 99.9], ["Moderate Risk", 1, 10, 0.3, 0.1]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_nara_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["Format", "empty", 1, 9.091, 0, 0]]
+    rows = [["Format", "empty", 1, 10, 0, 0]]
     column_names = ["Technical_Appraisal", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_tech_appraisal_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["Archive format", "ZIP Format", 1, 9.091, 0.012, 0.32]]
+    rows = [["Archive format", "ZIP Format", 1, 10, 0.3, 0.1]]
     column_names = ["Other_Risk", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_other_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["disk1", 6, 3.221, 0, 0, 6, 0, 0, 0], ["disk2", 5, 0.532, 0, 1, 4, 0, 1, 1]]
+    rows = [["disk1", 5, 215.7, 0, 0, 5, 0, 0, 0], ["disk2", 5, 4, 0, 1, 4, 0, 1, 1]]
     column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                     "NARA Low Risk (File Count)", "No NARA Match (File Count)", "Technical Appraisal_Format (File Count)",
                     "Other Risk Indicator (File Count)"]
     df_media_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False,
-             datetime.date.today().strftime('%Y-%m-%d'), 12.4, "Moderate Risk",
+    rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today,
+             round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "Moderate Risk",
              "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs",
                     "FITS_Date_Last_Modified", "FITS_Size_KB", "NARA_Risk Level",
@@ -1235,32 +1236,32 @@ def test_iteration(repo_path):
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2,
              "Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21",
-             False, 12.4, "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
+             False, round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "Moderate Risk",
+             "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Size_KB", "NARA_Risk Level", "NARA_Proposed Preservation Plan",
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_other_risks_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN,
-             "Exiftool version 11.54", True, datetime.date.today().strftime('%Y-%m-%d'), 8.2,
+    rows = [[fr"{output}\accession\disk1\data_update_final.xlsx", "XLSX", np.NaN, np.NaN,
+             "Exiftool version 11.54", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
              "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
-            [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
-             "Tika version 1.21", True, datetime.date.today().strftime('%Y-%m-%d'), 8.2,
+            [fr"{output}\accession\disk1\data_update_final.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
+             "Tika version 1.21", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
              "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_Creating_Application",
                     "NARA_Risk Level", "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_multiple_formats_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk2\duplicate_file.txt", 400, "f8210444e9555e87156131a8bdd1d327"],
-            [fr"{output}\accession\disk1\duplicate_file.txt", 400, "f8210444e9555e87156131a8bdd1d327"]]
+    rows = [[fr"{output}\accession\disk2\duplicate_file.txt", 3600, "fe6fb9d365e141e326adfaea99c87fa6"],
+            [fr"{output}\accession\disk1\duplicate_file.txt", 3600, "fe6fb9d365e141e326adfaea99c87fa6"]]
     column_names = ["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]
     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN,
-             "Jhove version 1.20.1", False, datetime.date.today().strftime('%Y-%m-%d'), 0.035, "e080b3394eaeba6b118ed15453e49a34",
-             np.NaN, True, True, "Not able to determine type of end of line severity=info", "Low Risk", "Retain",
-             "Format Name", "Not for TA", "Not for Other"]]
+    rows = [[fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1", False,
+             today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True, "Not able to determine type of end of line severity=info",
+             "Low Risk", "Retain", "Format Name", "Not for TA", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "FITS_Creating_Application",
                     "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message", "NARA_Risk Level",
@@ -1269,37 +1270,46 @@ def test_iteration(repo_path):
 
     # Makes a dataframe from each tab in format_analysis.xlsx.
     # Removing FITS_MD5 for df with Excel or zip files, since those have a different MD5 each time they are made.
-    # Rounds FITS_Size_KB for df with Excel or zip files, since the sizes varies each time they are made.
+    # Rounding file size and percentage for subtotals with Excel or zip files, since they vary in size each time.
+    # For subsets, used Python to calculate individual file sizes to keep the number accurate.
     xlsx = pd.ExcelFile("accession_format-analysis.xlsx")
     df_format_subtotals = pd.read_excel(xlsx, "Format Subtotals")
+    df_format_subtotals[["Size (MB)", "Size %"]] = df_format_subtotals[["Size (MB)", "Size %"]].round(1)
     df_nara_risk_subtotals = pd.read_excel(xlsx, "NARA Risk Subtotals")
+    df_nara_risk_subtotals[["Size (MB)", "Size %"]] = df_nara_risk_subtotals[["Size (MB)", "Size %"]].round(1)
     df_tech_appraisal_subtotals = pd.read_excel(xlsx, "Tech Appraisal Subtotals")
     df_other_risk_subtotals = pd.read_excel(xlsx, "Other Risk Subtotals")
+    df_other_risk_subtotals[["Size (MB)", "Size %"]] = df_other_risk_subtotals[["Size (MB)", "Size %"]].round(1)
     df_media_subtotals = pd.read_excel(xlsx, "Media Subtotals")
+    df_media_subtotals["Size (MB)"] = df_media_subtotals["Size (MB)"].round(1)
     df_nara_risk = pd.read_excel(xlsx, "NARA Risk")
     df_nara_risk = df_nara_risk.drop("FITS_MD5", axis=1)
-    df_nara_risk["FITS_Size_KB"] = df_nara_risk["FITS_Size_KB"].round(decimals=1)
     df_tech_appraisal = pd.read_excel(xlsx, "For Technical Appraisal")
     df_other_risk = pd.read_excel(xlsx, "Other Risks")
-    df_other_risk["FITS_Size_KB"] = df_other_risk["FITS_Size_KB"].round(decimals=1)
     df_multiple = pd.read_excel(xlsx, "Multiple Formats")
     df_multiple = df_multiple.drop("FITS_MD5", axis=1)
-    df_multiple["FITS_Size_KB"] = df_multiple["FITS_Size_KB"].round(decimals=1)
     df_duplicates = pd.read_excel(xlsx, "Duplicates")
     df_validation = pd.read_excel(xlsx, "Validation")
 
     # Compares the expected values to the actual script values.
-    compare_dataframes("Iteration_Format_Subtotals", df_format_subtotals, df_format_subtotals_expected)
-    compare_dataframes("Iteration_Tech_Appraisal_Subtotals", df_tech_appraisal_subtotals, df_tech_appraisal_subtotals_expected)
-    compare_dataframes("Iteration_NARA_Risk_Subtotals", df_nara_risk_subtotals, df_nara_risk_subtotals_expected)
-    compare_dataframes("Iteration_Other_Risk_Subtotals", df_other_risk_subtotals, df_other_risk_subtotals_expected)
-    compare_dataframes("Iteration_Media_Subtotals", df_media_subtotals, df_media_subtotals_expected)
-    compare_dataframes("Iteration_NARA_Risk_Subset", df_nara_risk, df_nara_risk_expected)
-    compare_dataframes("Iteration_Tech_Appraisal_Subset", df_tech_appraisal, df_for_technical_appraisal_expected)
-    compare_dataframes("Iteration_Other_Risk_Subset", df_other_risk, df_other_risks_expected)
-    compare_dataframes("Iteration_Multiple_IDs_Subset", df_multiple, df_multiple_formats_expected)
-    compare_dataframes("Iteration_Duplicates_Subset", df_duplicates, df_duplicates_expected)
-    compare_dataframes("Iteration_Validation_Subset", df_validation, df_validation_expected)
+    compare_dataframes("Iteration_Subtotals_Format", df_format_subtotals, df_format_subtotals_expected)
+    compare_dataframes("Iteration_Subtotals_Tech_Appraisal", df_tech_appraisal_subtotals, df_tech_appraisal_subtotals_expected)
+    compare_dataframes("Iteration_Subtotals_NARA_Risk", df_nara_risk_subtotals, df_nara_risk_subtotals_expected)
+    compare_dataframes("Iteration_Subtotals_Other_Risk", df_other_risk_subtotals, df_other_risk_subtotals_expected)
+    compare_dataframes("Iteration_Subtotals_Media", df_media_subtotals, df_media_subtotals_expected)
+    compare_dataframes("Iteration_Subset_NARA_Risk", df_nara_risk, df_nara_risk_expected)
+    compare_dataframes("Iteration_Subset_Tech_Appraisal", df_tech_appraisal, df_for_technical_appraisal_expected)
+    compare_dataframes("Iteration_Subset_Other_Risk", df_other_risk, df_other_risks_expected)
+    compare_dataframes("Iteration_Subset_Multiple_IDs", df_multiple, df_multiple_formats_expected)
+    compare_dataframes("Iteration_Subset_Duplicates", df_duplicates, df_duplicates_expected)
+    compare_dataframes("Iteration_Subset_Validation", df_validation, df_validation_expected)
+
+    # Deletes the test files.
+    shutil.rmtree("accession")
+    shutil.rmtree("accession_FITS")
+    os.remove("accession_fits.csv")
+    # os.remove("accession_format-analysis.xlsx") - getting a permissions error when try to delete
+    os.remove("accession_full_risk_data.csv")
 
 
 # Makes the output directory (the only script argument) the current directory for easier saving.
@@ -1323,36 +1333,36 @@ FAILED_TESTS = 0
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
 
-test_argument(repo)
-test_check_configuration_function(repo)
-
-test_make_fits()
-test_fits_class_error()
-test_update_fits_function()
-#test_make_fits_csv()
-test_csv_to_dataframe_function()
-test_csv_to_dataframe_function_errors()
-
-test_match_nara_risk_function()
-test_match_technical_appraisal_function()
-test_match_other_risk_function()
-test_deduplicating_results()
-
-test_nara_risk_subset()
-test_multiple_subset()
-test_validation_subset()
-test_tech_appraisal_subset()
-test_other_risk_subset()
-test_duplicates_subset()
-test_empty_subset()
-
-test_format_subtotal()
-test_nara_risk_subtotal()
-test_technical_appraisal_subtotal()
-test_technical_appraisal_subtotal_empty()
-test_other_risk_subtotal()
-test_other_risk_subtotal_empty()
-test_media_subtotal_function()
+# test_argument(repo)
+# test_check_configuration_function(repo)
+#
+# test_make_fits()
+# test_fits_class_error()
+# test_update_fits_function()
+# #test_make_fits_csv()
+# test_csv_to_dataframe_function()
+# test_csv_to_dataframe_function_errors()
+#
+# test_match_nara_risk_function()
+# test_match_technical_appraisal_function()
+# test_match_other_risk_function()
+# test_deduplicating_results()
+#
+# test_nara_risk_subset()
+# test_multiple_subset()
+# test_validation_subset()
+# test_tech_appraisal_subset()
+# test_other_risk_subset()
+# test_duplicates_subset()
+# test_empty_subset()
+#
+# test_format_subtotal()
+# test_nara_risk_subtotal()
+# test_technical_appraisal_subtotal()
+# test_technical_appraisal_subtotal_empty()
+# test_other_risk_subtotal()
+# test_other_risk_subtotal_empty()
+# test_media_subtotal_function()
 
 test_iteration(repo)
 
