@@ -14,14 +14,20 @@ import shutil
 from format_analysis_functions import *
 
 
-def compare_objects(test_name, actual, expected):
-    """Compares two strings or lists, one with the actual script output and one with the expected values.
-    Prints if they match (test passes) or not (test fails)."""
+def compare_strings(test_name, actual, expected):
+    """Compares two strings, one with the actual script output and one with the expected values.
+    Prints if they match (test passes) or not (test fails).
+    Results for failed tests are saved to a text file in the output folder for review."""
 
     if actual == expected:
         print("Pass: ", test_name)
     else:
         print("FAIL: ", test_name)
+        with open(f"{test_name}_comparison_results.txt", "w") as file:
+            file.write("Test output:\n")
+            file.write(actual)
+            file.write("\n\nExpected output:\n")
+            file.write(expected)
 
 
 def compare_dataframes(test_name, df_actual, df_expected):
@@ -51,16 +57,16 @@ def test_argument(repo_path):
 
     # Runs the script without an argument and verifies the correct error message would printed.
     no_argument = subprocess.run(f"python {script_path}", shell=True, stdout=subprocess.PIPE)
-    error_msg = b'\r\nThe required script argument (accession_folder) is missing.\r\nPlease run the script again.' \
-                b'\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n'
-    compare_objects("Argument_Missing", no_argument.stdout, error_msg)
+    error_msg = "\r\nThe required script argument (accession_folder) is missing.\r\nPlease run the script again." \
+                "\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
+    compare_strings("Argument_Missing", no_argument.stdout.decode("utf-8"), error_msg)
 
     # Runs the script with an argument that isn't a valid path and verifies the correct error message would print.
     wrong_argument = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
-    error_msg = b"\r\nThe provided accession folder 'C:/User/Wrong/Path' is not a valid directory." \
-                b"\r\nPlease run the script again." \
-                b"\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
-    compare_objects("Argument_Invalid_Path", wrong_argument.stdout, error_msg)
+    error_msg = "\r\nThe provided accession folder 'C:/User/Wrong/Path' is not a valid directory." \
+                "\r\nPlease run the script again." \
+                "\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
+    compare_strings("Argument_Invalid_Path", wrong_argument.stdout.decode("utf-8"), error_msg)
 
 
 def test_check_configuration_function(repo_path):
@@ -71,9 +77,9 @@ def test_check_configuration_function(repo_path):
 
     # Runs the script with no configuration.py present, since it was just renamed.
     no_config = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
-    error_msg = b'\r\nCould not run the script. Missing the required configuration.py file.' \
-                b'\r\nMake a configuration.py file using configuration_template.py and save it to the folder with the script.\r\n'
-    compare_objects("Config_Missing", no_config.stdout, error_msg)
+    error_msg = "\r\nCould not run the script. Missing the required configuration.py file." \
+                "\r\nMake a configuration.py file using configuration_template.py and save it to the folder with the script.\r\n"
+    compare_strings("Config_Missing", no_config.stdout.decode("utf-8"), error_msg)
 
     # Makes a configuration file without any of the required variables to use for testing.
     # Verifies that the check_configuration() function returns the expected error messages.
@@ -81,13 +87,13 @@ def test_check_configuration_function(repo_path):
     with open(f"{repo_path}/configuration.py", "w") as config:
         config.write('# Constants used for other scripts\nvariable = "value"\n')
     no_var = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
-    error_msg = b'\r\nProblems detected with configuration.py:\r\n' \
-                b'   * FITS variable is missing from the configuration file.\r\n' \
-                b'   * ITA variable is missing from the configuration file.\r\n' \
-                b'   * RISK variable is missing from the configuration file.\r\n' \
-                b'   * NARA variable is missing from the configuration file.\r\n\r\n' \
-                b'Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n'
-    compare_objects("Config_Missing_Variables", no_var.stdout, error_msg)
+    error_msg = '\r\nProblems detected with configuration.py:\r\n' \
+                '   * FITS variable is missing from the configuration file.\r\n' \
+                '   * ITA variable is missing from the configuration file.\r\n' \
+                '   * RISK variable is missing from the configuration file.\r\n' \
+                '   * NARA variable is missing from the configuration file.\r\n\r\n' \
+                'Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n'
+    compare_strings("Config_Missing_Variables", no_var.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
     # Makes a configuration file with the required variables but all are incorrect file paths to use for testing.
@@ -100,13 +106,13 @@ def test_check_configuration_function(repo_path):
         config.write('RISK = "C:/Users/Error/Riskfileformats.csv"\n')
         config.write('NARA = "C:/Users/Error/NARA.csv"\n')
     path_err = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
-    error_msg = b"\r\nProblems detected with configuration.py:\r\n" \
-                b"   * FITS path 'C:/Users/Error/fits.bat' is not correct.\r\n" \
-                b"   * ITAfileformats.csv path 'C:/Users/Error/ITAfileformats.csv' is not correct.\r\n" \
-                b"   * Riskfileformats.csv path 'C:/Users/Error/Riskfileformats.csv' is not correct.\r\n" \
-                b"   * NARA Preservation Action Plans CSV path 'C:/Users/Error/NARA.csv' is not correct.\r\n\r\n" \
-                b"Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n"
-    compare_objects("Config_Variable_Paths", path_err.stdout, error_msg)
+    error_msg = "\r\nProblems detected with configuration.py:\r\n" \
+                "   * FITS path 'C:/Users/Error/fits.bat' is not correct.\r\n" \
+                "   * ITAfileformats.csv path 'C:/Users/Error/ITAfileformats.csv' is not correct.\r\n" \
+                "   * Riskfileformats.csv path 'C:/Users/Error/Riskfileformats.csv' is not correct.\r\n" \
+                "   * NARA Preservation Action Plans CSV path 'C:/Users/Error/NARA.csv' is not correct.\r\n\r\n" \
+                "Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n"
+    compare_strings("Config_Variable_Paths", path_err.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
     # Renames the correct configuration file back to configuration.py.
@@ -133,30 +139,31 @@ def test_csv_to_dataframe_function():
     df_nara = csv_to_dataframe(c.NARA)
 
     # For each CSV, tests the function worked by verifying the column names and that the dataframe isn't empty.
+    # Column names are converted to a comma separated string to work with the compare_strings() function.
     if len(df_fits) != 0:
-        expected = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs"]
-        compare_objects("FITS_CSV_DF", df_fits.columns.to_list(), expected)
+        expected = "FITS_File_Path, FITS_Format_Name, FITS_Format_Version, FITS_Multiple_IDs"
+        compare_strings("FITS_CSV_DF", ', '.join(df_fits.columns.to_list()), expected)
     else:
         print("Test fails:   FITS_CSV_DF is empty")
 
     if len(df_ita) != 0:
-        compare_objects("ITA_CSV_DF", df_ita.columns.to_list(), ["FITS_FORMAT", "NOTES"])
+        compare_strings("ITA_CSV_DF", ', '.join(df_ita.columns.to_list()), "FITS_FORMAT, NOTES")
     else:
         print("Test fails:   ITA_CSV_DF is empty")
 
     if len(df_other) != 0:
-        compare_objects("Other_CSV_DF", df_other.columns.to_list(), ["FITS_FORMAT", "RISK_CRITERIA"])
+        compare_strings("Other_CSV_DF", ', '.join(df_other.columns.to_list()), "FITS_FORMAT, RISK_CRITERIA")
     else:
         print("Test fails:   Other_CSV_DF is empty")
 
     if len(df_nara) != 0:
-        expected = ["NARA_Format Name", "NARA_File Extension(s)", "NARA_Category/Plan(s)", "NARA_NARA Format ID",
-                    "NARA_MIME type(s)", "NARA_Specification/Standard URL", "NARA_PRONOM URL", "NARA_LOC URL",
-                    "NARA_British Library URL", "NARA_WikiData URL", "NARA_ArchiveTeam URL",
-                    "NARA_ForensicsWiki URL", "NARA_Wikipedia URL", "NARA_docs.fileformat.com", "NARA_Other URL",
-                    "NARA_Notes", "NARA_Risk Level", "NARA_Preservation Action", "NARA_Proposed Preservation Plan",
-                    "NARA_Description and Justification", "NARA_Preferred Processing and Transformation Tool(s)"]
-        compare_objects("NARA_CSV_DF", df_nara.columns.to_list(), expected)
+        expected = "NARA_Format Name, NARA_File Extension(s), NARA_Category/Plan(s), NARA_NARA Format ID, " \
+                   "NARA_MIME type(s), NARA_Specification/Standard URL, NARA_PRONOM URL, NARA_LOC URL, " \
+                   "NARA_British Library URL, NARA_WikiData URL, NARA_ArchiveTeam URL, NARA_ForensicsWiki URL, " \
+                   "NARA_Wikipedia URL, NARA_docs.fileformat.com, NARA_Other URL, NARA_Notes, NARA_Risk Level, " \
+                   "NARA_Preservation Action, NARA_Proposed Preservation Plan, NARA Description and Justification, " \
+                   "NARA_Preferred Processing and Transformation Tool(s)"
+        compare_strings("NARA_CSV_DF", ', '.join(df_nara.columns.to_list()), expected)
     else:
         print("Test fails:   NARA_CSV_DF is empty")
 
@@ -265,8 +272,8 @@ def test_fits_class_error():
 
     # Verifies the correct error message would be printed by the script and prints the test result.
     # In format_analysis.py, the error would also cause the script to exit.
-    error_msg = b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n'
-    compare_objects("FITS_Directory_Error", fits_result.stderr, error_msg)
+    error_msg = "Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n"
+    compare_strings("FITS_Directory_Error", fits_result.stderr.decode("utf-8"), error_msg)
 
     # Deletes the test files.
     shutil.rmtree(fr"{output}\accession")
@@ -1131,8 +1138,8 @@ def test_iteration(repo_path):
     # Runs the script on the test accession folder and tests if the expected messages were produced.
     # In format_analysis.py, these messages are printed to the terminal for archivist review.
     iteration_one = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
-    msg = b'\r\nGenerating new FITS format identification information.\r\n\r\nGenerating new risk data for the report.\r\n'
-    compare_objects("Iteration_One_Message", iteration_one.stdout, msg)
+    msg = "\r\nGenerating new FITS format identification information.\r\n\r\nGenerating new risk data for the report.\r\n"
+    compare_strings("Iteration_Message_1", iteration_one.stdout.decode("utf-8"), msg)
 
     # Deletes trash folder and adds a missed file to the accession folder to simulate archivist appraisal.
     # Also deletes the full_risk_data.csv so an updated one will be made with the changes.
@@ -1144,11 +1151,11 @@ def test_iteration(repo_path):
     # Runs the script again on the test accession folder.
     # It will update the FITS files to match the accession folder and update the three spreadsheet.
     iteration_two = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
-    msg = b'\r\nUpdating the XML files in the FITS folder to match files in the accession folder.\r\n' \
-          b'This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.\r\n' \
-          b'Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n' \
-          b'Generating new risk data for the report.\r\n'
-    compare_objects("Iteration_Two_Message", iteration_two.stdout, msg)
+    msg = "\r\nUpdating the XML files in the FITS folder to match files in the accession folder.\r\n" \
+          "This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.\r\n" \
+          "Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n" \
+          "Generating new risk data for the report.\r\n"
+    compare_strings("Iteration_Message_2", iteration_two.stdout.decode("utf-8"), msg)
 
     # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
     df_risk = pd.read_csv("accession_full_risk_data.csv")
@@ -1158,11 +1165,11 @@ def test_iteration(repo_path):
     # Runs the script again on the test accession folder.
     # It will use existing fits.csv and full_risk_data.csv to update format_analysis.xlsx.
     iteration_three = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
-    msg = b'\r\nUpdating the XML files in the FITS folder to match files in the accession folder.\r\n' \
-          b'This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.\r\n' \
-          b'Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n' \
-          b'Updating the report using existing risk data.\r\n'
-    compare_objects("Iteration_Three_Message", iteration_three.stdout, msg)
+    msg = "\r\nUpdating the XML files in the FITS folder to match files in the accession folder.\r\n" \
+          "This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.\r\n" \
+          "Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n" \
+          "Updating the report using existing risk data.\r\n"
+    compare_strings("Iteration_Message_3", iteration_three.stdout.decode("utf-8"), msg)
 
     # Makes dataframes with the expected values for each tab in format_analysis.xlsx.
     # Does not include the FITS_MD5 column for df with Excel or zip files, which are different each time they are made.
