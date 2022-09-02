@@ -16,13 +16,18 @@ from format_analysis_functions import *
 
 def compare_strings(test_name, actual, expected):
     """Compares two strings, one with the actual script output and one with the expected values.
-    Prints if they match (test passes) or not (test fails).
+    Prints if they match (test passes) or not (test fails) and updates the counter.
     Results for failed tests are saved to a text file in the output folder for review."""
 
     if actual == expected:
         print("Pass: ", test_name)
+        global PASSED_TESTS
+        PASSED_TESTS += 1
     else:
         print("FAIL: ", test_name)
+        global FAILED_TESTS
+        FAILED_TESTS += 1
+
         with open(f"{test_name}_comparison_results.txt", "w") as file:
             file.write("Test output:\n")
             file.write(actual)
@@ -32,7 +37,8 @@ def compare_strings(test_name, actual, expected):
 
 def compare_dataframes(test_name, df_actual, df_expected):
     """Compares two dataframes, one with the actual script output and one with the expected values.
-    Prints if they match (test passes) or not (test fails) and saves failed tests to a CSV for review."""
+    Prints if they match (test passes) or not (test fails) and updates the counter.
+    Results for failed tests are saved to a CSV in the output folder for review."""
 
     # Makes a new dataframe that merges the values of the two dataframes.
     df_comparison = df_actual.merge(df_expected, indicator=True, how="outer")
@@ -44,8 +50,12 @@ def compare_dataframes(test_name, df_actual, df_expected):
     # Otherwise, saves the dataframe with the complete merge (including matches) to a CSV in the output directory.
     if len(df_errors) == 0:
         print("Pass: ", test_name)
+        global PASSED_TESTS
+        PASSED_TESTS += 1
     else:
         print("FAIL: ", test_name)
+        global FAILED_TESTS
+        FAILED_TESTS += 1
         df_comparison.to_csv(f"{test_name}_comparison_results.csv", index=False)
 
 
@@ -140,21 +150,25 @@ def test_csv_to_dataframe_function():
 
     # For each CSV, tests the function worked by verifying the column names and that the dataframe isn't empty.
     # Column names are converted to a comma separated string to work with the compare_strings() function.
+    global FAILED_TESTS
     if len(df_fits) != 0:
         expected = "FITS_File_Path, FITS_Format_Name, FITS_Format_Version, FITS_Multiple_IDs"
         compare_strings("FITS_CSV_DF", ', '.join(df_fits.columns.to_list()), expected)
     else:
-        print("Test fails:   FITS_CSV_DF is empty")
+        print("FAIL: FITS_CSV_DF is empty")
+        FAILED_TESTS += 1
 
     if len(df_ita) != 0:
         compare_strings("ITA_CSV_DF", ', '.join(df_ita.columns.to_list()), "FITS_FORMAT, NOTES")
     else:
-        print("Test fails:   ITA_CSV_DF is empty")
+        print("FAIL: ITA_CSV_DF is empty")
+        FAILED_TESTS += 1
 
     if len(df_other) != 0:
         compare_strings("Other_CSV_DF", ', '.join(df_other.columns.to_list()), "FITS_FORMAT, RISK_CRITERIA")
     else:
-        print("Test fails:   Other_CSV_DF is empty")
+        print("FAIL: Other_CSV_DF is empty")
+        FAILED_TESTS += 1
 
     if len(df_nara) != 0:
         expected = "NARA_Format Name, NARA_File Extension(s), NARA_Category/Plan(s), NARA_NARA Format ID, " \
@@ -165,7 +179,8 @@ def test_csv_to_dataframe_function():
                    "NARA_Preferred Processing and Transformation Tool(s)"
         compare_strings("NARA_CSV_DF", ', '.join(df_nara.columns.to_list()), expected)
     else:
-        print("Test fails:   NARA_CSV_DF is empty")
+        print("FAIL: NARA_CSV_DF is empty")
+        FAILED_TESTS += 1
 
     # Deletes the test files.
     shutil.rmtree(fr"{output}\accession")
@@ -1300,6 +1315,10 @@ except (IndexError, FileNotFoundError):
 # sys.argv[0] is the path to format_analysis_tests.py
 repo = os.path.dirname(sys.argv[0])
 
+# Makes counters for the number of passed and failed tests to summarize the results at the end.
+PASSED_TESTS = 0
+FAILED_TESTS = 0
+
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
 # A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
@@ -1310,7 +1329,7 @@ test_check_configuration_function(repo)
 test_make_fits()
 test_fits_class_error()
 test_update_fits_function()
-test_make_fits_csv()
+#test_make_fits_csv()
 test_csv_to_dataframe_function()
 test_csv_to_dataframe_function_errors()
 
@@ -1337,4 +1356,9 @@ test_media_subtotal_function()
 
 test_iteration(repo)
 
-print("\nThe testing script is complete.")
+print("\nThe testing script is complete. Results:")
+if FAILED_TESTS == 0:
+    print(f"\t* All {PASSED_TESTS} tests passed.")
+else:
+    print(f"\t* {PASSED_TESTS} passed.")
+    print(f"\t* {FAILED_TESTS} failed. See output folder for logs of each failed test.")
