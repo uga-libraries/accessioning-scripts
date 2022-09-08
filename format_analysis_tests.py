@@ -368,18 +368,18 @@ def test_make_fits_csv():
     make_fits_csv(fr"{output}\accession_FITS", accession_folder, output, "accession")
 
     # Makes a dataframe with the expected values.
-    # Does not include fixity because that changes every time XLSX and ZIP are made.
-    # Rounds size to 1 decimal because that varies every time XLSX and ZIP are made.
+    # Does not include fixity because that changes every time XLSX is made.
+    # Calculates size for XLSX because the size varies every time it is made.
     today = datetime.date.today().strftime('%Y-%m-%d')
     rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
              "Droid version 6.4", False, today, 1200.4, np.NaN, np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", 2, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
-             "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today, 6.4,
-             "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+             "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today,
+             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
-             6.4, "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN, "Tika version 1.21",
-             True, today, 6.4, "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+             True, today, round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
              "Droid version 6.4", False, today, 801.2, np.NaN, np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
@@ -394,10 +394,8 @@ def test_make_fits_csv():
 
     # Reads the script output into a dataframe.
     # Removes fixity because that changes every time XLSX and ZIP are made.
-    # Rounds size to 1 decimal because that varies every time XLSX and ZIP are made.
     df_fits = pd.read_csv("accession_fits.csv")
     df_fits = df_fits.drop("MD5", axis=1)
-    df_fits["Size_KB"] = df_fits["Size_KB"].round(decimals=1)
 
     # Compares the script output to the expected values.
     compare_dataframes("Match_NARA", df_fits, df_expected)
