@@ -1175,8 +1175,12 @@ def test_iteration(repo_path):
     compare_strings("Iteration_Message_2", iteration_two.stdout.decode("utf-8"), msg)
 
     # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
+    # Removes the data_update.final.xlsx FITS id of Zip Format and NARA matches to empty.txt except for Plain Text.
     df_risk = pd.read_csv("accession_full_risk_data.csv")
-    df_risk.drop(index=[2, 10, 12, 13, 14], inplace=True)
+    xlsx_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk1\data_update_final.xlsx") & (df_risk["FITS_Format_Name"] == "ZIP Format")]
+    empty_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk2\empty.txt") & (df_risk["NARA_Format Name"] != "Plain Text")]
+    df_risk.drop(xlsx_to_drop.index, inplace=True)
+    df_risk.drop(empty_to_drop.index, inplace=True)
     df_risk.to_csv("accession_full_risk_data.csv", index=False)
 
     # Runs the script again on the test accession folder.
@@ -1367,7 +1371,7 @@ test_technical_appraisal_subtotal_empty()
 test_other_risk_subtotal()
 test_other_risk_subtotal_empty()
 test_media_subtotal_function()
-#
+
 test_iteration(repo)
 
 print("\nThe testing script is complete. Results:")
