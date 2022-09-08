@@ -1287,6 +1287,7 @@ def test_iteration(repo_path):
     df_multiple = df_multiple.drop("FITS_MD5", axis=1)
     df_duplicates = pd.read_excel(xlsx, "Duplicates")
     df_validation = pd.read_excel(xlsx, "Validation")
+    xlsx.close()
 
     # Compares the expected values to the actual script values.
     compare_dataframes("Iteration_Subtotals_Format", df_format_subtotals, df_format_subtotals_expected)
@@ -1305,7 +1306,7 @@ def test_iteration(repo_path):
     shutil.rmtree("accession")
     shutil.rmtree("accession_FITS")
     os.remove("accession_fits.csv")
-    # os.remove("accession_format-analysis.xlsx") - getting a permissions error when try to delete
+    os.remove("accession_format-analysis.xlsx")
     os.remove("accession_full_risk_data.csv")
 
 
