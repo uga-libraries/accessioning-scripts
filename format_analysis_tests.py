@@ -65,7 +65,7 @@ def test_argument(repo_path):
     # Calculates the path to the format_analysis.py script.
     script_path = os.path.join(repo_path, "format_analysis.py")
 
-    # Runs the script without an argument and verifies the correct error message would printed.
+    # Runs the script without an argument and verifies the correct error message would print.
     no_argument = subprocess.run(f"python {script_path}", shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nThe required script argument (accession_folder) is missing.\r\nPlease run the script again." \
                 "\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
@@ -134,7 +134,7 @@ def test_csv_to_dataframe_function():
 
     # Makes a FITS CSV with no special characters.
     # In format_analysis.py, this would be made earlier in the script and has more columns.
-    # The other CSVs read by this function are already on on the local machine and paths are in configuration.py
+    # The other CSVs read by this function are already on the local machine and paths are in configuration.py
     with open("accession_fits.csv", "w", newline="") as file:
         file_write = csv.writer(file)
         file_write.writerow(["File_Path", "Format_Name", "Format_Version", "Multiple_IDs"])
@@ -245,7 +245,7 @@ def test_make_fits():
 
     # Makes a dataframe with the files that are actually in the accession_fits folder after running the test.
     fits_files = []
-    for root, dir, files in os.walk("accession_fits"):
+    for root, dirs, files in os.walk("accession_fits"):
         fits_files.extend(files)
     df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
 
@@ -324,7 +324,7 @@ def test_update_fits_function():
 
     # Makes a dataframe with the files that are in the FITS folder.
     fits_files = []
-    for root, dir, files in os.walk("accession_fits"):
+    for root, dirs, files in os.walk("accession_fits"):
         fits_files.extend(files)
     df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
 
