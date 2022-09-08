@@ -283,7 +283,7 @@ def test_fits_class_error():
     # Verifies the correct error message would be printed by the script and prints the test result.
     # In format_analysis.py, the error would also cause the script to exit.
     error_msg = "Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n"
-    compare_strings("FITS_Directory_Error", fits_result.stderr.decode("utf-8"), error_msg)
+    compare_strings("FITS_Class_Error", fits_result.stderr.decode("utf-8"), error_msg)
 
     # Deletes the test files.
     shutil.rmtree(fr"{output}\accession")
@@ -398,7 +398,7 @@ def test_make_fits_csv():
     df_fits = df_fits.drop("MD5", axis=1)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Match_NARA", df_fits, df_expected)
+    compare_dataframes("Make_FITS_CSV", df_fits, df_expected)
 
     # Deletes the test files.
     shutil.rmtree("accession")
@@ -1333,12 +1333,12 @@ FAILED_TESTS = 0
 test_argument(repo)
 test_check_configuration_function(repo)
 
+test_csv_to_dataframe_function()
+test_csv_to_dataframe_function_errors()
 test_make_fits()
 test_fits_class_error()
 test_update_fits_function()
 test_make_fits_csv()
-test_csv_to_dataframe_function()
-test_csv_to_dataframe_function_errors()
 
 test_match_nara_risk_function()
 test_match_technical_appraisal_function()
