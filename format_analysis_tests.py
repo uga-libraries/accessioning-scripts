@@ -211,7 +211,7 @@ def test_csv_to_dataframe_function_errors():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the contents of the FITS folder to the expected values.
-    compare_dataframes("CSV_Encoding", df_fits, df_expected)
+    compare_dataframes("CSV_DF_Encoding", df_fits, df_expected)
 
     # Deletes the test file.
     os.remove("accession_fits.csv")
@@ -1188,17 +1188,17 @@ def test_iteration(repo_path):
     # Calculates size for df with XLSX and ZIP with os.path because they are different each time they are made.
     today = datetime.date.today().strftime('%Y-%m-%d')
 
-    rows = [["Comma-Separated Values (CSV)", "Low Risk", 2, 20, 212, 96.5],
+    rows = [["Comma-Separated Values (CSV)", "Low Risk", 2, 20, 212, 96.2],
             ["empty", "Low Risk", 1, 10, 0, 0],
             ["Extensible Markup Language", "Low Risk", 1, 10, 0, 0],
-            ["Office Open XML Workbook", "Low Risk", 1, 10, 0, 0],
+            ["Office Open XML Workbook", "Low Risk", 1, 10, 0.4, 0.2],
             ["Plain text", "Low Risk", 3, 30, 7.3, 3.3],
-            ["XLSX", "Low Risk", 1, 10, 0, 0],
+            ["XLSX", "Low Risk", 1, 10, 0.4, 0.2],
             ["ZIP Format", "Moderate Risk", 1, 10, 0.3, 0.1]]
     column_names = ["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_format_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["Low Risk", 9, 90, 219.4, 99.9], ["Moderate Risk", 1, 10, 0.3, 0.1]]
+    rows = [["Low Risk", 9, 90, 220.1, 99.9], ["Moderate Risk", 1, 10, 0.3, 0.1]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_nara_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
@@ -1210,7 +1210,7 @@ def test_iteration(repo_path):
     column_names = ["Other_Risk", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_other_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["disk1", 5, 215.7, 0, 0, 5, 0, 0, 0], ["disk2", 5, 4, 0, 1, 4, 0, 1, 1]]
+    rows = [["disk1", 5, 216.4, 0, 0, 5, 0, 0, 0], ["disk2", 5, 4, 0, 1, 4, 0, 1, 1]]
     column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                     "NARA Low Risk (File Count)", "No NARA Match (File Count)", "Technical Appraisal_Format (File Count)",
                     "Other Risk Indicator (File Count)"]
@@ -1242,10 +1242,10 @@ def test_iteration(repo_path):
 
     rows = [[fr"{output}\accession\disk1\data_update_final.xlsx", "XLSX", np.NaN, np.NaN,
              "Exiftool version 11.54", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
+             np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
             [fr"{output}\accession\disk1\data_update_final.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
              "Tika version 1.21", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
+             np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_Creating_Application",
                     "NARA_Risk Level", "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
