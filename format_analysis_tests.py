@@ -372,7 +372,7 @@ def test_make_fits_csv():
     # Calculates size for XLSX because the size varies every time it is made.
     today = datetime.date.today().strftime('%Y-%m-%d')
     rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
-             "Droid version 6.4", False, today, 1200.4, np.NaN, np.NaN, np.NaN, np.NaN],
+             "Droid version 6.4", False, today, 1200.41, np.NaN, np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", 2, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
              "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today,
              round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
@@ -381,13 +381,13 @@ def test_make_fits_csv():
             [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN, "Tika version 1.21",
              True, today, round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
-             "Droid version 6.4", False, today, 801.2, np.NaN, np.NaN, np.NaN, np.NaN],
+             "Droid version 6.4", False, today, 801.21, np.NaN, np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
              "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.2, np.NaN, True, True, np.NaN],
             [fr"{output}\accession\disk2\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.2, np.NaN, True, True, np.NaN],
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.22, np.NaN, True, True, np.NaN],
             [fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1",
-             False, today, 0, np.NaN, True, True, "Not able to determine type of end of line severity=info"]]
+             False, today, 0.035, np.NaN, True, True, "Not able to determine type of end of line severity=info"]]
     column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
                     "Date_Last_Modified", "Size_KB", "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     df_expected = pd.DataFrame(rows, columns=column_names)
