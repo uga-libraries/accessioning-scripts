@@ -368,7 +368,6 @@ def test_make_fits_csv():
     make_fits_csv(fr"{output}\accession_FITS", accession_folder, output, "accession")
 
     # Makes a dataframe with the expected values.
-    # Does not include fixity because that changes every time XLSX is made.
     # Calculates size for XLSX because the size varies every time it is made.
     today = datetime.date.today().strftime('%Y-%m-%d')
     rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
