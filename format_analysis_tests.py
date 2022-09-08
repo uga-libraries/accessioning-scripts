@@ -372,30 +372,36 @@ def test_make_fits_csv():
     # Calculates size for XLSX because the size varies every time it is made.
     today = datetime.date.today().strftime('%Y-%m-%d')
     rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
-             "Droid version 6.4", False, today, 1200.41, np.NaN, np.NaN, np.NaN, np.NaN],
+             "Droid version 6.4", False, today, 1200.41, "70ab34bf1e766f600ddfe2a8cb17dea3", np.NaN, np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", 2, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
              "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today,
-             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+             "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
-             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+             "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN, "Tika version 1.21",
-             True, today, round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+             True, today, round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3),
+             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
-             "Droid version 6.4", False, today, 801.21, np.NaN, np.NaN, np.NaN, np.NaN],
+             "Droid version 6.4", False, today, 801.21, "9b8dbe4ef9fa42c011df292f56288ebe", np.NaN, np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.2, np.NaN, True, True, np.NaN],
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.2,
+             "8677d925a634712ca46f3f7a3673f3c2", np.NaN, True, True, np.NaN],
             [fr"{output}\accession\disk2\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.22, np.NaN, True, True, np.NaN],
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.22,
+             "2364e92ed2f859d80cc18de241e12448", np.NaN, True, True, np.NaN],
             [fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1",
-             False, today, 0.035, np.NaN, True, True, "Not able to determine type of end of line severity=info"]]
+             False, today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True, "Not able to determine type of end of line severity=info"]]
     column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-                    "Date_Last_Modified", "Size_KB", "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
+                    "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Reads the script output into a dataframe.
-    # Removes fixity because that changes every time XLSX and ZIP are made.
+    # Provides a default MD5 value for data.xlsx because fixity is different every time the file is made.
     df_fits = pd.read_csv("accession_fits.csv")
-    df_fits = df_fits.drop("MD5", axis=1)
+    replace_md5 = df_fits["File_Path"] == fr"{output}\accession\disk1\data.xlsx"
+    df_fits.loc[replace_md5, "MD5"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
     # Compares the script output to the expected values.
     compare_dataframes("Make_FITS_CSV", df_fits, df_expected)
@@ -1217,10 +1223,10 @@ def test_iteration(repo_path):
     df_media_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today,
-             round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "Moderate Risk",
-             "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
+             round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+             "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs",
-                    "FITS_Date_Last_Modified", "FITS_Size_KB", "NARA_Risk Level",
+                    "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "NARA_Risk Level",
                     "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_nara_risk_expected = pd.DataFrame(rows, columns=column_names)
 
@@ -1242,12 +1248,12 @@ def test_iteration(repo_path):
 
     rows = [[fr"{output}\accession\disk1\data_update_final.xlsx", "XLSX", np.NaN, np.NaN,
              "Exiftool version 11.54", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
+             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
             [fr"{output}\accession\disk1\data_update_final.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
              "Tika version 1.21", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
+             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
-                    "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_Creating_Application",
+                    "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "FITS_Creating_Application",
                     "NARA_Risk Level", "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_multiple_formats_expected = pd.DataFrame(rows, columns=column_names)
 
@@ -1266,7 +1272,7 @@ def test_iteration(repo_path):
     df_validation_expected = pd.DataFrame(rows, columns=column_names)
 
     # Makes a dataframe from each tab in format_analysis.xlsx.
-    # Removing FITS_MD5 for df with Excel or zip files, since those have a different MD5 each time they are made.
+    # Provides a default MD5 for df with all XSLX or ZIP files, since those have a different MD5 each time they are made.
     # Rounding file size and percentage for subtotals with Excel or zip files, since they vary in size each time.
     # For subsets, used Python to calculate individual file sizes to keep the number accurate.
     xlsx = pd.ExcelFile("accession_format-analysis.xlsx")
@@ -1280,11 +1286,11 @@ def test_iteration(repo_path):
     df_media_subtotals = pd.read_excel(xlsx, "Media Subtotals")
     df_media_subtotals["Size (MB)"] = df_media_subtotals["Size (MB)"].round(1)
     df_nara_risk = pd.read_excel(xlsx, "NARA Risk")
-    df_nara_risk = df_nara_risk.drop("FITS_MD5", axis=1)
+    df_nara_risk["FITS_MD5"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     df_tech_appraisal = pd.read_excel(xlsx, "For Technical Appraisal")
     df_other_risk = pd.read_excel(xlsx, "Other Risks")
     df_multiple = pd.read_excel(xlsx, "Multiple Formats")
-    df_multiple = df_multiple.drop("FITS_MD5", axis=1)
+    df_multiple["FITS_MD5"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     df_duplicates = pd.read_excel(xlsx, "Duplicates")
     df_validation = pd.read_excel(xlsx, "Validation")
     xlsx.close()
@@ -1361,7 +1367,7 @@ test_technical_appraisal_subtotal_empty()
 test_other_risk_subtotal()
 test_other_risk_subtotal_empty()
 test_media_subtotal_function()
-
+#
 test_iteration(repo)
 
 print("\nThe testing script is complete. Results:")
