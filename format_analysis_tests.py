@@ -87,7 +87,8 @@ def test_check_configuration_function(repo_path):
     os.rename(f"{repo_path}/configuration.py", f"{repo_path}/configuration_original.py")
 
     # Runs the script with no configuration.py present, since it was just renamed.
-    no_config = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
+    no_config = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}",
+                               shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nCould not run the script. Missing the required configuration.py file." \
                 "\r\nMake a configuration.py file using configuration_template.py and save it to the folder with the script.\r\n"
     compare_strings("Config_Missing", no_config.stdout.decode("utf-8"), error_msg)
@@ -116,7 +117,8 @@ def test_check_configuration_function(repo_path):
         config.write('ITA = "C:/Users/Error/ITAfileformats.csv"\n')
         config.write('RISK = "C:/Users/Error/Riskfileformats.csv"\n')
         config.write('NARA = "C:/Users/Error/NARA.csv"\n')
-    path_err = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
+    path_err = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}",
+                              shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nProblems detected with configuration.py:\r\n" \
                 "   * FITS path 'C:/Users/Error/fits.bat' is not correct.\r\n" \
                 "   * ITAfileformats.csv path 'C:/Users/Error/ITAfileformats.csv' is not correct.\r\n" \
@@ -441,7 +443,7 @@ def test_match_nara_risk_function():
     # Extension variations: match single extension and pipe-separated extension, including case not matching
     # Also includes 2 that won't match
     rows = [[r"C:\PUID\file.zip", "ZIP archive", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263"],
-            [r"C:\PUID\Double\movie.ifo", "DVD Data File", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/419"],
+            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/419"],
             [r"C:\Name\img.jp2", "JPEG 2000 File Format", np.NaN, np.NaN],
             [r"C:\Name\Case\file.gz", "gzip", np.NaN, np.NaN],
             [r"C:\Name\Version\database.nsf", "Lotus Notes Database", "2", np.NaN],
@@ -464,13 +466,13 @@ def test_match_nara_risk_function():
     rows = [[r"C:\PUID\file.zip", "ZIP archive", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
              "ZIP archive", "zip", "https://www.nationalarchives.gov.uk/pronom/x-fmt/263", "Moderate Risk",
              "Retain but extract files from the container", "PRONOM"],
-            [r"C:\PUID\Double\movie.ifo", "DVD Data File", np.NaN,
+            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN,
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "DVD Data Backup File", "bup",
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "Moderate Risk", "Retain", "PRONOM"],
-            [r"C:\PUID\Double\movie.ifo", "DVD Data File", np.NaN,
+            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN,
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "DVD Data File", "dvd",
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "Moderate Risk", "Retain", "PRONOM"],
-            [r"C:\PUID\Double\movie.ifo", "DVD Data File", np.NaN,
+            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN,
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "DVD Info File", "ifo",
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "Moderate Risk", "Retain", "PRONOM"],
             [r"C:\Name\img.jp2", "JPEG 2000 File Format", np.NaN, np.NaN, "JPEG 2000 File Format", "jp2",
@@ -603,16 +605,26 @@ def test_deduplicating_results():
     # Makes a dataframe to use as input, with a subset of the columns usually in df_results.
     # Data variation: one FITS ID with one NARA match, multiple FITS IDs with one NARA match each,
     # multiple NARA matches with the same risk, multiple NARA matches with different risks.
-    rows = [[r"C:\acc\disk1\data.csv", "Comma-Separated Values (CSV)", "Comma Separated Values", "csv", "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Low Risk", "Retain"],
-            [r"C:\acc\disk1\data.xlsx", "Open Office XML Workbook", "Microsoft Excel Office Open XML", "xlsx", "https://www.nationalarchives.gov.uk/pronom/fmt/214", "Low Risk", "Retain"],
-            [r"C:\acc\disk1\data.xlsx", "XLSX", "Microsoft Excel Office Open XML", "xlsx", "https://www.nationalarchives.gov.uk/pronom/fmt/214", "Low Risk", "Retain"],
-            [r"C:\acc\disk1\empty.txt", "empty", "ASCII 7-bit Text", "txt|asc|csv|tab", "https://www.nationalarchives.gov.uk/pronom/x-fmt/22", "Low Risk", "Retain"],
-            [r"C:\acc\disk1\empty.txt", "empty", "ASCII 8-bit Text", "txt|asc|csv|tab", "https://www.nationalarchives.gov.uk/pronom/x-fmt/283", "Low Risk", "Retain"],
-            [r"C:\acc\disk1\empty.txt", "empty", "JSON", "json|txt", "https://www.nationalarchives.gov.uk/pronom/fmt/817", "Low Risk", "Retain"],
-            [r"C:\acc\disk1\empty.txt", "empty", "Plain Text", "Plain_Text|txt|text|asc|rte", "https://www.nationalarchives.gov.uk/pronom/x-fmt/111", "Low Risk", "Retain"],
-            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format (PDF) version 1.7", "pdf", "https://www.nationalarchives.gov.uk/pronom/fmt/276", "Moderate Risk", "Retain"],
-            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format (PDF) version 2.0", "pdf", "https://www.nationalarchives.gov.uk/pronom/fmt/1129", "Moderate Risk", "Retain"],
-            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format/Archiving (PDF/A-1a) accessible", "pdf", "https://www.nationalarchives.gov.uk/pronom/fmt/95", "Low Risk", "Retain"]]
+    rows = [[r"C:\acc\disk1\data.csv", "Comma-Separated Values (CSV)", "Comma Separated Values", "csv",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\data.xlsx", "Open Office XML Workbook", "Microsoft Excel Office Open XML", "xlsx",
+             "https://www.nationalarchives.gov.uk/pronom/fmt/214", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\data.xlsx", "XLSX", "Microsoft Excel Office Open XML", "xlsx",
+             "https://www.nationalarchives.gov.uk/pronom/fmt/214", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "ASCII 7-bit Text", "txt|asc|csv|tab",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/22", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "ASCII 8-bit Text", "txt|asc|csv|tab",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/283", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "JSON", "json|txt",
+             "https://www.nationalarchives.gov.uk/pronom/fmt/817", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\empty.txt", "empty", "Plain Text", "Plain_Text|txt|text|asc|rte",
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111", "Low Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format (PDF) version 1.7", "pdf",
+             "https://www.nationalarchives.gov.uk/pronom/fmt/276", "Moderate Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format (PDF) version 2.0", "pdf",
+             "https://www.nationalarchives.gov.uk/pronom/fmt/1129", "Moderate Risk", "Retain"],
+            [r"C:\acc\disk1\file.pdf", "PDF", "Portable Document Format/Archiving (PDF/A-1a) accessible", "pdf",
+             "https://www.nationalarchives.gov.uk/pronom/fmt/95", "Low Risk", "Retain"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "NARA_Format Name", "NARA_File Extension(s)",
                     "NARA_PRONOM URL", "NARA_Risk Level", "NARA_Proposed Preservation Plan"]
     df_results = pd.DataFrame(rows, columns=column_names)
@@ -1171,7 +1183,8 @@ def test_iteration(repo_path):
     # Runs the script on the test accession folder and tests if the expected messages were produced.
     # In format_analysis.py, these messages are printed to the terminal for archivist review.
     iteration_one = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
-    msg = "\r\nGenerating new FITS format identification information.\r\n\r\nGenerating new risk data for the report.\r\n"
+    msg = "\r\nGenerating new FITS format identification information.\r\n\r\n" \
+          "Generating new risk data for the report.\r\n"
     compare_strings("Iteration_Message_1", iteration_one.stdout.decode("utf-8"), msg)
 
     # Deletes trash folder and adds a missed file to the accession folder to simulate archivist appraisal.
@@ -1193,8 +1206,10 @@ def test_iteration(repo_path):
     # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
     # Removes the data_update.final.xlsx FITS id of Zip Format and NARA matches to empty.txt except for Plain Text.
     df_risk = pd.read_csv("accession_full_risk_data.csv")
-    xlsx_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk1\data_update_final.xlsx") & (df_risk["FITS_Format_Name"] == "ZIP Format")]
-    empty_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk2\empty.txt") & (df_risk["NARA_Format Name"] != "Plain Text")]
+    xlsx_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk1\data_update_final.xlsx") & 
+                           (df_risk["FITS_Format_Name"] == "ZIP Format")]
+    empty_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk2\empty.txt") & 
+                            (df_risk["NARA_Format Name"] != "Plain Text")]
     df_risk.drop(xlsx_to_drop.index, inplace=True)
     df_risk.drop(empty_to_drop.index, inplace=True)
     df_risk.to_csv("accession_full_risk_data.csv", index=False)
@@ -1243,7 +1258,7 @@ def test_iteration(repo_path):
     df_media_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today,
-             round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+             round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "XXXXXXXXXX",
              "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs",
                     "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "NARA_Risk Level",
@@ -1268,13 +1283,14 @@ def test_iteration(repo_path):
 
     rows = [[fr"{output}\accession\disk1\data_update_final.xlsx", "XLSX", np.NaN, np.NaN,
              "Exiftool version 11.54", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
+             "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
             [fr"{output}\accession\disk1\data_update_final.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
              "Tika version 1.21", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
-    column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
-                    "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "FITS_Creating_Application",
-                    "NARA_Risk Level", "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
+             "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
+    column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID",
+                    "FITS_Identifying_Tool(s)", "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB",
+                    "FITS_MD5", "FITS_Creating_Application", "NARA_Risk Level", "NARA_Proposed Preservation Plan",
+                    "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_multiple_formats_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk2\duplicate_file.txt", 3600, "fe6fb9d365e141e326adfaea99c87fa6"],
@@ -1282,17 +1298,19 @@ def test_iteration(repo_path):
     column_names = ["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]
     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1", False,
-             today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True, "Not able to determine type of end of line severity=info",
+    rows = [[fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1",
+             False, today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True,
+             "Not able to determine type of end of line severity=info",
              "Low Risk", "Retain", "Format Name", "Not for TA", "Not for Other"]]
-    column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
-                    "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "FITS_Creating_Application",
-                    "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message", "NARA_Risk Level",
-                    "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
+    column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID",
+                    "FITS_Identifying_Tool(s)", "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB",
+                    "FITS_MD5", "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message",
+                    "NARA_Risk Level", "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal",
+                    "Other_Risk"]
     df_validation_expected = pd.DataFrame(rows, columns=column_names)
 
     # Makes a dataframe from each tab in format_analysis.xlsx.
-    # Provides a default MD5 for df with all XSLX or ZIP files, since those have a different MD5 each time they are made.
+    # Provides a default MD5 for df with XLSX or ZIP files, since those have a different MD5 each time they are made.
     # Rounding file size and percentage for subtotals with Excel or zip files, since they vary in size each time.
     # For subsets, used Python to calculate individual file sizes to keep the number accurate.
     xlsx = pd.ExcelFile("accession_format-analysis.xlsx")
@@ -1306,11 +1324,11 @@ def test_iteration(repo_path):
     df_media_subtotals = pd.read_excel(xlsx, "Media Subtotals")
     df_media_subtotals["Size (MB)"] = df_media_subtotals["Size (MB)"].round(1)
     df_nara_risk = pd.read_excel(xlsx, "NARA Risk")
-    df_nara_risk["FITS_MD5"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    df_nara_risk["FITS_MD5"] = "XXXXXXXXXX"
     df_tech_appraisal = pd.read_excel(xlsx, "For Technical Appraisal")
     df_other_risk = pd.read_excel(xlsx, "Other Risks")
     df_multiple = pd.read_excel(xlsx, "Multiple Formats")
-    df_multiple["FITS_MD5"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    df_multiple["FITS_MD5"] = "XXXXXXXXXX"
     df_duplicates = pd.read_excel(xlsx, "Duplicates")
     df_validation = pd.read_excel(xlsx, "Validation")
     xlsx.close()
