@@ -433,6 +433,56 @@ def test_make_fits_csv():
 def test_make_fits_csv_function_errors():
     """Tests encoding error handling when saving FITS file data to the CSV."""
 
+    # Makes an accession folder with test files (all plain text) for testing.
+    # Variations: one with no encoding error, two with encoding errors.
+    accession_folder = fr"{output}\accession"
+    os.makedirs(fr"{output}\accession\disk1")
+    with open(r"accession\disk1\file.txt", "w") as file:
+        file.write("Text" * 1000)
+    with open(r"accession\disk1\pi_errorπ.txt", "w") as file:
+        file.write("Text" * 2500)
+    with open(r"accession\disk1\smiley_error.txt", "w") as file:
+        file.write("Text" * 1500)
+
+    # Makes FITS files using the test accession folder.
+    # In format_analysis.py, there is also error handling for if FITS has a load class error.
+    fits_output = f"{output}/accession_FITS"
+    os.mkdir(fits_output)
+    subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
+
+    # Runs the function being tested.
+    make_fits_csv(fr"{output}\accession_FITS", accession_folder, output, "accession")
+
+    # Makes a dataframe with the expected values for accession_encode_errors.txt.
+    rows = [[r"C:\Users\amhan\Desktop\Accessions\tests\accession\disk1\pi_errorπ.txt"],
+            [r"C:\Users\amhan\Desktop\Accessions\tests\accession\disk1\smiley_error.txt"]]
+    df_encode_expected = pd.DataFrame(rows, columns=["Paths"])
+
+    # Makes a dataframe with the expected values for accession_fits.csv.
+    rows = [[fr"{output}\accession\disk1\file.txt", "Plain text", np.NaN,
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False,
+             datetime.date.today().strftime('%Y-%m-%d'), 4.0, "1a640a2c9c60ffea3174b2f73a536c48", np.NaN, True, True,
+             np.NaN]]
+    column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
+                    "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed",
+                    "Status_Message"]
+    df_fits_csv_expected = pd.DataFrame(rows, columns=column_names)
+
+    # Reads the script outputs into dataframes.
+    df_encode = pd.read_csv("accession_encode_errors.txt", header=None, names=["Paths"])
+    df_fits_csv = pd.read_csv("accession_fits.csv")
+
+    # Compares the script outputs to the expected values.
+    compare_dataframes("Make_FITS_CSV_Error_Log", df_encode, df_encode_expected)
+    compare_dataframes("Make_FITS_CSV_Error_CSV", df_fits_csv, df_fits_csv_expected)
+
+    # Deletes the test files.
+    shutil.rmtree("accession")
+    shutil.rmtree("accession_FITS")
+    os.remove("accession_encode_errors.txt")
+    os.remove("accession_fits.csv")
+
 
 def test_match_nara_risk_function():
     """Tests combining NARA risk information with FITS information to produce df_results."""
@@ -1154,26 +1204,23 @@ def test_iteration(repo_path):
     accession_folder = fr"{output}\accession"
     os.makedirs(fr"{accession_folder}\disk1\trash")
     with open(r"accession\disk1\trash\trash.txt", "w") as file:
-        file.write("Trash Text " * 20000)
+        file.write("Trash Text " * 20)
     with open(r"accession\disk1\trash\trash1.txt", "w") as file:
-        file.write("Trash Text " * 20001)
+        file.write("Trash Text " * 21)
     with open(r"accession\disk1\trash\trash2.txt", "w") as file:
-        file.write("Trash Text " * 20002)
-    df_spreadsheet = pd.DataFrame({"C1": ["text"*9000], "C2": ["text"*9000], "C3": ["text"*9000]})
-    df_spreadsheet = pd.concat([df_spreadsheet]*1000, ignore_index=True)
-    df_spreadsheet.to_csv(r"accession\disk1\data.csv", index=False)
-    df_spreadsheet[["C3", "C4", "C5", "C6"]] = "New Text" * 1000
-    df_spreadsheet.to_csv(r"accession\disk1\data_update.csv", index=False)
-    df_spreadsheet[["C7", "C8", "C9", "C19"]] = "More Text" * 1000
-    df_spreadsheet.to_excel(r"accession\disk1\data_update_final.xlsx", index=False)
+        file.write("Trash Text " * 22)
+    df_spreadsheet = pd.DataFrame()
+    df_spreadsheet[["C1", "C2", "C2", "C3", "C4", "C5"]] = "Text" * 5000
+    df_spreadsheet = pd.concat([df_spreadsheet]*3000, ignore_index=True)
+    df_spreadsheet.to_excel(r"accession\disk1\data.xlsx", index=False)
     with open(r"accession\disk1\duplicate_file.txt", "w") as file:
-        file.write("Text" * 900000)
+        file.write("Text" * 900)
     os.makedirs(fr"{accession_folder}\disk2")
     shutil.make_archive(r"accession\disk2\disk1backup", 'zip', r"accession\disk1")
-    with open(r"accession\disk2\duplicate_file.txt", "w") as file:
-        file.write("Text" * 900000)
-    with open(r"accession\disk2\empty.txt", "w") as file:
-        file.write("")
+    shutil.copyfile(r"accession\disk2\disk1backup.zip", r"accession\disk2\disk1backup2.zip")
+    shutil.copyfile(r"accession\disk2\disk1backup.zip", r"accession\disk2\disk1backup3.zip")
+    shutil.copyfile(r"accession\disk1\duplicate_file.txt", r"accession\disk2\duplicate_file.txt")
+    open(r"accession\disk2\empty.txt", "w").close()
     with open(r"accession\disk2\error.html", "w") as file:
         file.write("<body>This isn't really html</body>")
 
@@ -1191,7 +1238,7 @@ def test_iteration(repo_path):
     # Also deletes the full_risk_data.csv so an updated one will be made with the changes.
     shutil.rmtree(r"accession\disk1\trash")
     with open(r"accession\disk2\new.txt", "w") as file:
-        file.write("Text"*30000)
+        file.write("Text"*300)
     os.remove("accession_full_risk_data.csv")
 
     # Runs the script again on the test accession folder.
@@ -1206,7 +1253,7 @@ def test_iteration(repo_path):
     # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
     # Removes the data_update.final.xlsx FITS id of Zip Format and NARA matches to empty.txt except for Plain Text.
     df_risk = pd.read_csv("accession_full_risk_data.csv")
-    xlsx_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk1\data_update_final.xlsx") & 
+    xlsx_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk1\data.xlsx") &
                            (df_risk["FITS_Format_Name"] == "ZIP Format")]
     empty_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk2\empty.txt") & 
                             (df_risk["NARA_Format Name"] != "Plain Text")]
@@ -1224,22 +1271,28 @@ def test_iteration(repo_path):
     compare_strings("Iteration_Message_3", iteration_three.stdout.decode("utf-8"), msg)
 
     # Makes dataframes with the expected values for each tab in format_analysis.xlsx.
-    # Does not include the FITS_MD5 column for df with Excel or zip files, which are different each time they are made.
-    # Calculates date, which is when the file was generated, with datetime to keep the expected value accurate.
-    # Calculates size for df with XLSX and ZIP with os.path because they are different each time they are made.
-    today = datetime.date.today().strftime('%Y-%m-%d')
 
-    rows = [["Comma-Separated Values (CSV)", "Low Risk", 2, 20, 212, 96.2],
-            ["empty", "Low Risk", 1, 10, 0, 0],
+    # Calculates date, which is when the file was generated, with datetime to keep the expected value accurate.
+    # Calculates size for XLSX and ZIP with os.path because they are different each time they are made.
+    # Calculates total size for recalculating subtotal percentages due o changes in size of XLSX and ZIP files.
+    today = datetime.date.today().strftime('%Y-%m-%d')
+    xlsx_kb = round(os.path.getsize(r"accession\disk1\data.xlsx") / 1000, 3)
+    xlsx_mb = round(xlsx_kb / 1000, 3)
+    zip_kb = round(os.path.getsize(r"accession\disk2\disk1backup.zip") / 1000, 3)
+    three_zip_mb = round((os.path.getsize(r"accession\disk2\disk1backup.zip") / 1000 * 3) / 1000, 3)
+    total_mb = df_risk["FITS_Size_KB"].sum()/1000
+
+    rows = [["empty", "Low Risk", 1, 10, 0, 0],
             ["Extensible Markup Language", "Low Risk", 1, 10, 0, 0],
-            ["Office Open XML Workbook", "Low Risk", 1, 10, 0.4, 0.2],
-            ["Plain text", "Low Risk", 3, 30, 7.3, 3.3],
-            ["XLSX", "Low Risk", 1, 10, 0.4, 0.2],
-            ["ZIP Format", "Moderate Risk", 1, 10, 0.3, 0.1]]
+            ["Office Open XML Workbook", "Low Risk", 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
+            ["Plain text", "Low Risk", 3, 30, 0.008, round((0.008 / total_mb) * 100, 3)],
+            ["XLSX", "Low Risk", 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
+            ["ZIP Format", "Moderate Risk", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
     column_names = ["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_format_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["Low Risk", 9, 90, 220.1, 99.9], ["Moderate Risk", 1, 10, 0.3, 0.1]]
+    rows = [["Low Risk", 7, 70, 0.019, round((0.019 / total_mb) * 100, 3)],
+            ["Moderate Risk", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_nara_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
@@ -1247,18 +1300,21 @@ def test_iteration(repo_path):
     column_names = ["Technical_Appraisal", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_tech_appraisal_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["Archive format", "ZIP Format", 1, 10, 0.3, 0.1]]
+    rows = [["Archive format", "ZIP Format", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
     column_names = ["Other_Risk", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_other_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["disk1", 5, 216.4, 0, 0, 5, 0, 0, 0], ["disk2", 5, 4, 0, 1, 4, 0, 1, 1]]
+    rows = [["disk1", 3, 0.014, 0, 0, 3, 0, 0, 0], ["disk2", 7, 0.021, 0, 3, 4, 0, 1, 3]]
     column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                     "NARA Low Risk (File Count)", "No NARA Match (File Count)", "Technical Appraisal_Format (File Count)",
                     "Other Risk Indicator (File Count)"]
     df_media_subtotals_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today,
-             round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "XXXXXXXXXX",
+    rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today, zip_kb, "XXXXXXXXXX",
+             "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"],
+            [fr"{output}\accession\disk2\disk1backup2.zip", "ZIP Format", 2, False, today, zip_kb, "XXXXXXXXXX",
+             "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"],
+            [fr"{output}\accession\disk2\disk1backup3.zip", "ZIP Format", 2, False, today, zip_kb, "XXXXXXXXXX",
              "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Multiple_IDs",
                     "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "NARA_Risk Level",
@@ -1274,27 +1330,38 @@ def test_iteration(repo_path):
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2,
              "Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21",
-             False, round(os.path.getsize(r"accession\disk2\disk1backup.zip")/1000, 3), "Moderate Risk",
-             "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"]]
+             False, zip_kb, "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA",
+             "Archive format"],
+            [fr"{output}\accession\disk2\disk1backup2.zip", "ZIP Format", 2,
+             "Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21",
+             False, zip_kb, "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA",
+             "Archive format"],
+            [fr"{output}\accession\disk2\disk1backup3.zip", "ZIP Format", 2,
+             "Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21",
+             False, zip_kb, "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA",
+             "Archive format"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Size_KB", "NARA_Risk Level", "NARA_Proposed Preservation Plan",
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_other_risks_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk1\data_update_final.xlsx", "XLSX", np.NaN, np.NaN,
-             "Exiftool version 11.54", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
-            [fr"{output}\accession\disk1\data_update_final.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
-             "Tika version 1.21", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
+    rows = [[fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
+             xlsx_kb, "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA",
+             "Not for Other"],
+            [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN, "Tika version 1.21",
+             True, today, xlsx_kb, "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension",
+             "Not for TA", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID",
                     "FITS_Identifying_Tool(s)", "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB",
                     "FITS_MD5", "FITS_Creating_Application", "NARA_Risk Level", "NARA_Proposed Preservation Plan",
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_multiple_formats_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [[fr"{output}\accession\disk2\duplicate_file.txt", 3600, "fe6fb9d365e141e326adfaea99c87fa6"],
-            [fr"{output}\accession\disk1\duplicate_file.txt", 3600, "fe6fb9d365e141e326adfaea99c87fa6"]]
+    rows = [[fr"{output}\accession\disk2\disk1backup.zip", zip_kb, "XXXXXXXXXX"],
+            [fr"{output}\accession\disk2\disk1backup2.zip", zip_kb, "XXXXXXXXXX"],
+            [fr"{output}\accession\disk2\disk1backup3.zip", zip_kb, "XXXXXXXXXX"],
+            [fr"{output}\accession\disk2\duplicate_file.txt", 3.6, "c0090e0840270f422e0c357b719e8857"],
+            [fr"{output}\accession\disk1\duplicate_file.txt", 3.6, "c0090e0840270f422e0c357b719e8857"]]
     column_names = ["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]
     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
 
@@ -1311,18 +1378,12 @@ def test_iteration(repo_path):
 
     # Makes a dataframe from each tab in format_analysis.xlsx.
     # Provides a default MD5 for df with XLSX or ZIP files, since those have a different MD5 each time they are made.
-    # Rounding file size and percentage for subtotals with Excel or zip files, since they vary in size each time.
-    # For subsets, used Python to calculate individual file sizes to keep the number accurate.
     xlsx = pd.ExcelFile("accession_format-analysis.xlsx")
     df_format_subtotals = pd.read_excel(xlsx, "Format Subtotals")
-    df_format_subtotals[["Size (MB)", "Size %"]] = df_format_subtotals[["Size (MB)", "Size %"]].round(1)
     df_nara_risk_subtotals = pd.read_excel(xlsx, "NARA Risk Subtotals")
-    df_nara_risk_subtotals[["Size (MB)", "Size %"]] = df_nara_risk_subtotals[["Size (MB)", "Size %"]].round(1)
     df_tech_appraisal_subtotals = pd.read_excel(xlsx, "Tech Appraisal Subtotals")
     df_other_risk_subtotals = pd.read_excel(xlsx, "Other Risk Subtotals")
-    df_other_risk_subtotals[["Size (MB)", "Size %"]] = df_other_risk_subtotals[["Size (MB)", "Size %"]].round(1)
     df_media_subtotals = pd.read_excel(xlsx, "Media Subtotals")
-    df_media_subtotals["Size (MB)"] = df_media_subtotals["Size (MB)"].round(1)
     df_nara_risk = pd.read_excel(xlsx, "NARA Risk")
     df_nara_risk["FITS_MD5"] = "XXXXXXXXXX"
     df_tech_appraisal = pd.read_excel(xlsx, "For Technical Appraisal")
@@ -1330,6 +1391,8 @@ def test_iteration(repo_path):
     df_multiple = pd.read_excel(xlsx, "Multiple Formats")
     df_multiple["FITS_MD5"] = "XXXXXXXXXX"
     df_duplicates = pd.read_excel(xlsx, "Duplicates")
+    replace_md5 = df_duplicates["FITS_File_Path"].str.endswith("zip")
+    df_duplicates.loc[replace_md5, "FITS_MD5"] = "XXXXXXXXXX"
     df_validation = pd.read_excel(xlsx, "Validation")
     xlsx.close()
 
@@ -1384,6 +1447,7 @@ test_make_fits()
 test_fits_class_error()
 test_update_fits_function()
 test_make_fits_csv()
+test_make_fits_csv_function_errors()
 
 test_match_nara_risk_function()
 test_match_technical_appraisal_function()
