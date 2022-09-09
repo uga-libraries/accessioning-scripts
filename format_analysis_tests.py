@@ -7,6 +7,7 @@ For any tests that do not import the function from format_analysis.py, sync the 
 If the input for any function or analysis changes, edit the test input and expected results."""
 
 # usage: python path/format_analysis_tests.py output_folder
+import gzip
 import io
 import os.path
 import shutil
@@ -340,23 +341,27 @@ def test_make_fits_csv():
     """Tests all variations for FITS data extraction and reformatting."""
 
     # Makes an accession folder with test files organized into 2 disks to use for testing.
-    # Formats included: csv, html, plain text, xlsx
-    # Variations: one and multiple format ids, with and without optional fields, one or multiple tools
+    # Formats included: csv, gzip, html, plain text, xlsx
+    # Variations: one and multiple format ids, with and without optional fields, one or multiple tools,
+    #             empty with another format id, file with multiple ids with same name (gzip) and one has PUID.
     accession_folder = fr"{output}\accession"
     os.makedirs(fr"{accession_folder}\disk1")
     df_spreadsheet = pd.DataFrame({"C1": ["text"*1000], "C2": ["text"*1000], "C3": ["text"*1000]})
-    df_spreadsheet = pd.concat([df_spreadsheet]*100, ignore_index=True)
+    df_spreadsheet = pd.concat([df_spreadsheet]*500, ignore_index=True)
     df_spreadsheet.to_csv(r"accession\disk1\data.csv", index=False)
     df_spreadsheet.to_excel(r"accession\disk1\data.xlsx", index=False)
-    df_spreadsheet["C3"] = "New Text"
+    df_spreadsheet["C3"] = "New Text"*10000
     df_spreadsheet.to_csv(r"accession\disk1\data_update.csv", index=False)
     with open(r"accession\disk1\file.txt", "w") as file:
-        file.write("Text" * 50)
+        file.write("Text" * 500)
     os.makedirs(fr"{accession_folder}\disk2")
     with open(r"accession\disk2\file.txt", "w") as file:
-        file.write("Text" * 55)
+        file.write("Text" * 550)
     with open(r"accession\disk2\error.html", "w") as file:
         file.write("<body>This isn't really html</body>")
+    open(r"accession\disk2\empty.txt", "w").close()
+    with gzip.open(r"accession\disk2\zipping.gz", "wb") as file:
+        file.write(b"Test Text\n" * 100000)
 
     # Makes FITS files using the test accession folder.
     # In format_analysis.py, there is also error handling for if FITS has a load class error.
@@ -370,37 +375,49 @@ def test_make_fits_csv():
     # Makes a dataframe with the expected values.
     # Calculates size for XLSX because the size varies every time it is made.
     today = datetime.date.today().strftime('%Y-%m-%d')
-    rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
-             "Droid version 6.4", False, today, 1200.41, "70ab34bf1e766f600ddfe2a8cb17dea3", np.NaN, np.NaN, np.NaN, np.NaN],
-            [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", 2, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
+    rows = [[fr"{output}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN,
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", False, today, 6002.01,
+             "f95a4c954014342e4bf03f51fcefaecd", np.NaN, np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk1\data.xlsx", "ZIP Format", 2,
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
              "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today,
-             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "XXXXXXXXXX",
              "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
-             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+             round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3), "XXXXXXXXXX",
              "Microsoft Excel", np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN, "Tika version 1.21",
              True, today, round(os.path.getsize(fr"{output}\accession\disk1\data.xlsx")/1000, 3),
-             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Microsoft Excel", np.NaN, np.NaN, np.NaN],
-            [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/18",
-             "Droid version 6.4", False, today, 801.21, "9b8dbe4ef9fa42c011df292f56288ebe", np.NaN, np.NaN, np.NaN, np.NaN],
-            [fr"{output}\accession\disk1\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.2,
-             "8677d925a634712ca46f3f7a3673f3c2", np.NaN, True, True, np.NaN],
-            [fr"{output}\accession\disk2\file.txt", "Plain text", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 0.22,
-             "2364e92ed2f859d80cc18de241e12448", np.NaN, True, True, np.NaN],
+             "XXXXXXXXXX", "Microsoft Excel", np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN,
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", False, today, 44002.01,
+             "d5e857a4bd33d2b5a2f96b78ccffe1f3", np.NaN, np.NaN, np.NaN, np.NaN],
+            [fr"{output}\accession\disk2\empty.txt", "empty", np.NaN, np.NaN, "file utility version 5.03", False, today,
+             0, "d41d8cd98f00b204e9800998ecf8427e", np.NaN, np.NaN, np.NaN, np.NaN],
             [fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1",
-             False, today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True, "Not able to determine type of end of line severity=info"]]
+             False, today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True,
+             "Not able to determine type of end of line severity=info"],
+            [fr"{output}\accession\disk1\file.txt", "Plain text", np.NaN,
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 2,
+             "7b71af3fdf4a2f72a378e3e77815e497", np.NaN, True, True, np.NaN],
+            [fr"{output}\accession\disk2\file.txt", "Plain text", np.NaN,
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+             "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 2.2,
+             "e700d0871d44af1a217f0bf32320f25c", np.NaN, True, True, np.NaN],
+            [fr"{output}\accession\disk2\zipping.gz", "GZIP Format", np.NaN,
+             "https://www.nationalarchives.gov.uk/pronom/x-fmt/266", "Droid version 6.4; Tika version 1.21",
+             False, today, 1.993, "XXXXXXXXXX", np.NaN, np.NaN, np.NaN, np.NaN]]
     column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-                    "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
+                    "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed",
+                    "Status_Message"]
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Reads the script output into a dataframe.
-    # Provides a default MD5 value for data.xlsx because fixity is different every time the file is made.
+    # Provides a default MD5 value for data.xlsx and zipping.gz because fixity is different every time they are made.
     df_fits = pd.read_csv("accession_fits.csv")
-    replace_md5 = df_fits["File_Path"] == fr"{output}\accession\disk1\data.xlsx"
-    df_fits.loc[replace_md5, "MD5"] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    replace_md5 = (df_fits["File_Path"].str.endswith("data.xlsx")) | (df_fits["File_Path"].str.endswith("zipping.gz"))
+    df_fits.loc[replace_md5, "MD5"] = "XXXXXXXXXX"
 
     # Compares the script output to the expected values.
     compare_dataframes("Make_FITS_CSV", df_fits, df_expected)
@@ -1251,10 +1268,10 @@ def test_iteration(repo_path):
 
     rows = [[fr"{output}\accession\disk1\data_update_final.xlsx", "XLSX", np.NaN, np.NaN,
              "Exiftool version 11.54", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
+             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"],
             [fr"{output}\accession\disk1\data_update_final.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
              "Tika version 1.21", True, today, round(os.path.getsize(r"accession\disk1\data_update_final.xlsx")/1000, 3),
-             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", np.NaN, "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
+             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "FITS_Creating_Application",
                     "NARA_Risk Level", "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
