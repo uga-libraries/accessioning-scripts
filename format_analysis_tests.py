@@ -67,15 +67,12 @@ def test_argument(repo_path):
 
     # Runs the script without an argument and verifies the correct error message would print.
     no_argument = subprocess.run(f"python {script_path}", shell=True, stdout=subprocess.PIPE)
-    error_msg = "\r\nThe required script argument (accession_folder) is missing.\r\nPlease run the script again." \
-                "\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
+    error_msg = "\r\nThe required script argument (accession_folder) is missing.\r\n"
     compare_strings("Argument_Missing", no_argument.stdout.decode("utf-8"), error_msg)
 
     # Runs the script with an argument that isn't a valid path and verifies the correct error message would print.
     wrong_argument = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
-    error_msg = "\r\nThe provided accession folder 'C:/User/Wrong/Path' is not a valid directory." \
-                "\r\nPlease run the script again." \
-                "\r\nScript usage: python path/format_analysis.py path/accession_folder\r\n"
+    error_msg = "\r\nThe provided accession folder 'C:/User/Wrong/Path' is not a valid directory.\r\n"
     compare_strings("Argument_Invalid_Path", wrong_argument.stdout.decode("utf-8"), error_msg)
 
 
@@ -103,7 +100,7 @@ def test_check_configuration_function(repo_path):
                 '   * ITA variable is missing from the configuration file.\r\n' \
                 '   * RISK variable is missing from the configuration file.\r\n' \
                 '   * NARA variable is missing from the configuration file.\r\n\r\n' \
-                'Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n'
+                'Correct the configuration file, using configuration_template.py as a model.\r\n'
     compare_strings("Configuration_File_Missing_Variables", no_var.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
@@ -123,7 +120,7 @@ def test_check_configuration_function(repo_path):
                 "   * ITAfileformats.csv path 'C:/Users/Error/ITAfileformats.csv' is not correct.\r\n" \
                 "   * Riskfileformats.csv path 'C:/Users/Error/Riskfileformats.csv' is not correct.\r\n" \
                 "   * NARA Preservation Action Plans CSV path 'C:/Users/Error/NARA.csv' is not correct.\r\n\r\n" \
-                "Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n"
+                "Correct the configuration file, using configuration_template.py as a model.\r\n"
     compare_strings("Configuration_File_Variable_Paths_Error", path_err.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
@@ -1230,7 +1227,7 @@ def test_iteration(repo_path):
     # In format_analysis.py, these messages are printed to the terminal for archivist review.
     iteration_one = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
     msg = "\r\nGenerating new FITS format identification information.\r\n\r\n" \
-          "Generating new risk data for the report.\r\n"
+          "Generating new risk data for the analysis report.\r\n"
     compare_strings("Iteration_Message_1", iteration_one.stdout.decode("utf-8"), msg)
 
     # Deletes trash folder and adds a missed file to the accession folder to simulate archivist appraisal.
@@ -1243,10 +1240,10 @@ def test_iteration(repo_path):
     # Runs the script again on the test accession folder.
     # It will update the FITS files to match the accession folder and update the three spreadsheet.
     iteration_two = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
-    msg = "\r\nUpdating the XML files in the FITS folder to match files in the accession folder.\r\n" \
-          "This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.\r\n" \
+    msg = "\r\nUpdating the XML files in the FITS folder to match the files in the accession folder.\r\n" \
+          "This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.\r\n" \
           "Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n" \
-          "Generating new risk data for the report.\r\n"
+          "Generating new risk data for the analysis report.\r\n"
     compare_strings("Iteration_Message_2", iteration_two.stdout.decode("utf-8"), msg)
 
     # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
@@ -1263,10 +1260,10 @@ def test_iteration(repo_path):
     # Runs the script again on the test accession folder.
     # It will use existing fits.csv and full_risk_data.csv to update format_analysis.xlsx.
     iteration_three = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
-    msg = "\r\nUpdating the XML files in the FITS folder to match files in the accession folder.\r\n" \
-          "This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.\r\n" \
+    msg = "\r\nUpdating the XML files in the FITS folder to match the files in the accession folder.\r\n" \
+          "This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.\r\n" \
           "Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n" \
-          "Updating the report using existing risk data.\r\n"
+          "Updating the analysis report using existing risk data.\r\n"
     compare_strings("Iteration_Message_3", iteration_three.stdout.decode("utf-8"), msg)
 
     # Makes dataframes with the expected values for each tab in format_analysis.xlsx.
