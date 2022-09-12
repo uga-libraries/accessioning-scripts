@@ -91,7 +91,7 @@ def test_check_configuration_function(repo_path):
                                shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nCould not run the script. Missing the required configuration.py file." \
                 "\r\nMake a configuration.py file using configuration_template.py and save it to the folder with the script.\r\n"
-    compare_strings("Config_Missing", no_config.stdout.decode("utf-8"), error_msg)
+    compare_strings("Configuration_File_Missing", no_config.stdout.decode("utf-8"), error_msg)
 
     # Makes a configuration file without any of the required variables to use for testing.
     # Verifies that the check_configuration() function returns the expected error messages.
@@ -105,7 +105,7 @@ def test_check_configuration_function(repo_path):
                 '   * RISK variable is missing from the configuration file.\r\n' \
                 '   * NARA variable is missing from the configuration file.\r\n\r\n' \
                 'Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n'
-    compare_strings("Config_Missing_Variables", no_var.stdout.decode("utf-8"), error_msg)
+    compare_strings("Configuration_File_Missing_Variables", no_var.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
     # Makes a configuration file with the required variables but all are incorrect file paths to use for testing.
@@ -125,7 +125,7 @@ def test_check_configuration_function(repo_path):
                 "   * Riskfileformats.csv path 'C:/Users/Error/Riskfileformats.csv' is not correct.\r\n" \
                 "   * NARA Preservation Action Plans CSV path 'C:/Users/Error/NARA.csv' is not correct.\r\n\r\n" \
                 "Correct the configuration file and run the script again. Use configuration_template.py as a model.\r\n"
-    compare_strings("Config_Variable_Paths", path_err.stdout.decode("utf-8"), error_msg)
+    compare_strings("Configuration_File_Variable_Paths_Error", path_err.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
     # Renames the correct configuration file back to configuration.py.
@@ -156,21 +156,21 @@ def test_csv_to_dataframe_function():
     global FAILED_TESTS
     if len(df_fits) != 0:
         expected = "FITS_File_Path, FITS_Format_Name, FITS_Format_Version, FITS_Multiple_IDs"
-        compare_strings("FITS_CSV_DF", ', '.join(df_fits.columns.to_list()), expected)
+        compare_strings("CSV_to_DF_FITS", ', '.join(df_fits.columns.to_list()), expected)
     else:
-        print("FAIL: FITS_CSV_DF is empty")
+        print("FAIL: CSV_to_DF FITS dataframe is empty")
         FAILED_TESTS += 1
 
     if len(df_ita) != 0:
-        compare_strings("ITA_CSV_DF", ', '.join(df_ita.columns.to_list()), "FITS_FORMAT, NOTES")
+        compare_strings("CSV_to_DF_ITA", ', '.join(df_ita.columns.to_list()), "FITS_FORMAT, NOTES")
     else:
-        print("FAIL: ITA_CSV_DF is empty")
+        print("FAIL: CSV_to_DF ITA dataframe is empty")
         FAILED_TESTS += 1
 
     if len(df_other) != 0:
-        compare_strings("Other_CSV_DF", ', '.join(df_other.columns.to_list()), "FITS_FORMAT, RISK_CRITERIA")
+        compare_strings("CSV_to_DF_Other", ', '.join(df_other.columns.to_list()), "FITS_FORMAT, RISK_CRITERIA")
     else:
-        print("FAIL: Other_CSV_DF is empty")
+        print("FAIL: CSV_to_DF Other dataframe is empty")
         FAILED_TESTS += 1
 
     if len(df_nara) != 0:
@@ -180,16 +180,16 @@ def test_csv_to_dataframe_function():
                    "NARA_Wikipedia URL, NARA_docs.fileformat.com, NARA_Other URL, NARA_Notes, NARA_Risk Level, " \
                    "NARA_Preservation Action, NARA_Proposed Preservation Plan, NARA_Description and Justification, " \
                    "NARA_Preferred Processing and Transformation Tool(s)"
-        compare_strings("NARA_CSV_DF", ', '.join(df_nara.columns.to_list()), expected)
+        compare_strings("CSV_to_DF_NARA", ', '.join(df_nara.columns.to_list()), expected)
     else:
-        print("FAIL: NARA_CSV_DF is empty")
+        print("FAIL: CSV_to_DF NARA dataframe is empty")
         FAILED_TESTS += 1
 
 
-def test_csv_to_dataframe_function_errors():
+def test_csv_to_dataframe_function_encoding_error():
     """Tests unicode error handling."""
 
-    # Makes a FITS CSV with special characters.
+    # Makes a FITS CSV with special characters (copyright symbol and accented e).
     # In format_analysis.py, this would be made earlier in the script and has more columns.
     with open("accession_fits.csv", "w", newline="") as file:
         file_write = csv.writer(file)
@@ -214,13 +214,13 @@ def test_csv_to_dataframe_function_errors():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the contents of the FITS folder to the expected values.
-    compare_dataframes("CSV_DF_Encoding", df_fits, df_expected)
+    compare_dataframes("CSV_to_DF_Encoding", df_fits, df_expected)
 
     # Deletes the test file.
     os.remove("accession_fits.csv")
 
 
-def test_make_fits():
+def test_make_fits_xml():
     """Tests the command for making FITS files the first time."""
 
     # Makes an accession folder with test files to use for testing.
@@ -253,7 +253,7 @@ def test_make_fits():
     df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
 
     # Compares the contents of the FITS folder to the expected values.
-    compare_dataframes("Make_FITS", df_fits_files, df_expected)
+    compare_dataframes("Make_FITS_XML", df_fits_files, df_expected)
 
     # Deletes the test files.
     shutil.rmtree(fr"{output}\accession")
@@ -339,7 +339,7 @@ def test_update_fits_function():
     shutil.rmtree("accession_FITS")
 
 
-def test_make_fits_csv():
+def test_make_fits_csv_function():
     """Tests all variations for FITS data extraction and reformatting."""
 
     # Makes an accession folder with test files organized into 2 disks to use for testing.
@@ -430,7 +430,7 @@ def test_make_fits_csv():
     os.remove("accession_fits.csv")
 
 
-def test_make_fits_csv_function_errors():
+def test_make_fits_csv_function_encoding_error():
     """Tests encoding error handling when saving FITS file data to the CSV."""
 
     # Makes an accession folder with test files (all plain text) for testing.
@@ -559,7 +559,7 @@ def test_match_nara_risk_function():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Match_NARA", df_results, df_expected)
+    compare_dataframes("Match_NARA_Risk", df_results, df_expected)
 
 
 def test_match_technical_appraisal_function():
@@ -601,7 +601,7 @@ def test_match_technical_appraisal_function():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Match_TA", df_results, df_expected)
+    compare_dataframes("Match_Tech_Appraisal", df_results, df_expected)
 
 
 def test_match_other_risk_function():
@@ -646,10 +646,10 @@ def test_match_other_risk_function():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Match_Other", df_results, df_expected)
+    compare_dataframes("Match_Other_Risk", df_results, df_expected)
 
 
-def test_deduplicating_results():
+def test_deduplicating_results_df():
     """Tests that duplicates from multiple NARA matches with the same risk information are correctly removed."""
 
     # Makes a dataframe to use as input, with a subset of the columns usually in df_results.
@@ -729,7 +729,7 @@ def test_nara_risk_subset():
     compare_dataframes("NARA_Risk_Subset", df_nara_risk, df_expected)
 
 
-def test_multiple_subset():
+def test_multiple_ids_subset():
     """Tests the files with multiple FITs format ids subset, which is based on the FITS_File_Path column."""
 
     # Makes a dataframe to use as input.
@@ -760,7 +760,7 @@ def test_multiple_subset():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Multiple_Subset", df_multiple, df_expected)
+    compare_dataframes("Multiple_IDs_Subset", df_multiple, df_expected)
 
 
 def test_validation_subset():
@@ -914,7 +914,7 @@ def test_empty_subset():
 
     # Calculates both subsets.
     # In format_analysis.py, this is done in the main body of the script.
-    df_multiple = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
+    df_multiple_ids = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
 
     df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
     df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
@@ -923,26 +923,26 @@ def test_empty_subset():
     # Tests each subset for if they are empty and supplies default text.
     # In format_analysis.py, this is done in the main body of the script
     # and includes all 6 subset dataframes in the tuple.
-    for df in (df_multiple, df_duplicates):
+    for df in (df_multiple_ids, df_duplicates):
         if len(df) == 0:
             df.loc[len(df)] = ["No data of this type"] + [np.NaN] * (len(df.columns) - 1)
 
     # Makes dataframes with the expected values for each subset.
     rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Size_KB", "FITS_MD5"]
-    df_multiple_expected = pd.DataFrame(rows, columns=column_names)
+    df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [["No data of this type", np.NaN, np.NaN]]
     column_names = ["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]
     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values for each subset.
-    compare_dataframes("Empty_Multiple_Subset", df_multiple, df_multiple_expected)
+    compare_dataframes("Empty_Multiple_IDs_Subset", df_multiple_ids, df_multiple_ids_expected)
     compare_dataframes("Empty_Duplicate_Subset", df_duplicates, df_duplicates_expected)
 
 
 def test_format_subtotal():
-    """Tests the format subtotals, which is based on FITS_Format_Name and NARA_Risk Level."""
+    """Tests the format subtotal, which is based on FITS_Format_Name and NARA_Risk Level."""
 
     # Makes a dataframe to use as input for the subtotal() function.
     # Data variation: formats with one row, formats with multiple rows, one format with a NARA risk level,
@@ -958,12 +958,12 @@ def test_format_subtotal():
     column_names = ["FITS_Format_Name", "FITS_Size_KB", "NARA_Risk Level"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotal.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
+    df_format_subtotal = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframe made by subtotal() are column values here
@@ -977,11 +977,11 @@ def test_format_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Format_Subtotals", df_format_subtotals, df_expected)
+    compare_dataframes("Format_Subtotal", df_format_subtotal, df_expected)
 
 
 def test_nara_risk_subtotal():
-    """Tests the NARA risk subtotals, which is based on NARA_Risk Level."""
+    """Tests the NARA risk subtotal, which is based on NARA_Risk Level."""
 
     # Makes a dataframe to use as input for the subtotal() function.
     # Data variation: one format with a NARA risk level, multiple formats with a NARA risk level, all 4 risk levels.
@@ -998,12 +998,12 @@ def test_nara_risk_subtotal():
     column_names = ["FITS_Format_Name", "FITS_Size_KB", "NARA_Risk Level"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotal.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
+    df_nara_risk_subtotal = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index value for the dataframe made by subtotal() is a column value here
@@ -1016,11 +1016,11 @@ def test_nara_risk_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("NARA_Risk_Subtotals", df_nara_risk_subtotals, df_expected)
+    compare_dataframes("NARA_Risk_Subtotal", df_nara_risk_subtotal, df_expected)
 
 
-def test_technical_appraisal_subtotal():
-    """Tests the technical appraisal subtotals, which is based on technical appraisal criteria and FITS_Format_Name."""
+def test_tech_appraisal_subtotal():
+    """Tests the technical appraisal subtotal, which is based on technical appraisal criteria and FITS_Format_Name."""
 
     # Makes a dataframe to use as input for the subtotal() function.
     # Data variation: for both criteria, has a unique format and duplicated formats.
@@ -1035,12 +1035,12 @@ def test_technical_appraisal_subtotal():
     column_names = ["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotal.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_tech_appraisal_subtotals = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+    df_tech_appraisal_subtotal = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
@@ -1054,22 +1054,22 @@ def test_technical_appraisal_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Tech_Appraisal_Subtotals", df_tech_appraisal_subtotals, df_expected)
+    compare_dataframes("Tech_Appraisal_Subtotal", df_tech_appraisal_subtotal, df_expected)
 
 
-def test_technical_appraisal_subtotal_empty():
-    """Tests the technical appraisal subtotals when there are no files in the input
+def test_tech_appraisal_subtotal_none():
+    """Tests the technical appraisal subtotal when there are no files in the input
     which meet any technical appraisal criteria."""
 
     # Makes an empty dataframe to use as input for the subtotal() function.
     df_results = pd.DataFrame(columns=["Technical_Appraisal", "FITS_Format_Name", "FITS_Size_KB"])
 
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotal.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_tech_appraisal_subtotals = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
+    df_tech_appraisal_subtotal = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
@@ -1077,11 +1077,11 @@ def test_technical_appraisal_subtotal_empty():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Tech_Appraisal_Subtotals_Empty", df_tech_appraisal_subtotals, df_expected)
+    compare_dataframes("Tech_Appraisal_Subtotal_None", df_tech_appraisal_subtotal, df_expected)
 
 
 def test_other_risk_subtotal():
-    """Tests the other risk subtotals, which is based on other risk criteria and FITS_Format_Name."""
+    """Tests the other risk subtotal, which is based on other risk criteria and FITS_Format_Name."""
 
     # Makes a dataframe to use as input for the subtotal() function.
     # Data variation: for each of the values for other risk, has unique formats and duplicated formats.
@@ -1098,12 +1098,12 @@ def test_other_risk_subtotal():
     column_names = ["Other_Risk", "FITS_Format_Name", "FITS_Size_KB"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotal.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_other_risk_subtotals = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+    df_other_risk_subtotal = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     # The index values for the dataframes made by subtotal() are column values here
@@ -1117,21 +1117,21 @@ def test_other_risk_subtotal():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Other_Risk_Subtotals", df_other_risk_subtotals, df_expected)
+    compare_dataframes("Other_Risk_Subtotal", df_other_risk_subtotal, df_expected)
 
 
-def test_other_risk_subtotal_empty():
-    """Tests the other risk subtotals when there are no files in the input which meet any other risk criteria."""
+def test_other_risk_subtotal_none():
+    """Tests the other risk subtotal when there are no files in the input which meet any other risk criteria."""
 
     # Makes an empty dataframe to use as input for the subtotal() function.
     df_results = pd.DataFrame(columns=["Other_Risk", "FITS_Format_Name", "FITS_Size_KB"])
 
-    # Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+    # Calculates the total files and total size in the dataframe to use for percentages with the subtotal.
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
     # Runs the subtotal() function for this subtotal.
-    df_other_risk_subtotals = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
+    df_other_risk_subtotal = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
     rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
@@ -1139,14 +1139,14 @@ def test_other_risk_subtotal_empty():
     df_expected = pd.DataFrame(rows, columns=column_names)
 
     # Compares the script output to the expected values.
-    compare_dataframes("Other_Risk_Subtotals_Empty", df_other_risk_subtotals, df_expected)
+    compare_dataframes("Other_Risk_Subtotal_None", df_other_risk_subtotal, df_expected)
 
 
 def test_media_subtotal_function():
-    """Tests variations in subtotals."""
+    """Tests variations in subtotal."""
 
     # Makes a dataframe and accession_folder variable to use as input.
-    # Data variations: Disks with and without each risk type, unique values and values to add for subtotals.
+    # Data variations: Disks with and without each risk type, unique values and values to add for subtotal.
     accession_folder = r"C:\ACC"
     rows = [[r"C:\ACC\Disk1\file.txt", 120, "Low Risk", "Not for TA", "Not for Other"],
             [r"C:\ACC\Disk1\file2.txt", 130, "Low Risk", "Not for TA", "Not for Other"],
@@ -1174,7 +1174,7 @@ def test_media_subtotal_function():
     df_results = pd.DataFrame(rows, columns=column_names)
 
     # Runs the media_subtotal() function. Uses the output folder for the accession folder.
-    df_media_subtotals = media_subtotal(df_results, accession_folder)
+    df_media_subtotal = media_subtotal(df_results, accession_folder)
 
     # Makes a dataframe with the expected values.
     rows = [["Disk1", 3, 0.39, 0, 0, 3, 0, 0, 0],
@@ -1188,7 +1188,7 @@ def test_media_subtotal_function():
     df_expected.set_index("Media")
 
     # Compares the script output to the expected values.
-    compare_dataframes("Media_Subtotals", df_media_subtotals, df_expected)
+    compare_dataframes("Media_Subtotal", df_media_subtotal, df_expected)
 
 
 def test_iteration(repo_path):
@@ -1271,10 +1271,11 @@ def test_iteration(repo_path):
     compare_strings("Iteration_Message_3", iteration_three.stdout.decode("utf-8"), msg)
 
     # Makes dataframes with the expected values for each tab in format_analysis.xlsx.
-
     # Calculates date, which is when the file was generated, with datetime to keep the expected value accurate.
     # Calculates size for XLSX and ZIP with os.path because they are different each time they are made.
-    # Calculates total size for recalculating subtotal percentages due o changes in size of XLSX and ZIP files.
+    # Calculates the size of 3 ZIP files in MB because if it is done from rounded zip_kb, there are slight differences.
+    # Calculates total size for recalculating subtotal percentages to incorporate changing size of XLSX and ZIP files.
+
     today = datetime.date.today().strftime('%Y-%m-%d')
     xlsx_kb = round(os.path.getsize(r"accession\disk1\data.xlsx") / 1000, 3)
     xlsx_mb = round(xlsx_kb / 1000, 3)
@@ -1289,26 +1290,26 @@ def test_iteration(repo_path):
             ["XLSX", "Low Risk", 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
             ["ZIP Format", "Moderate Risk", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
     column_names = ["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
-    df_format_subtotals_expected = pd.DataFrame(rows, columns=column_names)
+    df_format_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [["Low Risk", 7, 70, 0.019, round((0.019 / total_mb) * 100, 3)],
             ["Moderate Risk", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
-    df_nara_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
+    df_nara_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [["Format", "empty", 1, 10, 0, 0]]
     column_names = ["Technical_Appraisal", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
-    df_tech_appraisal_subtotals_expected = pd.DataFrame(rows, columns=column_names)
+    df_tech_appraisal_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [["Archive format", "ZIP Format", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
     column_names = ["Other_Risk", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
-    df_other_risk_subtotals_expected = pd.DataFrame(rows, columns=column_names)
+    df_other_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [["disk1", 3, 0.014, 0, 0, 3, 0, 0, 0], ["disk2", 7, 0.021, 0, 3, 4, 0, 1, 3]]
     column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
                     "NARA Low Risk (File Count)", "No NARA Match (File Count)", "Technical Appraisal_Format (File Count)",
                     "Other Risk Indicator (File Count)"]
-    df_media_subtotals_expected = pd.DataFrame(rows, columns=column_names)
+    df_media_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today, zip_kb, "XXXXXXXXXX",
              "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"],
@@ -1326,7 +1327,7 @@ def test_iteration(repo_path):
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Size_KB", "FITS_Creating_Application", "NARA_Risk Level",
                     "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
-    df_for_technical_appraisal_expected = pd.DataFrame(rows, columns=column_names)
+    df_tech_appraisal_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2,
              "Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21",
@@ -1343,7 +1344,7 @@ def test_iteration(repo_path):
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
                     "FITS_Multiple_IDs", "FITS_Size_KB", "NARA_Risk Level", "NARA_Proposed Preservation Plan",
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
-    df_other_risks_expected = pd.DataFrame(rows, columns=column_names)
+    df_other_risk_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
              xlsx_kb, "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA",
@@ -1355,7 +1356,7 @@ def test_iteration(repo_path):
                     "FITS_Identifying_Tool(s)", "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB",
                     "FITS_MD5", "FITS_Creating_Application", "NARA_Risk Level", "NARA_Proposed Preservation Plan",
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
-    df_multiple_formats_expected = pd.DataFrame(rows, columns=column_names)
+    df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", zip_kb, "XXXXXXXXXX"],
             [fr"{output}\accession\disk2\disk1backup2.zip", zip_kb, "XXXXXXXXXX"],
@@ -1377,19 +1378,20 @@ def test_iteration(repo_path):
     df_validation_expected = pd.DataFrame(rows, columns=column_names)
 
     # Makes a dataframe from each tab in format_analysis.xlsx.
-    # Provides a default MD5 for df with XLSX or ZIP files, since those have a different MD5 each time they are made.
+    # Provides a default MD5 for XLSX or ZIP files, since those have a different MD5 each time they are made.
+    # If the df is all XLSX or ZIP, the column is filled with the default. Otherwise, it is filtered by format first.
     xlsx = pd.ExcelFile("accession_format-analysis.xlsx")
-    df_format_subtotals = pd.read_excel(xlsx, "Format Subtotals")
-    df_nara_risk_subtotals = pd.read_excel(xlsx, "NARA Risk Subtotals")
-    df_tech_appraisal_subtotals = pd.read_excel(xlsx, "Tech Appraisal Subtotals")
-    df_other_risk_subtotals = pd.read_excel(xlsx, "Other Risk Subtotals")
-    df_media_subtotals = pd.read_excel(xlsx, "Media Subtotals")
+    df_format_subtotal = pd.read_excel(xlsx, "Format Subtotal")
+    df_nara_risk_subtotal = pd.read_excel(xlsx, "NARA Risk Subtotal")
+    df_tech_appraisal_subtotal = pd.read_excel(xlsx, "Tech Appraisal Subtotal")
+    df_other_risk_subtotal = pd.read_excel(xlsx, "Other Risk Subtotal")
+    df_media_subtotal = pd.read_excel(xlsx, "Media Subtotal")
     df_nara_risk = pd.read_excel(xlsx, "NARA Risk")
     df_nara_risk["FITS_MD5"] = "XXXXXXXXXX"
     df_tech_appraisal = pd.read_excel(xlsx, "For Technical Appraisal")
     df_other_risk = pd.read_excel(xlsx, "Other Risks")
-    df_multiple = pd.read_excel(xlsx, "Multiple Formats")
-    df_multiple["FITS_MD5"] = "XXXXXXXXXX"
+    df_multiple_ids = pd.read_excel(xlsx, "Multiple Formats")
+    df_multiple_ids["FITS_MD5"] = "XXXXXXXXXX"
     df_duplicates = pd.read_excel(xlsx, "Duplicates")
     replace_md5 = df_duplicates["FITS_File_Path"].str.endswith("zip")
     df_duplicates.loc[replace_md5, "FITS_MD5"] = "XXXXXXXXXX"
@@ -1397,15 +1399,15 @@ def test_iteration(repo_path):
     xlsx.close()
 
     # Compares the expected values to the actual script values.
-    compare_dataframes("Iteration_Subtotals_Format", df_format_subtotals, df_format_subtotals_expected)
-    compare_dataframes("Iteration_Subtotals_Tech_Appraisal", df_tech_appraisal_subtotals, df_tech_appraisal_subtotals_expected)
-    compare_dataframes("Iteration_Subtotals_NARA_Risk", df_nara_risk_subtotals, df_nara_risk_subtotals_expected)
-    compare_dataframes("Iteration_Subtotals_Other_Risk", df_other_risk_subtotals, df_other_risk_subtotals_expected)
-    compare_dataframes("Iteration_Subtotals_Media", df_media_subtotals, df_media_subtotals_expected)
+    compare_dataframes("Iteration_Subtotal_Format", df_format_subtotal, df_format_subtotal_expected)
+    compare_dataframes("Iteration_Subtotal_Tech_Appraisal", df_tech_appraisal_subtotal, df_tech_appraisal_subtotal_expected)
+    compare_dataframes("Iteration_Subtotal_NARA_Risk", df_nara_risk_subtotal, df_nara_risk_subtotal_expected)
+    compare_dataframes("Iteration_Subtotal_Other_Risk", df_other_risk_subtotal, df_other_risk_subtotal_expected)
+    compare_dataframes("Iteration_Subtotal_Media", df_media_subtotal, df_media_subtotal_expected)
     compare_dataframes("Iteration_Subset_NARA_Risk", df_nara_risk, df_nara_risk_expected)
-    compare_dataframes("Iteration_Subset_Tech_Appraisal", df_tech_appraisal, df_for_technical_appraisal_expected)
-    compare_dataframes("Iteration_Subset_Other_Risk", df_other_risk, df_other_risks_expected)
-    compare_dataframes("Iteration_Subset_Multiple_IDs", df_multiple, df_multiple_formats_expected)
+    compare_dataframes("Iteration_Subset_Tech_Appraisal", df_tech_appraisal, df_tech_appraisal_expected)
+    compare_dataframes("Iteration_Subset_Other_Risk", df_other_risk, df_other_risk_expected)
+    compare_dataframes("Iteration_Subset_Multiple_IDs", df_multiple_ids, df_multiple_ids_expected)
     compare_dataframes("Iteration_Subset_Duplicates", df_duplicates, df_duplicates_expected)
     compare_dataframes("Iteration_Subset_Validation", df_validation, df_validation_expected)
 
@@ -1436,42 +1438,51 @@ FAILED_TESTS = 0
 
 # Calls each of the test functions, which either test a function in format_analysis.py or
 # one of the analysis components, such as the duplicates subset or NARA risk subtotal.
-# A summary of the test result is printed to the terminal and failed tests are saved to the output folder.
+# A summary of the test result is printed to the terminal and reports for failed tests are saved to the output folder.
 
+# Tests for script inputs.
 test_argument(repo)
 test_check_configuration_function(repo)
-
 test_csv_to_dataframe_function()
-test_csv_to_dataframe_function_errors()
-test_make_fits()
+test_csv_to_dataframe_function_encoding_error()
+
+# Tests for generating format information with FITS.
+test_make_fits_xml()
 test_fits_class_error()
 test_update_fits_function()
-test_make_fits_csv()
-test_make_fits_csv_function_errors()
+test_make_fits_csv_function()
+test_make_fits_csv_function_encoding_error()
 
+# Tests for risk analysis of format information.
 test_match_nara_risk_function()
 test_match_technical_appraisal_function()
 test_match_other_risk_function()
-test_deduplicating_results()
+test_deduplicating_results_df()
 
+# Tests for each subset.
 test_nara_risk_subset()
-test_multiple_subset()
+test_multiple_ids_subset()
 test_validation_subset()
 test_tech_appraisal_subset()
 test_other_risk_subset()
 test_duplicates_subset()
 test_empty_subset()
 
+# Tests for each subtotal.
+# Includes tests for the two (tech appraisal and other risk) where no files may meet that criteria.
 test_format_subtotal()
 test_nara_risk_subtotal()
-test_technical_appraisal_subtotal()
-test_technical_appraisal_subtotal_empty()
+test_tech_appraisal_subtotal()
+test_tech_appraisal_subtotal_none()
 test_other_risk_subtotal()
-test_other_risk_subtotal_empty()
+test_other_risk_subtotal_none()
 test_media_subtotal_function()
 
+# Test for running the complete script through the three iterations:
+# Generating new data, using existing FITS data, and using existing risk data.
 test_iteration(repo)
 
+# Prints the number of tests which passed or failed.
 print("\nThe testing script is complete. Results:")
 if FAILED_TESTS == 0:
     print(f"\t* All {PASSED_TESTS} tests passed.")

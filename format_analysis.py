@@ -150,11 +150,11 @@ df_media_subtotals = media_subtotal(df_results, accession_folder)
 # Saves all dataframes to a separate tab in an Excel spreadsheet in the collection folder.
 # The index is not included if it is the row numbers.
 with pd.ExcelWriter(f"{collection_folder}/{accession_number}_format-analysis.xlsx") as result:
-    df_format_subtotals.to_excel(result, sheet_name="Format Subtotals")
-    df_nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotals")
-    df_tech_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotals")
-    df_other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotals")
-    df_media_subtotals.to_excel(result, sheet_name="Media Subtotals", index_label="Media")
+    df_format_subtotals.to_excel(result, sheet_name="Format Subtotal")
+    df_nara_risk_subtotals.to_excel(result, sheet_name="NARA Risk Subtotal")
+    df_tech_appraisal_subtotals.to_excel(result, sheet_name="Tech Appraisal Subtotal")
+    df_other_risk_subtotals.to_excel(result, sheet_name="Other Risk Subtotal")
+    df_media_subtotals.to_excel(result, sheet_name="Media Subtotal", index_label="Media")
     df_nara_risk.to_excel(result, sheet_name="NARA Risk", index=False)
     df_tech_appraisal.to_excel(result, sheet_name="For Technical Appraisal", index=False)
     df_other_risk.to_excel(result, sheet_name="Other Risks", index=False)
