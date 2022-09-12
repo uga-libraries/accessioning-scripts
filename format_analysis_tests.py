@@ -12,6 +12,8 @@ import io
 import os.path
 import shutil
 
+import pandas as pd
+
 from format_analysis_functions import *
 
 
@@ -1305,10 +1307,12 @@ def test_iteration(repo_path):
     column_names = ["Other_Risk", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_other_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["disk1", 3, 0.014, 0, 0, 3, 0, 0, 0], ["disk2", 7, 0.021, 0, 3, 4, 0, 1, 3]]
-    column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)", "NARA Moderate Risk (File Count)",
-                    "NARA Low Risk (File Count)", "No NARA Match (File Count)", "Technical Appraisal_Format (File Count)",
-                    "Other Risk Indicator (File Count)"]
+    disk1_mb = round(df_risk[df_risk["FITS_File_Path"].str.contains(r"\\disk1\\")]["FITS_Size_KB"].sum() / 1000, 3)
+    disk2_mb = round(df_risk[df_risk["FITS_File_Path"].str.contains(r"\\disk2\\")]["FITS_Size_KB"].sum() / 1000, 3)
+    rows = [["disk1", 3, disk1_mb, 0, 0, 3, 0, 0, 0], ["disk2", 7, disk2_mb, 0, 3, 4, 0, 1, 3]]
+    column_names = ["Media", "File Count", "Size (MB)", "NARA High Risk (File Count)",
+                    "NARA Moderate Risk (File Count)", "NARA Low Risk (File Count)", "No NARA Match (File Count)",
+                    "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
     df_media_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today, zip_kb, "XXXXXXXXXX",
