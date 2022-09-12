@@ -5,18 +5,17 @@ Purpose: generate format identification and create reports to support:
     3. Identify risks to address immediately.
 
 Produces a spreadsheet with risk information based on NARA preservation action plans and a local list of formats that
-typically indicate removal during technical appraisal, with several tabs that summarize this information in different
-ways.
+typically indicate removal during technical appraisal or other risks, with several tabs that summarize this information
+in different ways.
 
-Script usage: python path/format_analysis.py accession_folder
+Script usage: python path/format_analysis.py path/accession_folder
 The accession_folder is the path to the folder with files to be analyzed.
 Script output is saved in the parent folder of the accession folder.
 """
-import sys
 
 from format_analysis_functions import *
 
-# Configuration is made by the user on each new machine the script is installed on, so it could be missing.
+# Configuration.py is made by the archivist on each new machine the script is installed on, so it could be missing.
 try:
     import configuration as c
 except ModuleNotFoundError:
@@ -30,38 +29,33 @@ try:
     accession_folder = sys.argv[1]
 except IndexError:
     print("\nThe required script argument (accession_folder) is missing.")
-    print("Please run the script again.")
-    print("Script usage: python path/format_analysis.py path/accession_folder")
     sys.exit()
 
 if not os.path.exists(accession_folder):
     print(f"\nThe provided accession folder '{accession_folder}' is not a valid directory.")
-    print("Please run the script again.")
-    print("Script usage: python path/format_analysis.py path/accession_folder")
     sys.exit()
 
 # Verifies the configuration file has all of the required variables and the file paths are valid.
-# If there are any errors, prints an error and ends the script.
+# If there are any errors, ends the script.
 configuration_errors = check_configuration()
 if len(configuration_errors) > 0:
     print('\nProblems detected with configuration.py:')
     for error in configuration_errors:
-        print("   * " + error)
-    print('\nCorrect the configuration file and run the script again. Use configuration_template.py as a model.')
+        print("   *", error)
+    print('\nCorrect the configuration file, using configuration_template.py as a model.')
     sys.exit()
 
 # Calculates the accession number, which is the name of the last folder in the accession_folder path,
 # and the collection folder, which is everything in the accession_folder path except the accession folder.
-# These are only for naming file outputs, so it will not cause an error if they aren't named as expected.
+# These are used for naming script outputs, so it will not cause an error if they don't match id naming conventions.
 collection_folder, accession_number = os.path.split(accession_folder)
 
-# If there is already a folder with FITS format identification information in the collection folder,
-# updates the folder to match the contents of the accession folder.
-# Otherwise, runs FITS to generate the format identification information.
+# If there is already a FITS XML folder, updates the FITS folder to match the contents of the accession folder.
+# Otherwise, runs FITS to generate the FITS XML.
 fits_output = f"{collection_folder}/{accession_number}_FITS"
 if os.path.exists(fits_output):
-    print("\nUpdating the XML files in the FITS folder to match files in the accession folder.")
-    print("This will update fits.csv but currently does not update full_risk_data.csv from a previous script iteration.")
+    print("\nUpdating the XML files in the FITS folder to match the files in the accession folder.")
+    print("This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.")
     print("Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.")
     update_fits(accession_folder, fits_output, collection_folder, accession_number)
 else:
@@ -71,13 +65,13 @@ else:
                                  shell=True, stderr=subprocess.PIPE)
     if fits_status.stderr == b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n':
         print("Unable to generate FITS XML.")
-        print("Make sure that the FITS folder, the accession directory, and your current working directory are on the same letter drive.")
+        print("The FITS folder and accession folder need to be on the same letter drive.")
         sys.exit()
 
-# Combines the FITS data into a CSV. If one is already present, will replace it.
+# Combines the FITS data into a CSV. If one is already present, this will replace it.
 make_fits_csv(fits_output, accession_folder, collection_folder, accession_number)
 
-# Read the CSVs with data [FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA]
+# Read the CSVs with data (FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA)
 # into pandas for analysis and summarizing, and prints a warning if encoding errors have to be ignored.
 df_fits = csv_to_dataframe(f"{collection_folder}/{accession_number}_fits.csv")
 df_ita = csv_to_dataframe(c.ITA)
@@ -86,20 +80,20 @@ df_nara = csv_to_dataframe(c.NARA)
 
 # If there is already a spreadsheet with combined FITs and risk information from a previous iteration of the script,
 # reads that into a dataframe for additional analysis. This lets the archivist manually adjust the risk matches.
-# Otherwise, combines FITS, NARA, technical appraisal, and other risk data to a dataframe and saves it as a CSV.
+# Otherwise, combines FITS, NARA, technical appraisal, and other risk data into a dataframe and saves it as a CSV.
 csv_path = os.path.join(collection_folder, f"{accession_number}_full_risk_data.csv")
 if os.path.exists(csv_path):
-    print("\nUpdating the report using existing risk data.")
+    print("\nUpdating the analysis report using existing risk data.")
     df_results = csv_to_dataframe(csv_path)
 else:
-    print("\nGenerating new risk data for the report.")
+    print("\nGenerating new risk data for the analysis report.")
     df_results = match_nara_risk(df_fits, df_nara)
     df_results = match_technical_appraisal(df_results, df_ita)
     df_results = match_other_risk(df_results, df_other)
     df_results.to_csv(csv_path, index=False)
 
-# Removes duplicates in df_results from multiple NARA matches with the same risk and proposed preservation plan.
-# This information is saved in the accession's full risk data CSV if matches need to be checked.
+# Removes duplicates in df_results from multiple NARA matches (same risk and preservation plan) to a single file.
+# The full data with the duplicates is saved in the accession's full risk data CSV if matches need to be checked.
 df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
 df_results.drop_duplicates(inplace=True)
 
@@ -129,12 +123,14 @@ df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=Fa
 df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
 
 # Adds default text to any subset dataframe if there were no files of this type and the dataframe is empty.
-# The first column has the message and the rest are filled with blank. The list must have a value for every column.
+# The first column has the message and the rest are filled with blank.
+# The list must have a value for every column or it will cause an error.
 for df in (df_nara_risk, df_multiple, df_validation, df_tech_appraisal, df_other_risk, df_duplicates):
     if len(df) == 0:
         df.loc[len(df)] = ["No data of this type"] + [np.NaN] * (len(df.columns) - 1)
 
-# Calculates the total files and total size in the dataframe to use for percentages with the subtotals.
+# Calculates the number of files and total size in the dataframe to use for calculating percentages with the subtotals.
+# This gives percentages based on the entire accession and not just the files that are in a particular subtotal.
 totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum()/1000}
 
 # Calculates file and size subtotals based on different criteria.
