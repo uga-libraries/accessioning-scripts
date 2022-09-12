@@ -454,8 +454,8 @@ def test_make_fits_csv_function_encoding_error():
     make_fits_csv(fr"{output}\accession_FITS", accession_folder, output, "accession")
 
     # Makes a dataframe with the expected values for accession_encode_errors.txt.
-    rows = [[r"C:\Users\amhan\Desktop\Accessions\tests\accession\disk1\pi_errorπ.txt"],
-            [r"C:\Users\amhan\Desktop\Accessions\tests\accession\disk1\smiley_error.txt"]]
+    rows = [[fr"{output}\accession\disk1\pi_errorπ.txt"],
+            [fr"{output}\accession\disk1\smiley_error.txt"]]
     df_encode_expected = pd.DataFrame(rows, columns=["Paths"])
 
     # Makes a dataframe with the expected values for accession_fits.csv.
