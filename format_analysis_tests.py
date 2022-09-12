@@ -9,10 +9,7 @@ If the input for any function or analysis changes, edit the test input and expec
 # usage: python path/format_analysis_tests.py output_folder
 import gzip
 import io
-import os.path
 import shutil
-
-import pandas as pd
 
 from format_analysis_functions import *
 
@@ -1294,8 +1291,9 @@ def test_iteration(repo_path):
     column_names = ["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_format_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
-    rows = [["Low Risk", 7, 70, 0.019, round((0.019 / total_mb) * 100, 3)],
-            ["Moderate Risk", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
+    low_mb = round(df_risk[df_risk["NARA_Risk Level"] == "Low Risk"]["FITS_Size_KB"].sum() / 1000, 3)
+    rows = [["Low Risk", 7, 70, low_mb, round((low_mb / total_mb) * 100, 3)],
+            ["Moderate Risk", 3, 30, three_zip_mb, round((three_zip_mb / total_mb) * 100, 3)]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_nara_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
