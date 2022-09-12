@@ -1,12 +1,13 @@
-"""Purpose: tests for each function and analysis component (each subset and subtotal) in the format_analysis.py script.
+"""Purpose: tests each function and analysis component (each subset and subtotal) in the format_analysis.py script.
 Each test creates simplified input, runs the code, and compares it to the expected output.
-Test results are saved to a directory specified with the script argument.
-Comment out any test you do not wish to run.
+Tests include all data variation observed to date and error handling.
+Results for failed tests are saved to a directory specified with the script argument.
 
-For any tests that do not import the function from format_analysis.py, sync the code before running the test.
+For any tests that do not use a function from format_analysis.py, check the code is up to date before running the test.
 If the input for any function or analysis changes, edit the test input and expected results."""
 
-# usage: python path/format_analysis_tests.py output_folder
+# usage: python path/format_analysis_tests.py path/output_folder
+
 import gzip
 import io
 import shutil
@@ -19,15 +20,20 @@ def compare_strings(test_name, actual, expected):
     Prints if they match (test passes) or not (test fails) and updates the counter.
     Results for failed tests are saved to a text file in the output folder for review."""
 
+    # Test that passes. Prints the result and updates the counter.
     if actual == expected:
         print("Pass: ", test_name)
         global PASSED_TESTS
         PASSED_TESTS += 1
+
+    # Test that fails.
     else:
+        # Prints the result and updates the counter.
         print("FAIL: ", test_name)
         global FAILED_TESTS
         FAILED_TESTS += 1
 
+        # Saves a log to the output folder.
         with open(f"{test_name}_comparison_results.txt", "w") as file:
             file.write("Test output:\n")
             file.write(actual)
@@ -62,36 +68,37 @@ def compare_dataframes(test_name, df_actual, df_expected):
 def test_argument(repo_path):
     """Tests error handling for a missing or incorrect script argument."""
 
-    # Calculates the path to the format_analysis.py script.
+    # Calculates the path to the format_analysis.py script so this function can run it.
     script_path = os.path.join(repo_path, "format_analysis.py")
 
-    # Runs the script without an argument and verifies the correct error message would print.
+    # TEST ONE: Runs format_analysis.py without an argument and verifies the correct error message is made.
     no_argument = subprocess.run(f"python {script_path}", shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nThe required script argument (accession_folder) is missing.\r\n"
     compare_strings("Argument_Missing", no_argument.stdout.decode("utf-8"), error_msg)
 
-    # Runs the script with an argument that isn't a valid path and verifies the correct error message would print.
+    # TEST TWO: Runs format_analysis.py with an argument that isn't a valid path and
+    # verifies the correct error message is made.
     wrong_argument = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nThe provided accession folder 'C:/User/Wrong/Path' is not a valid directory.\r\n"
     compare_strings("Argument_Invalid_Path", wrong_argument.stdout.decode("utf-8"), error_msg)
 
 
 def test_check_configuration_function(repo_path):
-    """Tests error handling from missing configuration file, missing variables and variables with invalid paths."""
+    """Tests error handling from a missing configuration file, missing variables, and variables with invalid paths."""
 
     # Renames the current configuration file so errors can be generated without losing the correct file.
     os.rename(f"{repo_path}/configuration.py", f"{repo_path}/configuration_original.py")
 
-    # Runs the script with no configuration.py present, since it was just renamed.
+    # TEST ONE: Runs the script with no configuration.py present and verifies the correct error message is made.
     no_config = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}",
                                shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nCould not run the script. Missing the required configuration.py file." \
                 "\r\nMake a configuration.py file using configuration_template.py and save it to the folder with the script.\r\n"
     compare_strings("Configuration_File_Missing", no_config.stdout.decode("utf-8"), error_msg)
 
-    # Makes a configuration file without any of the required variables to use for testing.
-    # Verifies that the check_configuration() function returns the expected error messages.
-    # Deletes the file after the test is complete.
+    # TEST TWO: Makes a configuration file without any of the required variables.
+    # Runs the script and verifies the correct error message is made.
+    # Deletes the configuration file after the test is complete.
     with open(f"{repo_path}/configuration.py", "w") as config:
         config.write('# Constants used for other scripts\nvariable = "value"\n')
     no_var = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
@@ -104,35 +111,34 @@ def test_check_configuration_function(repo_path):
     compare_strings("Configuration_File_Missing_Variables", no_var.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
-    # Makes a configuration file with the required variables but all are incorrect file paths to use for testing.
-    # Verifies that the check_configuration() function returns the expected error messages.
-    # Deletes the file after the test is complete.
+    # TEST THREE: Makes a configuration file with the required variables but all have incorrect file paths.
+    # Runs the script and verifies the correct error message is made.
+    # Deletes the configuration file after the test is complete.
     with open(f"{repo_path}/configuration.py", "w") as config:
         config.write('# Constants used for other scripts\n')
         config.write('FITS = "C:/Users/Error/fits.bat"\n')
         config.write('ITA = "C:/Users/Error/ITAfileformats.csv"\n')
         config.write('RISK = "C:/Users/Error/Riskfileformats.csv"\n')
         config.write('NARA = "C:/Users/Error/NARA.csv"\n')
-    path_err = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}",
-                              shell=True, stdout=subprocess.PIPE)
+    path_error = subprocess.run(f"python {repo_path}/format_analysis.py {os.getcwd()}", shell=True, stdout=subprocess.PIPE)
     error_msg = "\r\nProblems detected with configuration.py:\r\n" \
                 "   * FITS path 'C:/Users/Error/fits.bat' is not correct.\r\n" \
                 "   * ITAfileformats.csv path 'C:/Users/Error/ITAfileformats.csv' is not correct.\r\n" \
                 "   * Riskfileformats.csv path 'C:/Users/Error/Riskfileformats.csv' is not correct.\r\n" \
                 "   * NARA Preservation Action Plans CSV path 'C:/Users/Error/NARA.csv' is not correct.\r\n\r\n" \
                 "Correct the configuration file, using configuration_template.py as a model.\r\n"
-    compare_strings("Configuration_File_Variable_Paths_Error", path_err.stdout.decode("utf-8"), error_msg)
+    compare_strings("Configuration_File_Variable_Paths_Error", path_error.stdout.decode("utf-8"), error_msg)
     os.remove(f"{repo_path}/configuration.py")
 
-    # Renames the correct configuration file back to configuration.py.
+    # Renames the original configuration file back to configuration.py.
     os.rename(f"{repo_path}/configuration_original.py", f"{repo_path}/configuration.py")
 
 
 def test_csv_to_dataframe_function():
     """Tests reading all four CSVs into dataframes and adding prefixes to FITS and NARA dataframes."""
 
-    # Makes a FITS CSV with no special characters.
-    # In format_analysis.py, this would be made earlier in the script and has more columns.
+    # Makes a FITS CSV with no special characters to use for testing.
+    # In format_analysis.py, this would be made earlier in the script and have more columns.
     # The other CSVs read by this function are already on the local machine and paths are in configuration.py
     with open("accession_fits.csv", "w", newline="") as file:
         file_write = csv.writer(file)
@@ -141,7 +147,7 @@ def test_csv_to_dataframe_function():
         file_write.writerow([r"C:\Coll\accession\CD002_Website\index.html", "Hypertext Markup Language", "4.01", True])
         file_write.writerow([r"C:\Coll\accession\CD002_Website\index.html", "HTML Transitional", "HTML 4.01", True])
 
-    # Runs the function on all four CSVs.
+    # RUNS THE FUNCTION BEING TESTED ON ALL FOUR CSVS.
     df_fits = csv_to_dataframe("accession_fits.csv")
     df_ita = csv_to_dataframe(c.ITA)
     df_other = csv_to_dataframe(c.RISK)
@@ -149,6 +155,7 @@ def test_csv_to_dataframe_function():
 
     # For each CSV, tests the function worked by verifying the column names and that the dataframe isn't empty.
     # Column names are converted to a comma separated string to work with the compare_strings() function.
+    # The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently.
     global FAILED_TESTS
     if len(df_fits) != 0:
         expected = "FITS_File_Path, FITS_Format_Name, FITS_Format_Version, FITS_Multiple_IDs"
@@ -183,10 +190,10 @@ def test_csv_to_dataframe_function():
 
 
 def test_csv_to_dataframe_function_encoding_error():
-    """Tests unicode error handling."""
+    """Tests unicode error handling when reading a CSV into a dataframe."""
 
-    # Makes a FITS CSV with special characters (copyright symbol and accented e).
-    # In format_analysis.py, this would be made earlier in the script and has more columns.
+    # Makes a FITS CSV with special characters (copyright symbol and accented e) to use for testing.
+    # In format_analysis.py, this would be made earlier in the script and have more columns.
     with open("accession_fits.csv", "w", newline="") as file:
         file_write = csv.writer(file)
         file_write.writerow(["File_Path", "Format_Name", "Format_Version", "Multiple_IDs"])
@@ -194,7 +201,8 @@ def test_csv_to_dataframe_function_encoding_error():
         file_write.writerow([r"C:\Coll\accession\CD002_Website\indexé.html", "Hypertext Markup Language", "4.01", True])
         file_write.writerow([r"C:\Coll\accession\CD002_Website\indexé.html", "HTML Transitional", "HTML 4.01", True])
 
-    # Runs the function but prevents it from printing a status message to the terminal.
+    # RUNS THE FUNCTION BEING TESTED.
+    # Prevents it from printing a status message to the terminal.
     # In format_analysis.py, it prints a warning for the archivist that the CSV had encoding errors.
     text_trap = io.StringIO()
     sys.stdout = text_trap
@@ -217,29 +225,25 @@ def test_csv_to_dataframe_function_encoding_error():
 
 
 def test_make_fits_xml():
-    """Tests the command for making FITS files the first time."""
+    """Tests the command for making FITS files when there is not already a folder of FITs XML
+    from a previous script iteration."""
 
-    # Makes an accession folder with test files to use for testing.
+    # Makes an accession folder with files to use for testing.
     accession_folder = fr"{output}\accession"
     os.makedirs(fr"{accession_folder}\folder")
     for file_path in ("file.txt", r"folder\file.txt", r"folder\other.txt"):
         with open(fr"accession\{file_path}", "w") as file:
             file.write("Text")
 
-    # Makes the directory for FITS files.
-    # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist.
+    # RUNS THE CODE BEING TESTED.
+    # Makes the directory for FITS files and calls FITS to make the FITS XML files.
+    # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist
+    # and also exits the script if there is an error.
     fits_output = f"{output}/accession_FITS"
     os.mkdir(fits_output)
+    subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True, stderr=subprocess.PIPE)
 
-    # Calls FITS with the correct location.
-    # In format_analysis.py, this is done in the main body of the script and also exits the script if there is an error.
-    fits_status = subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"',
-                                 shell=True, stderr=subprocess.PIPE)
-    if fits_status.stderr == b'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n':
-        print("Unable to generate FITS XML for this accession because FITS is in a different directory from the accession.")
-        print("Copy the FITS folder to the same letter directory as the accession files and run the script again.")
-
-    # Makes a dataframe with the files that should be in the accession_fits folder based on the input.
+    # Makes a dataframe with the files that should be in the accession_FITS folder.
     df_expected = pd.DataFrame(["file.txt.fits.xml", "file.txt-1.fits.xml", "other.txt.fits.xml"], columns=["Files"])
 
     # Makes a dataframe with the files that are actually in the accession_fits folder after running the test.
@@ -260,27 +264,25 @@ def test_fits_class_error():
     """Tests the error handling for FITS when it is in a different directory than the source files.
     For this test to work, the fits.bat file must be in the specified location."""
 
-    # Makes an accession folder with a test file to use for testing.
+    # Makes an accession folder with files to use for testing.
     accession_folder = fr"{output}\accession"
     os.mkdir(accession_folder)
     with open(fr"accession\file.txt", "w") as file:
         file.write("Text")
 
-    # Makes the directory for FITS files.
+    # Makes a variable with a FITS file path in a different directory from the accession folder.
+    # In format_analysis.py, the FITS path is taken from the configuration.py file.
+    fits_path = r"X:\test\fits.bat"
+
+    # RUNS THE CODE BEING TESTED.
+    # Makes the directory for FITS files and calls FITS to make the FITS XML files.
     # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist.
     fits_output = f"{output}/accession_FITS"
     os.mkdir(fits_output)
-
-    # Makes a variable with a FITS file path in a different directory from the accession folder.
-    # In format_analysis.py, the FITS file path is in the configuration.py file.
-    fits_path = r"X:\test\fits.bat"
-
-    # Calls FITS which is located in a different directory to generate an error.
     fits_result = subprocess.run(f'"{fits_path}" -r -i "{accession_folder}" -o "{fits_output}"',
                                  shell=True, stderr=subprocess.PIPE)
 
-    # Verifies the correct error message would be printed by the script and prints the test result.
-    # In format_analysis.py, the error would also cause the script to exit.
+    # Compares the error message generated by the script to the expected value.
     error_msg = "Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n"
     compare_strings("FITS_Class_Error", fits_result.stderr.decode("utf-8"), error_msg)
 
@@ -290,34 +292,33 @@ def test_fits_class_error():
 
 
 def test_update_fits_function():
-    """Tests removing FITS for deleted files and adding FITs for new files."""
+    """Tests that the FITS folder is correctly updated when files are deleted from and added to the accession folder."""
 
-    # Makes an accession folder with test files to use for testing.
+    # Makes an accession folder with files.
     accession_folder = fr"{output}\accession"
-    os.makedirs(fr"{accession_folder}\folder")
-    paths = ["file.txt", "delete_one.txt", r"folder\delete_one.txt", r"folder\delete_too.txt",
-             r"folder\file.txt", r"folder\spare.txt"]
+    os.makedirs(fr"{accession_folder}\dir")
+    paths = ["file.txt", "delete.txt", r"dir\delete.txt", r"dir\delete2.txt", r"dir\file.txt", r"dir\spare.txt"]
     for file_path in paths:
         with open(fr"accession\{file_path}", "w") as file:
             file.write("Text")
 
-    # Makes FITS XML for those files to use for testing.
+    # Makes FITS XML for the accession to use for testing.
     # In format_analysis.py, this is done in the main body of the script.
     fits_output = fr"{output}\accession_FITS"
     os.mkdir(fits_output)
     subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
     # Deletes 2 files and adds 1 file to the accession folder.
-    os.remove(r"accession\delete_one.txt")
-    os.remove(r"accession\folder\delete_too.txt")
+    os.remove(r"accession\delete.txt")
+    os.remove(r"accession\dir\delete2.txt")
     with open(r"accession\new_file.txt", "w") as file:
         file.write("Text")
 
-    # Runs the function to update FITs files.
+    # RUNS THE FUNCTION BEING TESTED.
     update_fits(accession_folder, fits_output, output, "accession")
 
     # Makes a dataframe with the files which should be in the FITs folder.
-    expected = ["delete_one.txt-1.fits.xml", "file.txt.fits.xml", "file.txt-1.fits.xml", "new_file.txt.fits.xml",
+    expected = ["delete.txt-1.fits.xml", "file.txt.fits.xml", "file.txt-1.fits.xml", "new_file.txt.fits.xml",
                 "spare.txt.fits.xml"]
     df_expected = pd.DataFrame(expected, columns=["Files"])
 
@@ -336,12 +337,12 @@ def test_update_fits_function():
 
 
 def test_make_fits_csv_function():
-    """Tests all variations for FITS data extraction and reformatting."""
+    """Tests all known variations for FITS data extraction and reformatting."""
 
-    # Makes an accession folder with test files organized into 2 disks to use for testing.
+    # Makes an accession folder with files organized into 2 folders.
     # Formats included: csv, gzip, html, plain text, xlsx
     # Variations: one and multiple format ids, with and without optional fields, one or multiple tools,
-    #             empty with another format id, file with multiple ids with same name (gzip) and one has PUID.
+    #             empty with another format id, file with multiple ids with same name and one has PUID (gzip).
     accession_folder = fr"{output}\accession"
     os.makedirs(fr"{accession_folder}\disk1")
     df_spreadsheet = pd.DataFrame({"C1": ["text"*1000], "C2": ["text"*1000], "C3": ["text"*1000]})
@@ -361,13 +362,13 @@ def test_make_fits_csv_function():
     with gzip.open(r"accession\disk2\zipping.gz", "wb") as file:
         file.write(b"Test Text\n" * 100000)
 
-    # Makes FITS files using the test accession folder.
+    # Makes FITS XML for the accession to use for testing.
     # In format_analysis.py, there is also error handling for if FITS has a load class error.
     fits_output = f"{output}/accession_FITS"
     os.mkdir(fits_output)
     subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
-    # Runs the function being tested.
+    # RUNS THE FUNCTION BEING TESTED.
     make_fits_csv(fr"{output}\accession_FITS", accession_folder, output, "accession")
 
     # Makes a dataframe with the expected values.
@@ -429,8 +430,8 @@ def test_make_fits_csv_function():
 def test_make_fits_csv_function_encoding_error():
     """Tests encoding error handling when saving FITS file data to the CSV."""
 
-    # Makes an accession folder with test files (all plain text) for testing.
-    # Variations: one with no encoding error, two with encoding errors.
+    # Makes an accession folder with plain text files.
+    # Variations: one with no encoding error, two with encoding errors (from pi symbol and smiley face).
     accession_folder = fr"{output}\accession"
     os.makedirs(fr"{output}\accession\disk1")
     with open(r"accession\disk1\file.txt", "w") as file:
@@ -440,13 +441,13 @@ def test_make_fits_csv_function_encoding_error():
     with open(r"accession\disk1\smiley_error.txt", "w") as file:
         file.write("Text" * 1500)
 
-    # Makes FITS files using the test accession folder.
+    # Makes FITS XML for the accession to use for testing.
     # In format_analysis.py, there is also error handling for if FITS has a load class error.
     fits_output = f"{output}/accession_FITS"
     os.mkdir(fits_output)
     subprocess.run(f'"{c.FITS}" -r -i "{accession_folder}" -o "{fits_output}"', shell=True)
 
-    # Runs the function being tested.
+    # RUNS THE FUNCTION BEING TESTED.
     make_fits_csv(fr"{output}\accession_FITS", accession_folder, output, "accession")
 
     # Makes a dataframe with the expected values for accession_encode_errors.txt.
@@ -489,7 +490,7 @@ def test_match_nara_risk_function():
     # Extension variations: match single extension and pipe-separated extension, including case not matching
     # Also includes 2 that won't match
     rows = [[r"C:\PUID\file.zip", "ZIP archive", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263"],
-            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/419"],
+            [r"C:\PUID\3\movie.ifo", "DVD Data File", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/419"],
             [r"C:\Name\img.jp2", "JPEG 2000 File Format", np.NaN, np.NaN],
             [r"C:\Name\Case\file.gz", "gzip", np.NaN, np.NaN],
             [r"C:\Name\Version\database.nsf", "Lotus Notes Database", "2", np.NaN],
@@ -505,20 +506,20 @@ def test_match_nara_risk_function():
     # In format_analysis.py, this is done in the main body of the script before the function is called.
     df_nara = csv_to_dataframe(c.NARA)
 
-    # Runs the function being tested.
+    # RUNS THE FUNCTION BEING TESTED.
     df_results = match_nara_risk(df_fits, df_nara)
 
     # Makes a dataframe with the expected values.
     rows = [[r"C:\PUID\file.zip", "ZIP archive", np.NaN, "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
              "ZIP archive", "zip", "https://www.nationalarchives.gov.uk/pronom/x-fmt/263", "Moderate Risk",
              "Retain but extract files from the container", "PRONOM"],
-            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN,
+            [r"C:\PUID\3\movie.ifo", "DVD Data File", np.NaN,
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "DVD Data Backup File", "bup",
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "Moderate Risk", "Retain", "PRONOM"],
-            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN,
+            [r"C:\PUID\3\movie.ifo", "DVD Data File", np.NaN,
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "DVD Data File", "dvd",
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "Moderate Risk", "Retain", "PRONOM"],
-            [r"C:\PUID\2\movie.ifo", "DVD Data File", np.NaN,
+            [r"C:\PUID\3\movie.ifo", "DVD Data File", np.NaN,
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "DVD Info File", "ifo",
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/419", "Moderate Risk", "Retain", "PRONOM"],
             [r"C:\Name\img.jp2", "JPEG 2000 File Format", np.NaN, np.NaN, "JPEG 2000 File Format", "jp2",
@@ -559,13 +560,12 @@ def test_match_nara_risk_function():
 
 
 def test_match_technical_appraisal_function():
-    """Tests adding technical appraisal categories to df_results,
-    which will already have information from FITS and NARA.
-    In format_analysis.py, this is done in the main body of the script."""
+    """Tests adding technical appraisal categories to df_results, which already has information from FITS and NARA."""
 
     # Makes a dataframe to use as input.
     # Data variation: examples that match both, one, or neither of the technical appraisal categories,
-    # with identical cases and different cases (match is case-insensitive).
+    #                 with identical cases and different cases (match is case-insensitive),
+    #                 and a folder that contains the word trash but shouldn't be identified for technical appraisal.
     rows = [[r"C:\CD1\Flower.JPG", "JPEG EXIF"],
             [r"C:\CD1\Trashes\Flower1.JPG", "JPEG EXIF"],
             [r"C:\CD2\Script\config.pyc", "unknown binary"],
@@ -581,7 +581,7 @@ def test_match_technical_appraisal_function():
     # In format_analysis.py, this is done in the main body of the script before the function is called.
     df_ita = csv_to_dataframe(c.ITA)
 
-    # Runs the function being tested.
+    # RUNS THE FUNCTION BEING TESTED.
     df_results = match_technical_appraisal(df_results, df_ita)
 
     # Makes a dataframe with the expected values.
@@ -601,14 +601,13 @@ def test_match_technical_appraisal_function():
 
 
 def test_match_other_risk_function():
-    """Tests adding other risk categories to df_results,
-    which will already have information from FITS, NARA, and technical appraisal.
-    In format_analysis.py, this is done in the main body of the script."""
+    """Tests adding other risk categories to df_results, which already has information from FITS, NARA,
+    and technical appraisal."""
 
     # Makes a dataframe to use as input.
     # Data variation: examples that match both, one, or neither of the other risk categories,
-    # with identical cases and different cases (match is case-insensitive),
-    # and at least one each of the format risk criteria.
+    #                 with identical cases and different cases (match is case-insensitive),
+    #                 and at least one each of the format risk criteria.
     rows = [["Adobe Photoshop file", "Moderate Risk", "Transform to TIFF or JPEG2000"],
             ["Cascading Style Sheet", "Low Risk", "Retain"],
             ["CorelDraw Drawing", "High Risk", "Transform to a TBD format, possibly PDF or TIFF"],
@@ -625,7 +624,7 @@ def test_match_other_risk_function():
     # In format_analysis.py, this is done in the main body of the script before the function is called.
     df_other = csv_to_dataframe(c.RISK)
 
-    # Runs the function being tested.
+    # RUNS THE FUNCTION BEING TESTED.
     df_results = match_other_risk(df_results, df_other)
 
     # Makes a dataframe with the expected values.
@@ -646,11 +645,12 @@ def test_match_other_risk_function():
 
 
 def test_deduplicating_results_df():
-    """Tests that duplicates from multiple NARA matches with the same risk information are correctly removed."""
+    """Tests that duplicates from multiple NARA matches with the same risk information are correctly removed.
+    In format_analysis.py, this is done in the main body of the script."""
 
     # Makes a dataframe to use as input, with a subset of the columns usually in df_results.
     # Data variation: one FITS ID with one NARA match, multiple FITS IDs with one NARA match each,
-    # multiple NARA matches with the same risk, multiple NARA matches with different risks.
+    #                 multiple NARA matches with the same risk, multiple NARA matches with different risks.
     rows = [[r"C:\acc\disk1\data.csv", "Comma-Separated Values (CSV)", "Comma Separated Values", "csv",
              "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Low Risk", "Retain"],
             [r"C:\acc\disk1\data.xlsx", "Open Office XML Workbook", "Microsoft Excel Office Open XML", "xlsx",
@@ -675,8 +675,7 @@ def test_deduplicating_results_df():
                     "NARA_PRONOM URL", "NARA_Risk Level", "NARA_Proposed Preservation Plan"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Removes columns with NARA identification info and then removes duplicate rows.
-    # In format_analysis.py, this is done in the main body of the script.
+    # RUNS THE CODE BEING TESTED: Removes columns with NARA identification info and then removes duplicate rows.
     df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
     df_results.drop_duplicates(inplace=True)
 
@@ -708,7 +707,7 @@ def test_nara_risk_subset():
                     "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the subset.
+    # RUNS THE CODE TO BE TESTED: filters the dataframe to the correct subset and removes unwanted columns.
     # In format_analysis.py, this is done in the main body of the script.
     df_nara_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
     df_nara_risk.drop(["FITS_PUID", "FITS_Identifying_Tool(s)", "FITS_Creating_Application",
@@ -741,7 +740,7 @@ def test_multiple_ids_subset():
                     "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the subset.
+    # RUNS THE CODE TO BE TESTED: filters the dataframe to the correct subset and removes unwanted columns.
     # In format_analysis.py, this is done in the main body of the script.
     df_multiple = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
     df_multiple.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
@@ -778,7 +777,7 @@ def test_validation_subset():
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the subset.
+    # RUNS THE CODE TO BE TESTED: filters the dataframe to the correct subset.
     # In format_analysis.py, this is done in the main body of the script.
     df_validation = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
                                (df_results["FITS_Status_Message"].notnull())].copy()
@@ -813,7 +812,7 @@ def test_tech_appraisal_subset():
                     "FITS_MD5", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the subset.
+    # RUNS THE CODE TO BE TESTED: filters the dataframe to the correct subset and removes unwanted columns.
     # In format_analysis.py, this is done in the main body of the script.
     df_tech_appraisal = df_results[df_results["Technical_Appraisal"] != "Not for TA"].copy()
     df_tech_appraisal.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Valid", "FITS_Well-Formed",
@@ -846,7 +845,7 @@ def test_other_risk_subset():
                     "FITS_Creating_Application", "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the subset.
+    # RUNS THE CODE TO BE TESTED: filters the dataframe to the correct subset and removes unwanted columns.
     # In format_analysis.py, this is done in the main body of the script.
     df_other_risk = df_results[df_results["Other_Risk"] != "Not for Other"].copy()
     df_other_risk.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Creating_Application", "FITS_Valid",
@@ -879,7 +878,7 @@ def test_duplicates_subset():
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Size_KB", "FITS_MD5"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Calculates the subset.
+    # RUNS THE CODE TO BE TESTED: filters the dataframe to the correct subset and removes unwanted columns.
     # In format_analysis.py, this is done in the main body of the script.
     df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
     df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
@@ -910,13 +909,14 @@ def test_empty_subset():
 
     # Calculates both subsets.
     # In format_analysis.py, this is done in the main body of the script.
+
     df_multiple_ids = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
 
     df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
     df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
     df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
 
-    # Tests each subset for if they are empty and supplies default text.
+    # RUNS THE CODE BEING TESTED: Tests each subset for if they are empty and supplies default text.
     # In format_analysis.py, this is done in the main body of the script
     # and includes all 6 subset dataframes in the tuple.
     for df in (df_multiple_ids, df_duplicates):
@@ -924,6 +924,7 @@ def test_empty_subset():
             df.loc[len(df)] = ["No data of this type"] + [np.NaN] * (len(df.columns) - 1)
 
     # Makes dataframes with the expected values for each subset.
+
     rows = [["No data of this type", np.NaN, np.NaN, np.NaN]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Size_KB", "FITS_MD5"]
     df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
@@ -942,7 +943,7 @@ def test_format_subtotal():
 
     # Makes a dataframe to use as input for the subtotal() function.
     # Data variation: formats with one row, formats with multiple rows, one format with a NARA risk level,
-    # multiple formats with a NARA risk level, blank in NARA risk level.
+    #                 multiple formats with a NARA risk level, blank in NARA risk level.
     rows = [["JPEG EXIF", 13.563, "Low Risk"],
             ["JPEG EXIF", 14.1, "Low Risk"],
             ["Open Office XML Workbook", 19.316, "Low Risk"],
@@ -958,7 +959,7 @@ def test_format_subtotal():
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
-    # Runs the subtotal() function for this subtotal.
+    # RUNS THE FUNCTION BEING TESTED.
     df_format_subtotal = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
@@ -998,7 +999,7 @@ def test_nara_risk_subtotal():
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
-    # Runs the subtotal() function for this subtotal.
+    # RUNS THE FUNCTION BEING TESTED.
     df_nara_risk_subtotal = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
 
     # Makes a dataframe with the expected values.
@@ -1035,7 +1036,7 @@ def test_tech_appraisal_subtotal():
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
-    # Runs the subtotal() function for this subtotal.
+    # RUNS THE FUNCTION BEING TESTED.
     df_tech_appraisal_subtotal = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
@@ -1064,7 +1065,7 @@ def test_tech_appraisal_subtotal_none():
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
-    # Runs the subtotal() function for this subtotal.
+    # RUNS THE FUNCTION BEING TESTED.
     df_tech_appraisal_subtotal = subtotal(df_results, ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
@@ -1098,7 +1099,7 @@ def test_other_risk_subtotal():
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
-    # Runs the subtotal() function for this subtotal.
+    # RUNS THE FUNCTION BEING TESTED.
     df_other_risk_subtotal = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
@@ -1126,7 +1127,7 @@ def test_other_risk_subtotal_none():
     # In format_analysis.py, this is done in the main body of the script before subtotal() is called.
     totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].sum() / 1000}
 
-    # Runs the subtotal() function for this subtotal.
+    # RUNS THE FUNCTION BEING TESTED.
     df_other_risk_subtotal = subtotal(df_results, ["Other_Risk", "FITS_Format_Name"], totals_dict)
 
     # Makes a dataframe with the expected values.
@@ -1169,7 +1170,7 @@ def test_media_subtotal_function():
     column_names = ["FITS_File_Path", "FITS_Size_KB", "NARA_Risk Level", "Technical_Appraisal", "Other_Risk"]
     df_results = pd.DataFrame(rows, columns=column_names)
 
-    # Runs the media_subtotal() function. Uses the output folder for the accession folder.
+    # RUNS THE FUNCTION BEING TESTED.
     df_media_subtotal = media_subtotal(df_results, accession_folder)
 
     # Makes a dataframe with the expected values.
@@ -1196,7 +1197,7 @@ def test_iteration(repo_path):
     # All subtotals and subsets in the final report will have some information.
     # Formats included: csv, html, plain text, xlsx, zip
     # Variations: duplicate files, empty file, file with multiple identifications (xlsx),
-    # file with validation error (html), technical appraisal (empty, trash), other risk (zip)
+    #             file with validation error (html), technical appraisal (empty, trash), other risk (zip)
     accession_folder = fr"{output}\accession"
     os.makedirs(fr"{accession_folder}\disk1\trash")
     with open(r"accession\disk1\trash\trash.txt", "w") as file:
@@ -1223,14 +1224,14 @@ def test_iteration(repo_path):
     # Calculates the path for running the format_analysis.py script.
     script_path = os.path.join(repo_path, "format_analysis.py")
 
-    # Runs the script on the test accession folder and tests if the expected messages were produced.
+    # ROUND ONE: Runs the script on the test accession folder and tests if the expected messages were produced.
     # In format_analysis.py, these messages are printed to the terminal for archivist review.
     iteration_one = subprocess.run(f"python {script_path} {accession_folder}", shell=True, stdout=subprocess.PIPE)
     msg = "\r\nGenerating new FITS format identification information.\r\n\r\n" \
           "Generating new risk data for the analysis report.\r\n"
     compare_strings("Iteration_Message_1", iteration_one.stdout.decode("utf-8"), msg)
 
-    # Deletes trash folder and adds a missed file to the accession folder to simulate archivist appraisal.
+    # ROUND TWO: Deletes the trash folder and adds a file to the accession folder to simulate archivist appraisal.
     # Also deletes the full_risk_data.csv so an updated one will be made with the changes.
     shutil.rmtree(r"accession\disk1\trash")
     with open(r"accession\disk2\new.txt", "w") as file:
@@ -1246,7 +1247,7 @@ def test_iteration(repo_path):
           "Generating new risk data for the analysis report.\r\n"
     compare_strings("Iteration_Message_2", iteration_two.stdout.decode("utf-8"), msg)
 
-    # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
+    # ROUND THREE: Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
     # Removes the data_update.final.xlsx FITS id of Zip Format and NARA matches to empty.txt except for Plain Text.
     df_risk = pd.read_csv("accession_full_risk_data.csv")
     xlsx_to_drop = df_risk[(df_risk["FITS_File_Path"] == fr"{accession_folder}\disk1\data.xlsx") &
@@ -1266,12 +1267,10 @@ def test_iteration(repo_path):
           "Updating the analysis report using existing risk data.\r\n"
     compare_strings("Iteration_Message_3", iteration_three.stdout.decode("utf-8"), msg)
 
-    # Makes dataframes with the expected values for each tab in format_analysis.xlsx.
-    # Calculates date, which is when the file was generated, with datetime to keep the expected value accurate.
-    # Calculates size for XLSX and ZIP with os.path because they are different each time they are made.
-    # Calculates the size of 3 ZIP files in MB because if it is done from rounded zip_kb, there are slight differences.
-    # Calculates total size for recalculating subtotal percentages to incorporate changing size of XLSX and ZIP files.
+    # The next several code blocks makes dataframes with the expected values for each tab in format_analysis.xlsx.
 
+    # Expected values for things that change (date and size and MD5 for XLSX and ZIP) are calculated
+    # instead of using a constant for comparison. Ones used frequently are saved to variables.
     today = datetime.date.today().strftime('%Y-%m-%d')
     xlsx_kb = round(os.path.getsize(r"accession\disk1\data.xlsx") / 1000, 3)
     xlsx_mb = round(xlsx_kb / 1000, 3)
@@ -1279,6 +1278,7 @@ def test_iteration(repo_path):
     three_zip_mb = round((os.path.getsize(r"accession\disk2\disk1backup.zip") / 1000 * 3) / 1000, 3)
     total_mb = df_risk["FITS_Size_KB"].sum()/1000
 
+    # Expected values for the format subtotal.
     rows = [["empty", "Low Risk", 1, 10, 0, 0],
             ["Extensible Markup Language", "Low Risk", 1, 10, 0, 0],
             ["Office Open XML Workbook", "Low Risk", 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
@@ -1288,20 +1288,24 @@ def test_iteration(repo_path):
     column_names = ["FITS_Format_Name", "NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_format_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the NARA risk subtotal.
     low_mb = round(df_risk[df_risk["NARA_Risk Level"] == "Low Risk"]["FITS_Size_KB"].sum() / 1000, 3)
     rows = [["Low Risk", 7, 70, low_mb, round((low_mb / total_mb) * 100, 3)],
             ["Moderate Risk", 3, 30, three_zip_mb, round((three_zip_mb / total_mb) * 100, 3)]]
     column_names = ["NARA_Risk Level", "File Count", "File %", "Size (MB)", "Size %"]
     df_nara_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the tech appraisal subtotal.
     rows = [["Format", "empty", 1, 10, 0, 0]]
     column_names = ["Technical_Appraisal", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_tech_appraisal_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the other risk subtotal.
     rows = [["Archive format", "ZIP Format", 3, 30, three_zip_mb, round(((three_zip_mb) / total_mb) * 100, 3)]]
     column_names = ["Other_Risk", "FITS_Format_Name", "File Count", "File %", "Size (MB)", "Size %"]
     df_other_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the media subtotal.
     disk1_mb = round(df_risk[df_risk["FITS_File_Path"].str.contains(r"\\disk1\\")]["FITS_Size_KB"].sum() / 1000, 3)
     disk2_mb = round(df_risk[df_risk["FITS_File_Path"].str.contains(r"\\disk2\\")]["FITS_Size_KB"].sum() / 1000, 3)
     rows = [["disk1", 3, disk1_mb, 0, 0, 3, 0, 0, 0], ["disk2", 7, disk2_mb, 0, 3, 4, 0, 1, 3]]
@@ -1310,6 +1314,7 @@ def test_iteration(repo_path):
                     "Technical Appraisal_Format (File Count)", "Other Risk Indicator (File Count)"]
     df_media_subtotal_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the NARA risk subset.
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2, False, today, zip_kb, "XXXXXXXXXX",
              "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA", "Archive format"],
             [fr"{output}\accession\disk2\disk1backup2.zip", "ZIP Format", 2, False, today, zip_kb, "XXXXXXXXXX",
@@ -1321,6 +1326,7 @@ def test_iteration(repo_path):
                     "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_nara_risk_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the tech appraisal subset.
     rows = [[fr"{output}\accession\disk2\empty.txt", "empty", np.NaN, "file utility version 5.03",
              False, 0, np.NaN, "Low Risk", "Retain", "File Extension", "Format", "Not for Other"]]
     column_names = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_Identifying_Tool(s)",
@@ -1328,6 +1334,7 @@ def test_iteration(repo_path):
                     "NARA_Proposed Preservation Plan", "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_tech_appraisal_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the other risk subset.
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", "ZIP Format", 2,
              "Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21",
              False, zip_kb, "Moderate Risk", "Retain but extract files from the container", "PRONOM", "Not for TA",
@@ -1345,6 +1352,7 @@ def test_iteration(repo_path):
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_other_risk_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the multiple format identifications subset.
     rows = [[fr"{output}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
              xlsx_kb, "XXXXXXXXXX", "Microsoft Excel", "Low Risk", "Retain", "File Extension", "Not for TA",
              "Not for Other"],
@@ -1357,6 +1365,7 @@ def test_iteration(repo_path):
                     "NARA_Match_Type", "Technical_Appraisal", "Other_Risk"]
     df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the duplicates subset.
     rows = [[fr"{output}\accession\disk2\disk1backup.zip", zip_kb, "XXXXXXXXXX"],
             [fr"{output}\accession\disk2\disk1backup2.zip", zip_kb, "XXXXXXXXXX"],
             [fr"{output}\accession\disk2\disk1backup3.zip", zip_kb, "XXXXXXXXXX"],
@@ -1365,6 +1374,7 @@ def test_iteration(repo_path):
     column_names = ["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]
     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
 
+    # Expected values for the validation subset.
     rows = [[fr"{output}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN, "Jhove version 1.20.1",
              False, today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True,
              "Not able to determine type of end of line severity=info",
@@ -1376,7 +1386,7 @@ def test_iteration(repo_path):
                     "Other_Risk"]
     df_validation_expected = pd.DataFrame(rows, columns=column_names)
 
-    # Makes a dataframe from each tab in format_analysis.xlsx.
+    # Makes a dataframe with the values from each tab in format_analysis.xlsx made by the script.
     # Provides a default MD5 for XLSX or ZIP files, since those have a different MD5 each time they are made.
     # If the df is all XLSX or ZIP, the column is filled with the default. Otherwise, it is filtered by format first.
     xlsx = pd.ExcelFile("accession_format-analysis.xlsx")
@@ -1418,7 +1428,7 @@ def test_iteration(repo_path):
     os.remove("accession_full_risk_data.csv")
 
 
-# Makes the output directory (the only script argument) the current directory for easier saving.
+# Makes the output directory (the only script argument) the current directory for simpler paths when saving files.
 # If the argument is missing or not a valid directory, ends the script.
 try:
     output = sys.argv[1]
