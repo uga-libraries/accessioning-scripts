@@ -2,6 +2,10 @@
 
 Scripts used for accessioning born-digital archives at the UGA Special Collections Libraries.
 
+The typical directory structure for accessions is a folder named with the collection id,
+which contains one folder per accession named with the accession id,
+Each accession folder contains one folder per transfer media named with the DMID (media id).
+
 
 ## find-long-paths.py
 
