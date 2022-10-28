@@ -59,6 +59,7 @@ Each test creates simplified input, runs the code, and compares it to the expect
 Tests include all known input data variations and function error handling.
 Results for failed tests are saved to a directory specified with the script argument.
 There are 49 tests organized into 28 functions.
+Note: these are not formal unit tests but will be converted to unit tests in the next development round.
 
 
 ## technical-appraisal-logs.py
