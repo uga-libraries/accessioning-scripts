@@ -1,11 +1,9 @@
-"""Tests reading all four CSVs into dataframes and adding prefixes to FITS and NARA dataframes."""
-# TODO: NOT TESTED
+"""Tests the function csv_to_dataframe, which reads the 4 CSVs with data needed for the analysis into dataframes,
+handles encoding errors if encountered, and edits column names for 2 of them."""
 
 import csv
-import io
 import os
-import pd
-import sys
+import pandas as pd
 import unittest
 from format_analysis_functions import csv_to_dataframe
 from configuration import *
@@ -13,38 +11,40 @@ from configuration import *
 
 class MyTestCase(unittest.TestCase):
 
-    def test_fits(self):
-        """Tests the function worked by verifying the column names and that the dataframe isn't empty.
-           The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently."""
-        # TODO: this one actually could be a test of the dataframe contents.
+    def tearDown(self):
+        """Deletes the test file accession_fits.csv, if it is present."""
+        if os.path.exists('accession_fits.csv'):
+            os.remove('accession_fits.csv')
 
-        # Makes a FITS CSV with no special characters to use for testing.
-        # In format_analysis.py, this would be made earlier in the script and have more columns.
+    def test_fits(self):
+        """Test for reading of accession_fits.csv.
+        Result for testing is the contents of the dataframe."""
+
+        # Makes an abbreviated FITS CSV (fewer columns) with no special characters to use for testing.
         with open('accession_fits.csv', 'w', newline='') as file:
             file_write = csv.writer(file)
             file_write.writerow(['File_Path', 'Format_Name', 'Format_Version', 'Multiple_IDs'])
             file_write.writerow([r'C:\Coll\accession\CD001_Images\IMG1.JPG', 'JPEG EXIF', '1.01', False])
             file_write.writerow([r'C:\Coll\accession\CD002_Web\index.html', 'Hypertext Markup Language', '4.01', True])
             file_write.writerow([r'C:\Coll\accession\CD002_Web\index.html', 'HTML Transitional', 'HTML 4.01', True])
-        df = csv_to_dataframe('accession_fits.csv')
+        df_result = csv_to_dataframe('accession_fits.csv')
 
-        # First test is that the dataframe is not empty.
-        result_empty = len(df) != 0
-        expected_empty = True
+        # Makes a dataframe with the expected values in df_fits after the CSV is read with encoding_errors="ignore".
+        # This causes characters to be skipped if they can't be read.
+        rows = [[r'C:\Coll\accession\CD001_Images\IMG1.JPG', 'JPEG EXIF', '1.01', False],
+                [r'C:\Coll\accession\CD002_Web\index.html', 'Hypertext Markup Language', '4.01', True],
+                [r'C:\Coll\accession\CD002_Web\index.html', 'HTML Transitional', 'HTML 4.01', True]]
+        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs']
+        df_expected = pd.DataFrame(rows, columns=column_names)
 
-        # Second test is the columns in the dataframe.
-        result_columns = df.columns.to_list()
-        expected_columns = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs']
-
-        # Deletes the test file.
-        os.remove('accession_fits.csv')
-
-        self.assertEqual(result_empty, expected_empty, 'Problem with fits - dataframe empty')
-        self.assertEqual(result_columns, expected_columns, 'Problem with fits - dataframe columns')
+        # Compares the contents of the FITS dataframe to the expected values.
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_ita(self):
         """Tests the function worked by verifying the column names and that the dataframe isn't empty.
            The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently."""
+        # TODO: this one actually could be a test of the dataframe contents.
 
         df = csv_to_dataframe(ITA)
 
@@ -62,6 +62,7 @@ class MyTestCase(unittest.TestCase):
     def test_other_risk(self):
         """Tests the function worked by verifying the column names and that the dataframe isn't empty.
            The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently."""
+        # TODO: this one actually could be a test of the dataframe contents.
 
         df = csv_to_dataframe(RISK)
 
@@ -94,8 +95,7 @@ class MyTestCase(unittest.TestCase):
                             'NARA_ArchiveTeam URL', 'NARA_ForensicsWiki URL', 'NARA_Wikipedia URL',
                             'NARA_docs.fileformat.com', 'NARA_Other URL', 'NARA_Notes', 'NARA_Risk Level',
                             'NARA_Preservation Action', 'NARA_Proposed Preservation Plan',
-                            'NARA_Description and Justification',
-                            'NARA_Preferred Processing and Transformation Tool(s)\'s']
+                            'NARA_Description and Justification', 'NARA_Preferred Processing and Transformation Tool(s)']
 
         self.assertEqual(result_empty, expected_empty, 'Problem with nara - dataframe empty')
         self.assertEqual(result_columns, expected_columns, 'Problem with nara - dataframe columns')
@@ -112,12 +112,8 @@ class MyTestCase(unittest.TestCase):
             file_write.writerow([r'C:\Coll\accession\CD002_Web\indexé.html', 'Hypertext Markup Language', '4.01', True])
             file_write.writerow([r'C:\Coll\accession\CD002_Web\indexé.html', 'HTML Transitional', 'HTML 4.01', True])
 
-        # Runs the function being tested, while preventing it printing a status message to the terminal.
-        # In format_analysis.py, it prints a warning for the archivist that the CSV had encoding errors.
-        text_trap = io.StringIO()
-        sys.stdout = text_trap
+        # Runs the function being tested, which will print a message to the terminal if working correctly.
         df_result = csv_to_dataframe('accession_fits.csv')
-        sys.stdout = sys.__stdout__
 
         # Makes a dataframe with the expected values in df_fits after the CSV is read with encoding_errors="ignore".
         # This causes characters to be skipped if they can't be read.
@@ -127,11 +123,9 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs']
         df_expected = pd.DataFrame(rows, columns=column_names)
 
-        # Deletes the test file.
-        os.remove('accession_fits.csv')
-
-        # Compares the contents of the FITS folder to the expected values.
-        self.assertEqual(df_result, df_expected, 'Problem with encoding error')
+        # Compares the contents of the FITS dataframe to the expected values.
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_result, df_expected)
 
 
 if __name__ == '__main__':
