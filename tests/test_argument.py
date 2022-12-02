@@ -1,5 +1,5 @@
-"""Tests error handling for a missing or incorrect script argument."""
-# TODO: UNTESTED
+"""Tests error handling for a missing or incorrect script argument.
+Error handling is in the main body of the script, so the tests run the entire script."""
 
 import os
 import subprocess
@@ -9,7 +9,8 @@ import unittest
 class MyTestCase(unittest.TestCase):
 
     def test_no_argument_error(self):
-        """Runs format_analysis.py without an argument and verifies the correct error message is made."""
+        """Runs format_analysis.py without an argument.
+         Result for testing is the error message."""
         script_path = os.path.join('..', 'format_analysis.py')
         script_output = subprocess.run(f'python {script_path}', shell=True, stdout=subprocess.PIPE)
 
@@ -19,8 +20,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(result, expected, 'Problem with no argument error')
 
     def test_path_error(self):
-        """Runs format_analysis.py with an argument that isn't a valid path and verifies the correct error message is
-        made. """
+        """Runs format_analysis.py with an argument that isn't a valid path.
+         Result for testing is the error message."""
         script_path = os.path.join('..', 'format_analysis.py')
         script_output = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
 
