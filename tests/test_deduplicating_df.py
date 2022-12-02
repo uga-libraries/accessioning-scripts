@@ -1,12 +1,14 @@
+"""Tests code from the main body of the script that removes duplicates from the dataframe.
+Must manually sync the code in the test with any changes in the main script."""
+
 import pandas as pd
 import unittest
 
 
-# TODO: not tested. This is not a function.
 class MyTestCase(unittest.TestCase):
-    def test_something(self):
+    def test_deduplication(self):
         """Tests that duplicates from multiple NARA matches with the same risk information are correctly removed.
-            In format_analysis.py, this is done in the main body of the script."""
+        Result for testing is the dataframe after duplicates are removed."""
 
         # Makes a dataframe to use as input, with a subset of the columns usually in df_results.
         # Data variation: one FITS ID with one NARA match, multiple FITS IDs with one NARA match each,
@@ -49,8 +51,10 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan']
         df_expected = pd.DataFrame(rows, columns=column_names)
 
-        # Compares the script output to the expected values.
-        self.assertEqual(df_results, df_expected, 'Problem with deduplicating dataframe')
+        # Compares the contents of the FITS dataframe to the expected values.
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        # TODO: not matching due to the index.
+        pd.testing.assert_frame_equal(df_results, df_expected)
 
 
 if __name__ == '__main__':
