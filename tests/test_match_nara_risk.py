@@ -1,5 +1,4 @@
 """Tests combining NARA risk information with FITS information to produce df_results."""
-# TODO: not tested
 
 import numpy as np
 import pandas as pd
