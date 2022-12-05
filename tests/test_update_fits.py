@@ -1,5 +1,4 @@
 """Tests that the FITS folder is correctly updated when files are deleted from and added to the accession folder."""
-# TODO: untested
 
 import os
 import pandas as pd
@@ -25,7 +24,7 @@ class MyTestCase(unittest.TestCase):
         # Makes FITS XML for the accession to use for testing.
         # In format_analysis.py, this is done in the main body of the script.
         os.mkdir('accession_FITS')
-        subprocess.run(f'"{c.FITS}" -r -i "accession" -o "accession_FITS"', shell=True)
+        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True)
 
         # Deletes 2 files and adds 1 file to the accession folder.
         os.remove(r"accession\delete.txt")
@@ -34,16 +33,16 @@ class MyTestCase(unittest.TestCase):
             file.write("Text")
 
         # RUNS THE FUNCTION BEING TESTED.
-        update_fits('accession', 'accession_FITS', os.getcwd(), "accession")
+        update_fits(os.path.join(os.getcwd(), 'accession'), os.path.join(os.getcwd(), 'accession_FITS'), os.getcwd(), 'accession')
 
         # Makes a dataframe with the files which should be in the FITs folder.
-        expected = ["delete.txt-1.fits.xml", "file.txt.fits.xml", "file.txt-1.fits.xml", "new_file.txt.fits.xml",
+        expected = ["delete.txt-1.fits.xml", "file.txt-1.fits.xml", "file.txt.fits.xml", "new_file.txt.fits.xml",
                     "spare.txt.fits.xml"]
         df_expected = pd.DataFrame(expected, columns=["Files"])
 
         # Makes a dataframe with the files that are in the FITS folder.
         fits_files = []
-        for root, dirs, files in os.walk("accession_fits"):
+        for root, dirs, files in os.walk("accession_FITS"):
             fits_files.extend(files)
         df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
 
@@ -52,7 +51,8 @@ class MyTestCase(unittest.TestCase):
         shutil.rmtree("accession_FITS")
 
         # Compares the contents of the FITS folder to the expected values.
-        self.assertEqual(df_fits_files, df_expected, 'Problem with update fits')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_fits_files, df_expected)
 
 
 if __name__ == '__main__':
