@@ -1,5 +1,4 @@
 """Tests adding technical appraisal categories to df_results, which already has information from FITS and NARA."""
-# TODO: not tested
 
 import pandas as pd
 import unittest
@@ -37,11 +36,11 @@ class MyTestCase(unittest.TestCase):
                 [r'C:\CD2\Trash\New Text.txt', 'Plain text', 'Trash'],
                 [r'C:\FD1\empty.txt', 'empty', 'Format'],
                 [r'C:\FD1\trashes\program.dll', 'PE32 executable', 'Trash']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'Technical Appraisal']
+        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal']
         df_expected = pd.DataFrame(rows, columns=column_names)
 
-        # Compares the script output to the expected values.
-        self.assertEqual(df_results, df_expected, 'Problem with match technical appraisal')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_results, df_expected)
 
 
 if __name__ == '__main__':
