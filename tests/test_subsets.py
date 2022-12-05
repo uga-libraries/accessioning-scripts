@@ -1,6 +1,7 @@
 """Tests making subsets of the dataframe.
 This is not a function, but instead a series of pandas filters in the main body of the code."""
-# TODO: not tested. Might work better if use one dataframe as input for all the tests.
+# TODO: dataframe comparisons don't work because of index differences
+# TODO: Might work better if use one dataframe as input for all the tests.
 
 import numpy as np
 import pandas as pd
@@ -38,7 +39,8 @@ class MyTestCase(unittest.TestCase):
         df_expected = pd.DataFrame(rows, columns=column_names)
 
         # Compares the code output to the expected values.
-        self.assertEqual(df_nara_risk, df_expected, 'Problem with NARA risk subset')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_nara_risk, df_expected)
 
     def test_multiple_ids_subset(self):
         """Tests the files with multiple FITs format ids subset, which is based on the FITS_File_Path column."""
@@ -70,7 +72,8 @@ class MyTestCase(unittest.TestCase):
         df_expected = pd.DataFrame(rows, columns=column_names)
 
         # Compares the code output to the expected values.
-        self.assertEqual(df_multiple, df_expected, 'Problem with multiple ids subset')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_multiple, df_expected)
 
     def test_validation_subset(self):
         """Tests the FITS validation subset, which is based on the FITS_Valid, FITS_Well-Formed,
@@ -107,7 +110,8 @@ class MyTestCase(unittest.TestCase):
         df_expected = pd.DataFrame(rows, columns=column_names)
 
         # Compares the code output to the expected values.
-        self.assertEqual(df_validation, df_expected, 'Problem with validation subset')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_validation, df_expected)
 
     def test_tech_appraisal_subset(self):
         """Tests the technical appraisal subset, which is based on the Technical_Appraisal column."""
@@ -138,7 +142,8 @@ class MyTestCase(unittest.TestCase):
         df_expected = pd.DataFrame(rows, columns=column_names)
 
         # Compares the code output to the expected values.
-        self.assertEqual(df_tech_appraisal, df_expected, 'Problem with technical appraisal subset')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_tech_appraisal, df_expected)
 
     def test_other_risk_subset(self):
         """Tests the other risk subset, which is based on the Other_Risk column."""
@@ -171,7 +176,8 @@ class MyTestCase(unittest.TestCase):
         df_expected = pd.DataFrame(rows, columns=column_names)
 
         # Compares the code output to the expected values.
-        self.assertEqual(df_other_risk, df_expected, 'Problem with other risk subset')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_other_risk, df_expected)
 
     def test_duplicates_subset(self):
         """Tests the duplicates subset, which is based on the FITS_File_Path and FITS_MD5 columns."""
@@ -201,7 +207,8 @@ class MyTestCase(unittest.TestCase):
         df_expected = pd.DataFrame(rows, columns=column_names)
 
         # Compares the code output to the expected values.
-        self.assertEqual(df_duplicates, df_expected, 'Problem with duplicates subset')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_duplicates, df_expected)
 
     def test_empty_subset(self):
         """Tests handling of an empty subset, which can happen with any subset.
@@ -235,8 +242,9 @@ class MyTestCase(unittest.TestCase):
         df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
 
         # Compares the code outputs to the expected values.
-        self.assertEqual(df_multiple_ids, df_multiple_ids_expected, 'Problem with multiple ids empty subset')
-        self.assertEqual(df_duplicates, df_duplicates_expected, 'Problem with duplicates empty subset')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_multiple_ids, df_multiple_ids_expected)
+        pd.testing.assert_frame_equal(df_duplicates, df_duplicates_expected)
 
 
 if __name__ == '__main__':
