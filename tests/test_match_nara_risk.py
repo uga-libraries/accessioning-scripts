@@ -81,7 +81,8 @@ class MyTestCase(unittest.TestCase):
                         'NARA_Proposed Preservation Plan', 'NARA_Match_Type']
         df_expected = pd.DataFrame(rows, columns=column_names)
 
-        self.assertEqual(df_results, df_expected, 'Problem with match NARA risk')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_results, df_expected)
 
 
 if __name__ == '__main__':
