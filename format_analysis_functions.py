@@ -406,7 +406,8 @@ def match_other_risk(df_results, df_other):
     risk_list = df_other["FITS_FORMAT"].tolist()
 
     # Gets a list of the row index for any row where the FITS_Format_Name matches a format on the risk list.
-    # The match is case insensitive and will match partial strings.
+    # The match is case insensitive and will match if the entire term in Riskfileformats.csv matches
+    # part of the FITS format name.
     # re.escape prevents errors from characters in the format name that have regex meanings.
     indexes = df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)),
                                                                          case=False)].index
