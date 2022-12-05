@@ -375,7 +375,8 @@ def match_technical_appraisal(df_results, df_ita):
     ta_list = df_ita["FITS_FORMAT"].tolist()
 
     # Makes a column Technical_Appraisal and puts the value "Format" for any row with a FITS_Format_Name
-    # that matches any formats in the ta_list. The match is case insensitive and will match partial strings.
+    # that matches any formats in the ta_list. The match is case insensitive and will match if the entire term
+    # in ITAfileformats.csv matches part of the FITS format name.
     # re.escape prevents errors from characters in the format name that have regex meanings.
     df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
                    "Technical_Appraisal"] = "Format"
