@@ -11,6 +11,18 @@ from format_analysis_functions import make_fits_csv
 
 
 class MyTestCase(unittest.TestCase):
+
+    def tearDown(self):
+        """Deletes test outputs, if present."""
+
+        # These are present for all tests.
+        shutil.rmtree("accession")
+        shutil.rmtree("accession_FITS")
+        os.remove("accession_fits.csv")
+
+        if os.path.exists("accession_encode_errors.txt"):
+            os.remove("accession_encode_errors.txt")
+
     def test_make_fits_csv(self):
         """Tests all known variations for FITS data extraction and reformatting."""
 
@@ -39,48 +51,48 @@ class MyTestCase(unittest.TestCase):
         # Makes FITS XML for the accession to use for testing.
         # In format_analysis.py, there is also error handling for if FITS has a load class error.
         os.mkdir('accession_FITS')
-        subprocess.run(f'"{c.FITS}" -r -i "accession" -o "accession_FITS"', shell=True)
+        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True)
 
-        # RUNS THE FUNCTION BEING TESTED.
-        make_fits_csv(fr"accession_FITS", 'accession_FITS', os.getcwd(), "accession")
+        # Runs the function being tested.
+        make_fits_csv('accession_FITS', 'accession', os.getcwd(), 'accession')
 
         # Makes a dataframe with the expected values.
         # Calculates size for XLSX because the size varies every time it is made.
         today = datetime.date.today().strftime('%Y-%m-%d')
-        rows = [[fr"accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN,
+        rows = [[fr"{os.getcwd()}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN,
                  "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", False, today, 6002.01,
                  "f95a4c954014342e4bf03f51fcefaecd", np.NaN, np.NaN, np.NaN, np.NaN],
-                [fr"accession\disk1\data.xlsx", "ZIP Format", 2,
+                [fr"{os.getcwd()}\accession\disk1\data.xlsx", "ZIP Format", 2,
                  "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
                  "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today,
                  round(os.path.getsize(fr"accession\disk1\data.xlsx") / 1000, 3), "XXXXXXXXXX",
                  "Microsoft Excel", np.NaN, np.NaN, np.NaN],
-                [fr"accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
+                [fr"{os.getcwd()}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
                  round(os.path.getsize(fr"accession\disk1\data.xlsx") / 1000, 3), "XXXXXXXXXX",
                  "Microsoft Excel", np.NaN, np.NaN, np.NaN],
-                [fr"accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
+                [fr"{os.getcwd()}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
                  "Tika version 1.21",
                  True, today, round(os.path.getsize(fr"accession\disk1\data.xlsx") / 1000, 3),
                  "XXXXXXXXXX", "Microsoft Excel", np.NaN, np.NaN, np.NaN],
-                [fr"accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN,
+                [fr"{os.getcwd()}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN,
                  "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", False, today, 44002.01,
                  "d5e857a4bd33d2b5a2f96b78ccffe1f3", np.NaN, np.NaN, np.NaN, np.NaN],
-                [fr"accession\disk2\empty.txt", "empty", np.NaN, np.NaN, "file utility version 5.03", False,
+                [fr"{os.getcwd()}\accession\disk2\empty.txt", "empty", np.NaN, np.NaN, "file utility version 5.03", False,
                  today,
                  0, "d41d8cd98f00b204e9800998ecf8427e", np.NaN, np.NaN, np.NaN, np.NaN],
-                [fr"accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN,
+                [fr"{os.getcwd()}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN,
                  "Jhove version 1.20.1",
                  False, today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True,
                  "Not able to determine type of end of line severity=info"],
-                [fr"accession\disk1\file.txt", "Plain text", np.NaN,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-                 "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 2,
-                 "7b71af3fdf4a2f72a378e3e77815e497", np.NaN, True, True, np.NaN],
-                [fr"accession\disk2\file.txt", "Plain text", np.NaN,
+                [fr"{os.getcwd()}\accession\disk2\file.txt", "Plain text", np.NaN,
                  "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
                  "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 2.2,
                  "e700d0871d44af1a217f0bf32320f25c", np.NaN, True, True, np.NaN],
-                [fr"accession\disk2\zipping.gz", "GZIP Format", np.NaN,
+                [fr"{os.getcwd()}\accession\disk1\file.txt", "Plain text", np.NaN,
+                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
+                 "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 2,
+                 "7b71af3fdf4a2f72a378e3e77815e497", np.NaN, True, True, np.NaN],
+                [fr"{os.getcwd()}\accession\disk2\zipping.gz", "GZIP Format", np.NaN,
                  "https://www.nationalarchives.gov.uk/pronom/x-fmt/266", "Droid version 6.4; Tika version 1.21",
                  False, today, 1.993, "XXXXXXXXXX", np.NaN, np.NaN, np.NaN, np.NaN]]
         column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
@@ -95,13 +107,9 @@ class MyTestCase(unittest.TestCase):
             df_fits["File_Path"].str.endswith("zipping.gz"))
         df_fits.loc[replace_md5, "MD5"] = "XXXXXXXXXX"
 
-        # Deletes the test files.
-        shutil.rmtree("accession")
-        shutil.rmtree("accession_FITS")
-        os.remove("accession_fits.csv")
-
         # Compares the script output to the expected values.
-        self.assertEqual(df_fits, df_expected, 'Problem with make fits csv')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_fits, df_expected)
 
     def test_encoding_error(self):
         """Tests encoding error handling when saving FITS file data to the CSV."""
@@ -119,18 +127,18 @@ class MyTestCase(unittest.TestCase):
         # Makes FITS XML for the accession to use for testing.
         # In format_analysis.py, there is also error handling for if FITS has a load class error.
         os.mkdir('accession_FITS')
-        subprocess.run(f'"{c.FITS}" -r -i "accession" -o "accession_FITS"', shell=True)
+        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True)
 
         # RUNS THE FUNCTION BEING TESTED.
         make_fits_csv(fr"accession_FITS", "accession", os.getcwd(), "accession")
 
         # Makes a dataframe with the expected values for accession_encode_errors.txt.
-        rows = [[fr"accession\disk1\pi_errorπ.txt"],
-                [fr"accession\disk1\smiley_error.txt"]]
+        rows = [[fr"{os.getcwd()}\accession\disk1\pi_errorπ.txt"],
+                [fr"{os.getcwd()}\accession\disk1\smiley_error.txt"]]
         df_encode_expected = pd.DataFrame(rows, columns=["Paths"])
 
         # Makes a dataframe with the expected values for accession_fits.csv.
-        rows = [[fr"accession\disk1\file.txt", "Plain text", np.NaN,
+        rows = [[fr"{os.getcwd()}\accession\disk1\file.txt", "Plain text", np.NaN,
                  "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
                  "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False,
                  datetime.date.today().strftime('%Y-%m-%d'), 4.0, "1a640a2c9c60ffea3174b2f73a536c48", np.NaN, True,
@@ -145,15 +153,10 @@ class MyTestCase(unittest.TestCase):
         df_encode = pd.read_csv("accession_encode_errors.txt", header=None, names=["Paths"])
         df_fits_csv = pd.read_csv("accession_fits.csv")
 
-        # Deletes the test files.
-        shutil.rmtree("accession")
-        shutil.rmtree("accession_FITS")
-        os.remove("accession_encode_errors.txt")
-        os.remove("accession_fits.csv")
-
         # Compares the script outputs to the expected values.
-        self.assertEqual(df_encode, df_encode_expected, 'Problem with encoding error - log')
-        self.assertEqual(df_fits_csv, df_fits_csv_expected, 'Problem with encoding error - csv')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_encode, df_encode_expected)
+        pd.testing.assert_frame_equal(df_fits_csv, df_fits_csv_expected)
 
 
 if __name__ == '__main__':
