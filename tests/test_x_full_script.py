@@ -7,7 +7,6 @@ import subprocess
 import unittest
 
 
-# TODO - not tested, may be able to split into multiple tests (one for each iteration?)
 class MyTestCase(unittest.TestCase):
     def test_iteration(self):
         """Tests that the script follows the correct logic based on the contents of the accession folder and
@@ -43,7 +42,8 @@ class MyTestCase(unittest.TestCase):
 
         # ROUND ONE: Runs the script on the test accession folder and tests if the expected messages were produced.
         # In format_analysis.py, these messages are printed to the terminal for archivist review.
-        iteration_one = subprocess.run("python format_analysis.py accession", shell=True, stdout=subprocess.PIPE)
+        script_path = os.path.join('..', 'format_analysis.py')
+        iteration_one = subprocess.run(f"python {script_path} accession", shell=True, stdout=subprocess.PIPE)
         msg = "\r\nGenerating new FITS format identification information.\r\n\r\n" \
               "Generating new risk data for the analysis report.\r\n"
         self.assertEqual(iteration_one.stdout.decode("utf-8"), msg, 'Problem with Iteration_Message_1')
@@ -57,7 +57,7 @@ class MyTestCase(unittest.TestCase):
 
         # Runs the script again on the test accession folder.
         # It will update the FITS files to match the accession folder and update the three spreadsheet.
-        iteration_two = subprocess.run("python format_analysis.py accession", shell=True, stdout=subprocess.PIPE)
+        iteration_two = subprocess.run(f"python {script_path} accession", shell=True, stdout=subprocess.PIPE)
         msg = "\r\nUpdating the XML files in the FITS folder to match the files in the accession folder.\r\n" \
               "This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.\r\n" \
               "Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n" \
@@ -77,7 +77,7 @@ class MyTestCase(unittest.TestCase):
 
         # Runs the script again on the test accession folder.
         # It will use existing fits.csv and full_risk_data.csv to update format_analysis.xlsx.
-        iteration_three = subprocess.run("python format_analysis.py accession", shell=True, stdout=subprocess.PIPE)
+        iteration_three = subprocess.run(f"python {script_path} accession", shell=True, stdout=subprocess.PIPE)
         msg = "\r\nUpdating the XML files in the FITS folder to match the files in the accession folder.\r\n" \
               "This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.\r\n" \
               "Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n" \
@@ -230,17 +230,18 @@ class MyTestCase(unittest.TestCase):
         xlsx.close()
 
         # Compares the expected values to the actual script values.
-        self.assertEqual(df_format_subtotal, df_format_subtotal_expected, "Problem with Iteration_Subtotal_Format")
-        self.assertEqual(df_tech_appraisal_subtotal, df_tech_appraisal_subtotal_expected, "Problem with Iteration_Subtotal_Tech_Appraisal")
-        self.assertEqual(df_nara_risk_subtotal, df_nara_risk_subtotal_expected, "Problem with Iteration_Subtotal_NARA_Risk")
-        self.assertEqual(df_other_risk_subtotal, df_other_risk_subtotal_expected, "Problem with Iteration_Subtotal_Other_Risk")
-        self.assertEqual(df_media_subtotal, df_media_subtotal_expected, "Problem with Iteration_Subtotal_Media")
-        self.assertEqual(df_nara_risk, df_nara_risk_expected, "Problem with Iteration_Subset_NARA_Risk")
-        self.assertEqual(df_tech_appraisal, df_tech_appraisal_expected, "Problem with Iteration_Subset_Tech_Appraisal")
-        self.assertEqual(df_other_risk, df_other_risk_expected, "Problem with Iteration_Subset_Other_Risk")
-        self.assertEqual(df_multiple_ids, df_multiple_ids_expected, "Problem with Iteration_Subset_Multiple_IDs")
-        self.assertEqual(df_duplicates, df_duplicates_expected, "Problem with Iteration_Subset_Duplicates")
-        self.assertEqual(df_validation, df_validation_expected, "Problem with Iteration_Subset_Validation")
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_format_subtotal, df_format_subtotal_expected)
+        pd.testing.assert_frame_equal(df_tech_appraisal_subtotal, df_tech_appraisal_subtotal_expected)
+        pd.testing.assert_frame_equal(df_nara_risk_subtotal, df_nara_risk_subtotal_expected)
+        pd.testing.assert_frame_equal(df_other_risk_subtotal, df_other_risk_subtotal_expected)
+        pd.testing.assert_frame_equal(df_media_subtotal, df_media_subtotal_expected)
+        pd.testing.assert_frame_equal(df_nara_risk, df_nara_risk_expected)
+        pd.testing.assert_frame_equal(df_tech_appraisal, df_tech_appraisal_expected)
+        pd.testing.assert_frame_equal(df_other_risk, df_other_risk_expected)
+        pd.testing.assert_frame_equal(df_multiple_ids, df_multiple_ids_expected)
+        pd.testing.assert_frame_equal(df_duplicates, df_duplicates_expected)
+        pd.testing.assert_frame_equal(df_validation, df_validation_expected)
 
         # Deletes the test files.
         shutil.rmtree("accession")
