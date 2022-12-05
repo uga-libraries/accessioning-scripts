@@ -4,7 +4,7 @@ import unittest
 import configuration as c
 from format_analysis_functions import csv_to_dataframe, match_other_risk
 
-# TODO: not tested
+
 class MyTestCase(unittest.TestCase):
     def test_something(self):
         """Tests adding other risk categories to df_results, which already has information from FITS, NARA,
@@ -43,7 +43,8 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk']
         df_expected = pd.DataFrame(rows, columns=column_names)
 
-        self.assertEqual(df_results, df_expected, 'Problem with match other risk')
+        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+        pd.testing.assert_frame_equal(df_results, df_expected)
 
 
 if __name__ == '__main__':
