@@ -19,7 +19,7 @@ class MyTestCase(unittest.TestCase):
 
         # Makes an accession folder with files to use for testing.
         os.makedirs('accession\\dir')
-        paths = ['file.txt', 'duplicate.txt', 'dir\\duplicate.txt', 'dir\\additional.txt']
+        paths = ['double.txt', 'duplicate.txt', 'file.txt', 'dir\\additional.txt', 'dir\\double.txt', 'dir\\duplicate.txt']
         for file_path in paths:
             with open(fr'accession\{file_path}', 'w') as file:
                 file.write('Text')
@@ -47,35 +47,38 @@ class MyTestCase(unittest.TestCase):
         results = []
         for root, dirs, files in os.walk("accession_FITS"):
             results.extend(files)
-        expected = ['additional.txt.fits.xml', 'duplicate.txt-1.fits.xml', 'duplicate.txt.fits.xml', 'file.txt.fits.xml']
+        expected = ['additional.txt.fits.xml', 'double.txt-1.fits.xml', 'double.txt.fits.xml',
+                    'duplicate.txt-1.fits.xml', 'duplicate.txt.fits.xml', 'file.txt.fits.xml']
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with no change')
 
     def test_delete_unique(self):
         """
-        Test for running the function after deleting a file with a unique filename.
+        Test for running the function after deleting files with unique filenames.
         Result for testing is the contents of the accession_FITS folder.
         """
-        # Deletes one file from the accession folder and runs the function being tested.
+        # Deletes two files from the accession folder and runs the function being tested.
         os.remove(os.path.join('accession', 'file.txt'))
+        os.remove(os.path.join('accession', 'dir', 'additional.txt'))
         update_fits(self.accession_path, self.fits_path, os.getcwd(), 'accession')
 
         # Makes lists of the actual results from the test and the expected results.
         results = []
         for root, dirs, files in os.walk("accession_FITS"):
             results.extend(files)
-        expected = ['additional.txt.fits.xml', 'duplicate.txt-1.fits.xml', 'duplicate.txt.fits.xml']
+        expected = ['double.txt-1.fits.xml', 'double.txt.fits.xml', 'duplicate.txt-1.fits.xml', 'duplicate.txt.fits.xml']
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with delete unique filename')
+        self.assertEqual(results, expected, 'Problem with delete unique filenames')
 
     def test_delete_duplicate(self):
         """
-        Test for running the function after deleting a file with a duplicated filename (same name, different folders).
+        Test for running the function after deleting files with duplicated filenames (same name, different folders).
         Result for testing is the contents of the accession_FITS folder.
         """
-        # Deletes one file from the accession folder and runs the function being tested.
+        # Deletes two files from the accession folder and runs the function being tested.
+        os.remove(os.path.join('accession', 'double.txt'))
         os.remove(os.path.join('accession', 'dir', 'duplicate.txt'))
         update_fits(self.accession_path, self.fits_path, os.getcwd(), 'accession')
 
@@ -83,18 +86,20 @@ class MyTestCase(unittest.TestCase):
         results = []
         for root, dirs, files in os.walk("accession_FITS"):
             results.extend(files)
-        expected = ['additional.txt.fits.xml', 'duplicate.txt-1.fits.xml', 'file.txt.fits.xml']
+        expected = ['additional.txt.fits.xml', 'double.txt.fits.xml', 'duplicate.txt-1.fits.xml', 'file.txt.fits.xml']
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with delete duplicate filename')
+        self.assertEqual(results, expected, 'Problem with delete duplicate filenames')
 
     def test_add_unique(self):
         """
-        Test for running the function after adding a new file with a name not yet in the accession folder.
+        Test for running the function after adding new files with a name not yet in the accession folder.
         Result for testing is the contents of the accession_FITS folder.
         """
         # Adds one file to the accession folder and runs the function being tested.
         with open(os.path.join('accession', 'new_file.txt'), 'w') as file:
+            file.write('New Text')
+        with open(os.path.join('accession', 'dir', 'another_new_file.txt'), 'w') as file:
             file.write('New Text')
         update_fits(self.accession_path, self.fits_path, os.getcwd(), 'accession')
 
@@ -102,11 +107,12 @@ class MyTestCase(unittest.TestCase):
         results = []
         for root, dirs, files in os.walk("accession_FITS"):
             results.extend(files)
-        expected = ['additional.txt.fits.xml', 'duplicate.txt-1.fits.xml', 'duplicate.txt.fits.xml',
-                    'file.txt.fits.xml', 'new_file.txt.fits.xml']
+        expected = ['additional.txt.fits.xml', 'another_new_file.txt.fits.xml', 'double.txt-1.fits.xml',
+                    'double.txt.fits.xml', 'duplicate.txt-1.fits.xml', 'duplicate.txt.fits.xml', 'file.txt.fits.xml',
+                    'new_file.txt.fits.xml']
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with add unique filename')
+        self.assertEqual(results, expected, 'Problem with add unique filenames')
 
 
 if __name__ == '__main__':
