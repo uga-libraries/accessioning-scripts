@@ -1,7 +1,6 @@
 """Tests making subsets of the dataframe.
-This is not a function, but instead a series of pandas filters in the main body of the code."""
-# TODO: dataframe comparisons don't work because of index differences
-# TODO: Might work better if use one dataframe as input for all the tests.
+This is not a function, but instead a series of pandas filters in the main body of the code.
+The code must be manually synced to any changes in the code."""
 
 import numpy as np
 import pandas as pd
@@ -11,155 +10,114 @@ import unittest
 class MyTestCase(unittest.TestCase):
 
     def test_nara_risk_subset(self):
-        """Tests the NARA risk subset, which is based on the NARA_Risk Level column."""
-
-        # Makes a dataframe to use as input.
-        # Data variation: all 4 risk levels and all columns to be dropped.
-        rows = [[r'C:\Disk1\file.txt', 'Plain text', 'Low Risk', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\photo.jpg', 'JPEG EXIF', 'Low Risk', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\file.psd', 'Adobe Photoshop file', 'Moderate Risk', 'drop', 'drop', 'drop', 'drop', 'drop',
-                 'drop'],
-                [r'C:\Disk1\file.bak', 'Backup File', 'High Risk', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\new.txt', 'empty', 'No Match', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'NARA_Risk Level', 'FITS_PUID',
-                        'FITS_Identifying_Tool(s)',
-                        'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message']
-        df_results = pd.DataFrame(rows, columns=column_names)
+        """
+        Test for the NARA risk subset, which includes any file that is not 'Low Risk'.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_tests.csv')
 
         # Runs the code being tested (from the main body of the script).
         df_nara_risk = df_results[df_results['NARA_Risk Level'] != 'Low Risk'].copy()
         df_nara_risk.drop(['FITS_PUID', 'FITS_Identifying_Tool(s)', 'FITS_Creating_Application',
                            'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
 
-        # Makes a dataframe with the expected values.
-        rows = [[r'C:\Disk1\file.psd', 'Adobe Photoshop file', 'Moderate Risk'],
-                [r'C:\Disk1\file.bak', 'Backup File', 'High Risk'],
-                [r'C:\Disk1\new.txt', 'empty', 'No Match']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'NARA_Risk Level']
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_nara_risk.values.tolist()
+        expected = [['C:\\CD1\\file.bak', 'Backup File', np.NaN, False, '5/5/2022', 1.23, 'ab1e0b017c8eex694eb379e354571234', 'Backup File', 'bak|old|sb|bck', 'https://www.nationalarchives.gov.uk/pronom/fmt/941', 'High Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN, False, '5/5/2022', 57.01, 'le1b6b058c8rrb684ex370e354572936', 'Adobe Photoshop', 'psd', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'PRONOM', 'Not for TA', 'Layered image file'],
+                    ['C:\\FD1\\Worksheets.zip', 'ZIP Format', '2', False, '8/25/2022', 11.374, 'b335c9b47034466907b169e04cbbfa', 'ZIP archive', 'zip', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/263', 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format'],
+                    ['C:\\FD2\\Worksheets.zip', 'ZIP Format', '2', False, '8/25/2022', 11.374, 'b335c9b47034466907b169e04cbbfa', 'ZIP archive', 'zip', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/263', 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format']]
 
-        # Compares the code output to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_nara_risk, df_expected)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with NARA risk subset')
 
     def test_multiple_ids_subset(self):
-        """Tests the files with multiple FITs format ids subset, which is based on the FITS_File_Path column."""
-
-        # Makes a dataframe to use as input.
-        # Data variation: files with multiple ids and files without; all columns to be dropped.
-        rows = [[r'C:\Disk1\file1.txt', 'Plain text', False, 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\file2.html', 'Hypertext Markup Language', True, 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\file2.html', 'HTML Transitional', True, 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Document', True, 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Workbook', True, 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\file3.xlsx', 'XLSX', True, 'drop', 'drop', 'drop'],
-                [r'C:\Disk1\photo.jpg', 'JPEG EXIF', False, 'drop', 'drop', 'drop']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Multiple_IDs',
-                        'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message']
-        df_results = pd.DataFrame(rows, columns=column_names)
+        """
+        Test for the multiple ids subset, which includes any file with more than one format identification from FITS.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_tests.csv')
 
         # Runs the code being tested (from the main body of the script).
         df_multiple = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
         df_multiple.drop(['FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
 
-        # Makes a dataframe with the expected values.
-        rows = [[r'C:\Disk1\file2.html', 'Hypertext Markup Language', True],
-                [r'C:\Disk1\file2.html', 'HTML Transitional', True],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Document', True],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Workbook', True],
-                [r'C:\Disk1\file3.xlsx', 'XLSX', True]]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Multiple_IDs']
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_multiple.values.tolist()
+        expected = [['C:\\CD1\\Photo.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 47.836, 'fe1e6b017c8eeb684eb379e354572936', np.NaN, 'JPEG File Interchange Format 1.01', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/43', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\Photo.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 47.836, 'fe1e6b017c8eeb684eb379e354572936', np.NaN, 'JPEG File Interchange Format 1.02', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/44', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\Picture.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 13.563, '686779fae835aadff6474898f5781e99', np.NaN, 'JPEG File Interchange Format 1.01', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/43', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\Picture.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 13.563, '686779fae835aadff6474898f5781e99', np.NaN, 'JPEG File Interchange Format 1.02', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/44', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD2\\blank.docx', 'empty', np.NaN, np.NaN, 'file utility version 5.03', False, '6/27/2022', 0, 'd41d8cd98fb204e98998ecf8427e', np.NaN, 'Microsoft Word for Windows 27-onwards (OOXML)', 'docx', 'https://www.nationalarchives.gov.uk/pronom/fmt/412', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other'],
+                    ['C:\\CD2\\blank.docx', 'empty', np.NaN, np.NaN, 'file utility version 5.03', False, '6/27/2022', 0, 'd41d8cd98fb204e98998ecf8427e', np.NaN, 'Microsoft Word Open Office XML', 'docx|docm', 'https://www.nationalarchives.gov.uk/pronom/fmt/523', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other'],
+                    ['C:\\CD2\\overview-summary.html', 'HTML Transitional', 'HTML 4.01', np.NaN, 'Jhove version 1.20.1', True, '5/5/2022', 7.496, '1fcd29526b78728d69e0b0487223fe43', np.NaN, 'Hypertext Markup Language 5.1', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD2\\overview-summary.html', 'HTML Transitional', 'HTML 4.01', np.NaN, 'Jhove version 1.20.1', True, '5/5/2022', 7.496, '1fcd29526b78728d69e0b0487223fe43', np.NaN, 'Hypertext Markup Language 5.2', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD2\\overview-summary.html', 'Hypertext Markup Language', '4.01', 'https://www.nationalarchives.gov.uk/pronom/fmt/1', 'Droid version 6.4; file utility version 5.03', True, '5/5/2022', 7.496, '1fcd29526b78728d69e0b0487223fe43', np.NaN, 'Hypertext Markup Language 4.01', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/1', 'Low Risk', 'Retain', 'PRONOM', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD2\\overview-tree.html', 'HTML Transitional', 'HTML 4.01', np.NaN, 'Jhove version 1.20.1', True, '5/5/2022', 28.38, 'fd50cd9e7ab6551cd726b49021f0c439', np.NaN, 'Hypertext Markup Language 5.1', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD2\\overview-tree.html', 'HTML Transitional', 'HTML 4.01', np.NaN, 'Jhove version 1.20.1', True, '5/5/2022', 28.38, 'fd50cd9e7ab6551cd726b49021f0c439', np.NaN, 'Hypertext Markup Language 5.2', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD2\\overview-tree.html', 'Hypertext Markup Language', '4.01', 'https://www.nationalarchives.gov.uk/pronom/fmt/1', 'Droid version 6.4; file utility version 5.03', True, '5/5/2022', 28.38, 'fd50cd9e7ab6551cd726b49021f0c439', np.NaN, 'Hypertext Markup Language 4.01', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/1', 'Low Risk', 'Retain', 'PRONOM', 'Not for TA', 'Not for Other'],
+                    ['C:\\FD1\\Worksheet Excel Version.xlsx', 'Office Open XML Document', '27 onwards', 'https://www.nationalarchives.gov.uk/pronom/fmt/189', 'Droid version 6.4', True, '5/5/2022', 15.766, 'e0aeaee6f3046bf5568c8076522d83a5', 'Microsoft Excel', 'Microsoft Excel Office Open XML', 'xlsx', 'https://www.nationalarchives.gov.uk/pronom/fmt/214', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\FD1\\Worksheet Excel Version.xlsx', 'Office Open XML Workbook', np.NaN, np.NaN, 'Tika version 1.21', True, '5/5/2022', 15.766, 'e0aeaee6f3046bf5568c8076522d83a5', 'Microsoft Excel', 'Microsoft Excel Office Open XML', 'xlsx', 'https://www.nationalarchives.gov.uk/pronom/fmt/214', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\FD1\\Worksheet Excel Version.xlsx', 'XLSX', np.NaN, np.NaN, 'Exiftool version 11.54', True, '5/5/2022', 15.766, 'e0aeaee6f3046bf5568c8076522d83a5', 'Microsoft Excel', 'Microsoft Excel Office Open XML', 'xlsx', 'https://www.nationalarchives.gov.uk/pronom/fmt/214', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other']]
 
-        # Compares the code output to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_multiple, df_expected)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with multiple ids subset')
 
     def test_validation_subset(self):
-        """Tests the FITS validation subset, which is based on the FITS_Valid, FITS_Well-Formed,
-        and FITS_Status_Message columns."""
-
-        # Makes a dataframe to use as input.
-        # Data variation: values in 0, 1, 2, or 3 columns will include the file in the validation subset.
-        # Some of these combinations probably wouldn't happen in real data, but want to be thorough.
-        rows = [[r'C:\Disk1\file1.txt', 'Plain text', True, True, np.NaN],
-                [r'C:\Disk1\file2.html', 'Hypertext Markup Language', np.NaN, np.NaN, np.NaN],
-                [r'C:\Disk1\file2.html', 'HTML Transitional', False, True, np.NaN],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Document', True, False, np.NaN],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Workbook', True, True, 'Validation Error'],
-                [r'C:\Disk1\file3.xlsx', 'XLSX', False, False, np.NaN],
-                [r'C:\Disk1\photo.jpg', 'JPEG EXIF', True, False, 'Validation Error'],
-                [r'C:\Disk1\photo1.jpg', 'JPEG EXIF', False, True, 'Validation Error'],
-                [r'C:\Disk1\photo2.jpg', 'JPEG EXIF', False, False, 'Validation Error']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message']
-        df_results = pd.DataFrame(rows, columns=column_names)
+        """
+        Test for the FITS validation subset, which includes any file where FITS had Valid equal to False,
+        Well-Formed equal to False, or any text in the Status Message.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_tests.csv')
 
         # Runs the code being tested (from the main body of the script).
-        df_validation = df_results[(df_results['FITS_Valid'] == False) | (df_results['FITS_Well-Formed'] == False) |
+        df_validation = df_results[(df_results['FITS_Valid'] == False) |
+                                   (df_results['FITS_Well-Formed'] == False) |
                                    (df_results['FITS_Status_Message'].notnull())].copy()
 
-        # Makes a dataframe with the expected values.
-        rows = [[r'C:\Disk1\file2.html', 'HTML Transitional', False, True, np.NaN],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Document', True, False, np.NaN],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Workbook', True, True, 'Validation Error'],
-                [r'C:\Disk1\file3.xlsx', 'XLSX', False, False, np.NaN],
-                [r'C:\Disk1\photo.jpg', 'JPEG EXIF', True, False, 'Validation Error'],
-                [r'C:\Disk1\photo1.jpg', 'JPEG EXIF', False, True, 'Validation Error'],
-                [r'C:\Disk1\photo2.jpg', 'JPEG EXIF', False, False, 'Validation Error']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message']
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_validation.values.tolist()
+        expected = [['C:\\CD1\\file.bak', 'Backup File', np.NaN, np.NaN, 'file utility version 5.03', False, '5/5/2022', 1.23, 'ab1e0b017c8eex694eb379e354571234', np.NaN, False, True, np.NaN, 'Backup File', 'bak|old|sb|bck', 'https://www.nationalarchives.gov.uk/pronom/fmt/941', 'High Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92', 'file utility version 5.03', False, '5/5/2022', 57.01, 'le1b6b058c8rrb684ex370e354572936', np.NaN, True, False, np.NaN, 'Adobe Photoshop', 'psd', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'PRONOM', 'Not for TA', 'Layered image file'],
+                    ['C:\\CD1\\Photo.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 47.836, 'fe1e6b017c8eeb684eb379e354572936', np.NaN, True, True, 'Unknown TIFF IFD tag', 'JPEG File Interchange Format 1.01', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/43', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\Photo.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 47.836, 'fe1e6b017c8eeb684eb379e354572936', np.NaN, True, True, 'Unknown TIFF IFD tag', 'JPEG File Interchange Format 1.02', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/44', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\Picture.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 13.563, '686779fae835aadff6474898f5781e99', np.NaN, True, True, 'Unknown TIFF IFD tag', 'JPEG File Interchange Format 1.01', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/43', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD1\\Picture.JPG', 'JPEG EXIF', '1.01', np.NaN, 'Jhove version 1.20.1; NLNZ Metadata Extractor version 3.6GA', False, '5/5/2022', 13.563, '686779fae835aadff6474898f5781e99', np.NaN, True, True, 'Unknown TIFF IFD tag', 'JPEG File Interchange Format 1.02', 'jpg|jpeg', 'https://www.nationalarchives.gov.uk/pronom/fmt/44', 'Low Risk', 'Retain', 'File Extension', 'Not for TA', 'Not for Other'],
+                    ['C:\\CD2\\blank.docx', 'empty', np.NaN, np.NaN, 'file utility version 5.03', False, '6/27/2022', 0, 'd41d8cd98fb204e98998ecf8427e', np.NaN, np.NaN, np.NaN, 'File is empty', 'Microsoft Word for Windows 27-onwards (OOXML)', 'docx', 'https://www.nationalarchives.gov.uk/pronom/fmt/412', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other'],
+                    ['C:\\CD2\\blank.docx', 'empty', np.NaN, np.NaN, 'file utility version 5.03', False, '6/27/2022', 0, 'd41d8cd98fb204e98998ecf8427e', np.NaN, np.NaN, np.NaN, 'File is empty', 'Microsoft Word Open Office XML', 'docx|docm', 'https://www.nationalarchives.gov.uk/pronom/fmt/523', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other'],
+                    ['C:\\CD2\\index.html', 'Hypertext Markup Language', '4.01', 'https://www.nationalarchives.gov.uk/pronom/fmt/1', 'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', False, '5/5/2022', 2.971, 'acff2f63c38dd7a30ca809ef36782d', np.NaN, False, False, 'TokenMgrError', 'Hypertext Markup Language 4.01', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/1', 'Low Risk', 'Retain', 'PRONOM', 'Not for TA', 'Not for Other']]
 
-        # Compares the code output to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_validation, df_expected)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with validation subset')
 
     def test_tech_appraisal_subset(self):
-        """Tests the technical appraisal subset, which is based on the Technical_Appraisal column."""
-
-        # Makes a dataframe to use as input.
-        # Data variation: all 3 technical appraisal categories and all columns to drop.
-        rows = [['DOS/Windows Executable', 'Format', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['JPEG EXIF', 'Not for TA', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['Unknown Binary', 'Format', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['Plain text', 'Not for TA', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['JPEG EXIF', 'Trash', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['Open Office XML Workbook', 'Trash', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop']]
-        column_names = ['FITS_Format_Name', 'Technical_Appraisal', 'FITS_PUID', 'FITS_Date_Last_Modified',
-                        'FITS_MD5', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message']
-        df_results = pd.DataFrame(rows, columns=column_names)
+        """
+        Test for the technical appraisal subset, which includes any file that is not 'Not for TA'.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_tests.csv')
 
         # Runs the code being tested (from the main body of the script).
         df_tech_appraisal = df_results[df_results['Technical_Appraisal'] != 'Not for TA'].copy()
         df_tech_appraisal.drop(['FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5', 'FITS_Valid', 'FITS_Well-Formed',
                                 'FITS_Status_Message'], inplace=True, axis=1)
 
-        # Makes a dataframe with the expected values.
-        rows = [['DOS/Windows Executable', 'Format'],
-                ['Unknown Binary', 'Format'],
-                ['JPEG EXIF', 'Trash'],
-                ['Open Office XML Workbook', 'Trash']]
-        column_names = ['FITS_Format_Name', 'Technical_Appraisal']
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_tech_appraisal.values.tolist()
+        expected = [['C:\\CD2\\blank.docx', 'empty', np.NaN, 'file utility version 5.03', False, 0.0, np.NaN, 'Microsoft Word for Windows 27-onwards (OOXML)', 'docx', 'https://www.nationalarchives.gov.uk/pronom/fmt/412', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other'],
+                    ['C:\\CD2\\blank.docx', 'empty', np.NaN, 'file utility version 5.03', False, 0.0, np.NaN, 'Microsoft Word Open Office XML', 'docx|docm', 'https://www.nationalarchives.gov.uk/pronom/fmt/523', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other'],
+                    ['C:\\CD2\\Trash\\Junk.txt', 'Plain text', np.NaN, 'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', False, 0.4, np.NaN, 'Plain Text', 'Plain|txt|text|asc|rte', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/111', 'Low Risk', 'Retain', 'PRONOM', 'Trash', 'Not for Other']]
 
-        # Compares the code output to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_tech_appraisal, df_expected)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with tech appraisal subset')
 
     def test_other_risk_subset(self):
-        """Tests the other risk subset, which is based on the Other_Risk column."""
-
-        # Makes a dataframe to use as input.
-        # Data variation: all other risk categories and all columns to drop.
-        rows = [['DOS/Windows Executable', 'Not for Other', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['Adobe Photoshop file', 'Layered image file', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['JPEG EXIF', 'Not for Other', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['Cascading Style Sheet', 'Possible saved web page', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop',
-                 'drop'],
-                ['iCalendar', 'NARA Low/Transform', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop'],
-                ['Zip Format', 'Archive format', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop', 'drop']]
-        column_names = ['FITS_Format_Name', 'Other_Risk', 'FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5',
-                        'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message']
-        df_results = pd.DataFrame(rows, columns=column_names)
+        """
+        Test for the other risk subset, which includes any file that is not 'Not for Other'.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_tests.csv')
 
         # Runs the code being tested (from the main body of the script).
         df_other_risk = df_results[df_results['Other_Risk'] != 'Not for Other'].copy()
@@ -167,84 +125,70 @@ class MyTestCase(unittest.TestCase):
             ['FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid',
              'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
 
-        # Makes a dataframe with the expected values.
-        rows = [['Adobe Photoshop file', 'Layered image file'],
-                ['Cascading Style Sheet', 'Possible saved web page'],
-                ['iCalendar', 'NARA Low/Transform'],
-                ['Zip Format', 'Archive format']]
-        column_names = ['FITS_Format_Name', 'Other_Risk']
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_other_risk.values.tolist()
+        expected = []
 
-        # Compares the code output to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_other_risk, df_expected)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with other risk subset')
 
     def test_duplicates_subset(self):
-        """Tests the duplicates subset, which is based on the FITS_File_Path and FITS_MD5 columns."""
-
-        # Makes a dataframe to use as input.
-        # Data variation: unique files, files duplicate because of multiple FITs file ids, and real duplicate files.
-        rows = [[r'C:\Disk1\file1.txt', 'Plain text', 0.004, '098f6bcd4621d373cade4e832627b4f6'],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Document', 19.316, 'b66e2fa385872d1a16d31b00f4b5f035'],
-                [r'C:\Disk1\file3.xlsx', 'Open Office XML Workbook', 19.316, 'b66e2fa385872d1a16d31b00f4b5f035'],
-                [r'C:\Disk1\file3.xlsx', 'XLSX', 19.316, 'b66e2fa385872d1a16d31b00f4b5f035'],
-                [r'C:\Disk1\photo.jpg', 'JPEG EXIF', 13.563, '686779fae835aadff6474898f5781e99'],
-                [r'C:\Disk2\file1.txt', 'Plain text', 0.004, '098f6bcd4621d373cade4e832627b4f6'],
-                [r'C:\Disk3\file1.txt', 'Plain text', 0.004, '098f6bcd4621d373cade4e832627b4f6']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Size_KB', 'FITS_MD5']
-        df_results = pd.DataFrame(rows, columns=column_names)
+        """
+        Test for the duplicates subset, which includes any file which is in the set more than once.
+        There will be multiple files with the same MD5 but each will have a different file path.
+        It does not include files that were duplicated because they were copied for multiple FITS identifications
+        or possible NARA matches.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_tests.csv')
 
         # Runs the code being tested (from the main body of the script).
         df_duplicates = df_results[['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']].copy()
         df_duplicates = df_duplicates.drop_duplicates(subset=['FITS_File_Path'], keep=False)
         df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset='FITS_MD5', keep=False)]
 
-        # Makes a dataframe with the expected values.
-        rows = [[r'C:\Disk1\file1.txt', 0.004, '098f6bcd4621d373cade4e832627b4f6'],
-                [r'C:\Disk2\file1.txt', 0.004, '098f6bcd4621d373cade4e832627b4f6'],
-                [r'C:\Disk3\file1.txt', 0.004, '098f6bcd4621d373cade4e832627b4f6']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_duplicates.values.tolist()
+        expected = []
 
-        # Compares the code output to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_duplicates, df_expected)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with duplicates subset')
 
-    def test_empty_subset(self):
-        """Tests handling of an empty subset, which can happen with any subset.
-        Using the file with multiple format ids and duplicate MD5s subsets for testing."""
-        # TODO: split into 2 tests, or does every subset needs an empty test?
-
-        # Makes a dataframe to use as input where all files have a unique identification and unique MD5.
-        rows = [[r'C:\Disk1\file1.txt', 'Plain text', 0.004, '098f6bcd4621d373cade4e832627b4f6'],
-                [r'C:\Disk1\file2.txt', 'Plain text', 5.347, 'c9f6d785a33cfac2cc1f51ab4704b8a1'],
-                [r'C:\Disk2\file3.pdf', 'Portable Document Format', 187.972, '6dfeecf4e4200a0ad147a7271a094e68'],
-                [r'c:\Disk2\file4.txt', 'Plain text', 0.178, '97e4f6e6f35e5606855d0917e22740b9']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Size_KB', 'FITS_MD5']
-        df_results = pd.DataFrame(rows, columns=column_names)
-
-        # Runs the code being tested (from the main body of the script).
-        df_multiple_ids = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
-        df_duplicates = df_results[['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']].copy()
-        df_duplicates = df_duplicates.drop_duplicates(subset=['FITS_File_Path'], keep=False)
-        df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset='FITS_MD5', keep=False)]
-        for df in (df_multiple_ids, df_duplicates):
-            if len(df) == 0:
-                df.loc[len(df)] = ['No data of this type'] + [np.NaN] * (len(df.columns) - 1)
-
-        # Makes dataframes with the expected values for each subset.
-        rows = [['No data of this type', np.NaN, np.NaN, np.NaN]]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Size_KB', 'FITS_MD5']
-        df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
-
-        rows = [['No data of this type', np.NaN, np.NaN]]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']
-        df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
-
-        # Compares the code outputs to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_multiple_ids, df_multiple_ids_expected)
-        pd.testing.assert_frame_equal(df_duplicates, df_duplicates_expected)
+    # def test_empty_subset(self):
+    #     """Tests handling of an empty subset, which can happen with any subset.
+    #     Using the file with multiple format ids and duplicate MD5s subsets for testing."""
+    #     # TODO: split into 2 tests, or does every subset needs an empty test?
+    #
+    #     # Makes a dataframe to use as input where all files have a unique identification and unique MD5.
+    #     rows = [[r'C:\Disk1\file1.txt', 'Plain text', 0.004, '098f6bcd4621d373cade4e832627b4f6'],
+    #             [r'C:\Disk1\file2.txt', 'Plain text', 5.347, 'c9f6d785a33cfac2cc1f51ab4704b8a1'],
+    #             [r'C:\Disk2\file3.pdf', 'Portable Document Format', 187.972, '6dfeecf4e4200a0ad147a7271a094e68'],
+    #             [r'c:\Disk2\file4.txt', 'Plain text', 0.178, '97e4f6e6f35e5606855d0917e22740b9']]
+    #     column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Size_KB', 'FITS_MD5']
+    #     df_results = pd.DataFrame(rows, columns=column_names)
+    #
+    #     # Runs the code being tested (from the main body of the script).
+    #     df_multiple_ids = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
+    #     df_duplicates = df_results[['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']].copy()
+    #     df_duplicates = df_duplicates.drop_duplicates(subset=['FITS_File_Path'], keep=False)
+    #     df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset='FITS_MD5', keep=False)]
+    #     for df in (df_multiple_ids, df_duplicates):
+    #         if len(df) == 0:
+    #             df.loc[len(df)] = ['No data of this type'] + [np.NaN] * (len(df.columns) - 1)
+    #
+    #     # Makes dataframes with the expected values for each subset.
+    #     rows = [['No data of this type', np.NaN, np.NaN, np.NaN]]
+    #     column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Size_KB', 'FITS_MD5']
+    #     df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
+    #
+    #     rows = [['No data of this type', np.NaN, np.NaN]]
+    #     column_names = ['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']
+    #     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
+    #
+    #     # Compares the code outputs to the expected values.
+    #     # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+    #     pd.testing.assert_frame_equal(df_multiple_ids, df_multiple_ids_expected)
+    #     pd.testing.assert_frame_equal(df_duplicates, df_duplicates_expected)
 
 
 if __name__ == '__main__':
