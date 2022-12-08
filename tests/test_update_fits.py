@@ -112,7 +112,30 @@ class MyTestCase(unittest.TestCase):
                     'new_file.txt.fits.xml']
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with add unique filenames')
+        self.assertEqual(results, expected, 'Problem with adding unique filenames')
+
+    def test_add_duplicate(self):
+        """
+        Test for running the function after adding new files with name already in the accession folder.
+        Currently, this makes no change to FITS. Future development should change that.
+        Result for testing is the contents of the accession_FITS folder.
+        """
+        # Adds one file to the accession folder and runs the function being tested.
+        with open(os.path.join('accession', 'additional.txt'), 'w') as file:
+            file.write('New Text')
+        with open(os.path.join('accession', 'dir', 'file.txt'), 'w') as file:
+            file.write('New Text')
+        update_fits(self.accession_path, self.fits_path, os.getcwd(), 'accession')
+
+        # Makes lists of the actual results from the test and the expected results.
+        results = []
+        for root, dirs, files in os.walk("accession_FITS"):
+            results.extend(files)
+        expected = ['additional.txt.fits.xml', 'double.txt-1.fits.xml', 'double.txt.fits.xml',
+                    'duplicate.txt-1.fits.xml', 'duplicate.txt.fits.xml', 'file.txt.fits.xml']
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with adding duplicate filenames')
 
 
 if __name__ == '__main__':
