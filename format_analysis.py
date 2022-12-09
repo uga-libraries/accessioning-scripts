@@ -98,36 +98,54 @@ df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"
 df_results.drop_duplicates(inplace=True)
 
 # The next several code blocks make different subsets of the data based on different risk factors
-# and removes any columns not typically needed for review.
+# and removes any columns not typically needed for review. If the subset is empty (no risk of that type),
+# the dataframe is given the default value of 'No data of this type'.
 
+# Subset: NARA risk. Any format that is not Low Risk.
 df_nara_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
 df_nara_risk.drop(["FITS_PUID", "FITS_Identifying_Tool(s)", "FITS_Creating_Application",
                    "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
+if len(df_nara_risk) == 0:
+    df_nara_risk = pd.DataFrame([['No data of this type']])
 
+# Subset: multiple FITS format identifications for the same file.
+# TODO: this is not working correctly. It should not count as multiple if it is due to multiple NARA matches.
 df_multiple = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
 df_multiple.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
+if len(df_multiple) == 0:
+    df_multiple = pd.DataFrame([['No data of this type']])
 
-df_validation = df_results[(df_results["FITS_Valid"] == False) | (df_results["FITS_Well-Formed"] == False) |
+# Subset: formats that are not valid.
+# FITS could have False in the Valid and/or Well-Formed fields and/or text in the Status Message.
+df_validation = df_results[(df_results["FITS_Valid"] == False) |
+                           (df_results["FITS_Well-Formed"] == False) |
                            (df_results["FITS_Status_Message"].notnull())].copy()
+if len(df_validation) == 0:
+    df_validation = pd.DataFrame([['No data of this type']])
 
+# Subset: technical appraisal. Any format that is not 'Not for TA'.
 df_tech_appraisal = df_results[df_results["Technical_Appraisal"] != "Not for TA"].copy()
 df_tech_appraisal.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Valid", "FITS_Well-Formed",
                         "FITS_Status_Message"], inplace=True, axis=1)
+if len(df_tech_appraisal) == 0:
+    df_tech_appraisal = pd.DataFrame([['No data of this type']])
 
+# Subset: other risk. Any format that is not 'Not for Other'.
 df_other_risk = df_results[df_results["Other_Risk"] != "Not for Other"].copy()
-df_other_risk.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Creating_Application", "FITS_Valid",
-                    "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
+df_other_risk.drop(["FITS_PUID", "FITS_Date_Last_Modified", "FITS_MD5", "FITS_Creating_Application",
+                    "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
+if len(df_other_risk) == 0:
+    df_other_risk = pd.DataFrame([['No data of this type']])
 
+# Subset: duplicate files. Any file that is in the directory in more than one location.
+# It does not include files repeated in the dataframe because of multiple FITS identifications or
+# multiple possible NARA matches by removing duplicates from the file path first
+# and only including any files with the same fixity and a different file path.
 df_duplicates = df_results[["FITS_File_Path", "FITS_Size_KB", "FITS_MD5"]].copy()
 df_duplicates = df_duplicates.drop_duplicates(subset=["FITS_File_Path"], keep=False)
 df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset="FITS_MD5", keep=False)]
-
-# Adds default text to any subset dataframe if there were no files of this type and the dataframe is empty.
-# The first column has the message and the rest are filled with blank.
-# The list must have a value for every column or it will cause an error.
-for df in (df_nara_risk, df_multiple, df_validation, df_tech_appraisal, df_other_risk, df_duplicates):
-    if len(df) == 0:
-        df.loc[len(df)] = ["No data of this type"] + [np.NaN] * (len(df.columns) - 1)
+if len(df_duplicates) == 0:
+    df_duplicates = pd.DataFrame([['No data of this type']])
 
 # Calculates the number of files and total size in the dataframe to use for calculating percentages with the subtotals.
 # This gives percentages based on the entire accession and not just the files that are in a particular subtotal.
