@@ -20,6 +20,8 @@ class MyTestCase(unittest.TestCase):
         df_nara_risk = df_results[df_results['NARA_Risk Level'] != 'Low Risk'].copy()
         df_nara_risk.drop(['FITS_PUID', 'FITS_Identifying_Tool(s)', 'FITS_Creating_Application',
                            'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_nara_risk) == 0:
+            df_nara_risk = pd.DataFrame([['No data of this type']])
 
         # Makes lists of the actual results from the test and the expected results.
         results = df_nara_risk.values.tolist()
@@ -31,6 +33,28 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with NARA risk subset')
 
+    def test_nara_risk_subset_empty(self):
+        """
+        Test for the NARA risk subset, when there are no files matching the criteria for this subset.
+        This happens when all files are 'Low Risk'
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_empty_tests.csv')
+
+        # Runs the code being tested (from the main body of the script).
+        df_nara_risk = df_results[df_results['NARA_Risk Level'] != 'Low Risk'].copy()
+        df_nara_risk.drop(['FITS_PUID', 'FITS_Identifying_Tool(s)', 'FITS_Creating_Application',
+                           'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_nara_risk) == 0:
+            df_nara_risk = pd.DataFrame([['No data of this type']])
+
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_nara_risk.values.tolist()
+        expected = [['No data of this type']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with NARA risk subset when empty')
+
     def test_multiple_ids_subset(self):
         """
         Test for the multiple ids subset, which includes any file with more than one format identification from FITS.
@@ -41,6 +65,8 @@ class MyTestCase(unittest.TestCase):
         # Runs the code being tested (from the main body of the script).
         df_multiple = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
         df_multiple.drop(['FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_multiple) == 0:
+            df_multiple = pd.DataFrame([['No data of this type']])
 
         # Makes lists of the actual results from the test and the expected results.
         results = df_multiple.values.tolist()
@@ -63,6 +89,27 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with multiple ids subset')
 
+    def test_multiple_ids_subset_empty(self):
+        """
+        Test for the multiple ids subset, when there are no files matching the criteria for this subset.
+        This happens when all files had one format identification from FITS.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_empty_tests.csv')
+
+        # Runs the code being tested (from the main body of the script).
+        df_multiple = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
+        df_multiple.drop(['FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_multiple) == 0:
+            df_multiple = pd.DataFrame([['No data of this type']])
+
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_multiple.values.tolist()
+        expected = [['No data of this type']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with multiple ids subset when empty')
+
     def test_validation_subset(self):
         """
         Test for the FITS validation subset, which includes any file where FITS had Valid equal to False,
@@ -75,6 +122,8 @@ class MyTestCase(unittest.TestCase):
         df_validation = df_results[(df_results['FITS_Valid'] == False) |
                                    (df_results['FITS_Well-Formed'] == False) |
                                    (df_results['FITS_Status_Message'].notnull())].copy()
+        if len(df_validation) == 0:
+            df_validation = pd.DataFrame([['No data of this type']])
 
         # Makes lists of the actual results from the test and the expected results.
         results = df_validation.values.tolist()
@@ -91,6 +140,29 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with validation subset')
 
+    def test_validation_subset_empty(self):
+        """
+        Test for the validation subset, when there are no files matching the criteria for this subset.
+        This happens when all files have FITS where Valid is True or empty, Well-Formed is true or empty,
+        and Status Message is empty.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_empty_tests.csv')
+
+        # Runs the code being tested (from the main body of the script).
+        df_validation = df_results[(df_results['FITS_Valid'] == False) |
+                                   (df_results['FITS_Well-Formed'] == False) |
+                                   (df_results['FITS_Status_Message'].notnull())].copy()
+        if len(df_validation) == 0:
+            df_validation = pd.DataFrame([['No data of this type']])
+
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_validation.values.tolist()
+        expected = [['No data of this type']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with validation subset when empty')
+
     def test_tech_appraisal_subset(self):
         """
         Test for the technical appraisal subset, which includes any file that is not 'Not for TA'.
@@ -102,6 +174,8 @@ class MyTestCase(unittest.TestCase):
         df_tech_appraisal = df_results[df_results['Technical_Appraisal'] != 'Not for TA'].copy()
         df_tech_appraisal.drop(['FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5', 'FITS_Valid', 'FITS_Well-Formed',
                                 'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_tech_appraisal) == 0:
+            df_tech_appraisal = pd.DataFrame([['No data of this type']])
 
         # Makes lists of the actual results from the test and the expected results.
         results = df_tech_appraisal.values.tolist()
@@ -112,6 +186,28 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with tech appraisal subset')
 
+    def test_tech_appraisal_subset_empty(self):
+        """
+        Test for the technical appraisal subset, when there are no files matching the criteria for this subset.
+        This happens when all files are 'Not for TA'.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_empty_tests.csv')
+
+        # Runs the code being tested (from the main body of the script).
+        df_tech_appraisal = df_results[df_results['Technical_Appraisal'] != 'Not for TA'].copy()
+        df_tech_appraisal.drop(['FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5', 'FITS_Valid', 'FITS_Well-Formed',
+                                'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_tech_appraisal) == 0:
+            df_tech_appraisal = pd.DataFrame([['No data of this type']])
+
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_tech_appraisal.values.tolist()
+        expected = [['No data of this type']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with technical appraisal subset when empty')
+
     def test_other_risk_subset(self):
         """
         Test for the other risk subset, which includes any file that is not 'Not for Other'.
@@ -121,23 +217,48 @@ class MyTestCase(unittest.TestCase):
 
         # Runs the code being tested (from the main body of the script).
         df_other_risk = df_results[df_results['Other_Risk'] != 'Not for Other'].copy()
-        df_other_risk.drop(
-            ['FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid',
-             'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
+        df_other_risk.drop(['FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5', 'FITS_Creating_Application',
+                            'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_other_risk) == 0:
+            df_other_risk = pd.DataFrame([['No data of this type']])
 
         # Makes lists of the actual results from the test and the expected results.
         results = df_other_risk.values.tolist()
-        expected = []
+        expected = [['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN, 'file utility version 5.03', False, 57.01, 'Adobe Photoshop', 'psd', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'PRONOM', 'Not for TA', 'Layered image file'],
+                    ['C:\\FD1\\Worksheets.zip', 'ZIP Format', '2', 'Droid version 6.4; file utility version 5.03', False, 11.374, 'ZIP archive', 'zip', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/263', 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format'],
+                    ['C:\\FD2\\Worksheets.zip', 'ZIP Format', '2', 'Droid version 6.4; file utility version 5.03', False, 11.374, 'ZIP archive', 'zip', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/263', 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with other risk subset')
+
+    def test_other_risk_subset_empty(self):
+        """
+        Test for the other risk subset, when there are no files matching the criteria for this subset.
+        This happens when all files are 'Not for Other'.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_empty_tests.csv')
+
+        # Runs the code being tested (from the main body of the script).
+        df_other_risk = df_results[df_results['Other_Risk'] != 'Not for Other'].copy()
+        df_other_risk.drop(['FITS_PUID', 'FITS_Date_Last_Modified', 'FITS_MD5', 'FITS_Creating_Application',
+                            'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'], inplace=True, axis=1)
+        if len(df_other_risk) == 0:
+            df_other_risk = pd.DataFrame([['No data of this type']])
+
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_other_risk.values.tolist()
+        expected = [['No data of this type']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with other risk subset when empty')
 
     def test_duplicates_subset(self):
         """
         Test for the duplicates subset, which includes any file which is in the set more than once.
         There will be multiple files with the same MD5 but each will have a different file path.
         It does not include files that were duplicated because they were copied for multiple FITS identifications
-        or possible NARA matches.
+        or multiple possible NARA matches.
         """
         # Reads test data into a dataframe (located in the tests folder of the script repo).
         df_results = pd.read_csv('for_subset_tests.csv')
@@ -146,49 +267,41 @@ class MyTestCase(unittest.TestCase):
         df_duplicates = df_results[['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']].copy()
         df_duplicates = df_duplicates.drop_duplicates(subset=['FITS_File_Path'], keep=False)
         df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset='FITS_MD5', keep=False)]
+        if len(df_duplicates) == 0:
+            df_duplicates = pd.DataFrame([['No data of this type']])
 
         # Makes lists of the actual results from the test and the expected results.
         results = df_duplicates.values.tolist()
-        expected = []
+        expected = [['C:\\FD1\\Worksheet CSV Version.csv', 0.178, '97e4f6e6f35e5606855d0917e22740b9'],
+                    ['C:\\FD1\\Worksheets.zip', 11.374, 'b335c9b47034466907b169e04cbbfa'],
+                    ['C:\\FD2\\Worksheet CSV Version.csv', 0.178, '97e4f6e6f35e5606855d0917e22740b9'],
+                    ['C:\\FD2\\Worksheets.zip', 11.374, 'b335c9b47034466907b169e04cbbfa']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with duplicates subset')
 
-    # def test_empty_subset(self):
-    #     """Tests handling of an empty subset, which can happen with any subset.
-    #     Using the file with multiple format ids and duplicate MD5s subsets for testing."""
-    #     # TODO: split into 2 tests, or does every subset needs an empty test?
-    #
-    #     # Makes a dataframe to use as input where all files have a unique identification and unique MD5.
-    #     rows = [[r'C:\Disk1\file1.txt', 'Plain text', 0.004, '098f6bcd4621d373cade4e832627b4f6'],
-    #             [r'C:\Disk1\file2.txt', 'Plain text', 5.347, 'c9f6d785a33cfac2cc1f51ab4704b8a1'],
-    #             [r'C:\Disk2\file3.pdf', 'Portable Document Format', 187.972, '6dfeecf4e4200a0ad147a7271a094e68'],
-    #             [r'c:\Disk2\file4.txt', 'Plain text', 0.178, '97e4f6e6f35e5606855d0917e22740b9']]
-    #     column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Size_KB', 'FITS_MD5']
-    #     df_results = pd.DataFrame(rows, columns=column_names)
-    #
-    #     # Runs the code being tested (from the main body of the script).
-    #     df_multiple_ids = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
-    #     df_duplicates = df_results[['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']].copy()
-    #     df_duplicates = df_duplicates.drop_duplicates(subset=['FITS_File_Path'], keep=False)
-    #     df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset='FITS_MD5', keep=False)]
-    #     for df in (df_multiple_ids, df_duplicates):
-    #         if len(df) == 0:
-    #             df.loc[len(df)] = ['No data of this type'] + [np.NaN] * (len(df.columns) - 1)
-    #
-    #     # Makes dataframes with the expected values for each subset.
-    #     rows = [['No data of this type', np.NaN, np.NaN, np.NaN]]
-    #     column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Size_KB', 'FITS_MD5']
-    #     df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
-    #
-    #     rows = [['No data of this type', np.NaN, np.NaN]]
-    #     column_names = ['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']
-    #     df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
-    #
-    #     # Compares the code outputs to the expected values.
-    #     # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-    #     pd.testing.assert_frame_equal(df_multiple_ids, df_multiple_ids_expected)
-    #     pd.testing.assert_frame_equal(df_duplicates, df_duplicates_expected)
+    def test_duplicates_subset_empty(self):
+        """
+        Test for the duplicates risk subset, when there are no files matching the criteria for this subset.
+        This happens when all files are unique or are only in the dataframe more than once because of
+        multiple FITS identifications or multiple possible NARA matches.
+        """
+        # Reads test data into a dataframe (located in the tests folder of the script repo).
+        df_results = pd.read_csv('for_subset_empty_tests.csv')
+
+        # Runs the code being tested (from the main body of the script).
+        df_duplicates = df_results[['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']].copy()
+        df_duplicates = df_duplicates.drop_duplicates(subset=['FITS_File_Path'], keep=False)
+        df_duplicates = df_duplicates.loc[df_duplicates.duplicated(subset='FITS_MD5', keep=False)]
+        if len(df_duplicates) == 0:
+            df_duplicates = pd.DataFrame([['No data of this type']])
+
+        # Makes lists of the actual results from the test and the expected results.
+        results = df_duplicates.values.tolist()
+        expected = [['No data of this type']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with duplicates subset when empty')
 
 
 if __name__ == '__main__':
