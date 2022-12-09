@@ -1,6 +1,5 @@
 """Tests the function subtotal, including all four types of subtotals which are generated."""
 
-import numpy as np
 import pandas as pd
 import unittest
 from format_analysis_functions import subtotal
