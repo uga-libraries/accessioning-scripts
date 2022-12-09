@@ -119,11 +119,12 @@ class MyTestCase(unittest.TestCase):
                                               ['Technical_Appraisal', 'FITS_Format_Name'], totals_dict)
         results = df_subtotal.values.tolist()
 
-        # Makes a list with the expected values.
+        # Makes a string with the expected value of the first cell in the first (only) row.
+        # Just use that for comparison because the rest of the cells are blank and using np.NaN
+        # for those blanks in expected prevents assertEqual from seeing them as equal.
         expected = 'No data of this type'
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        # Just the first item in the list (the message) is used for the comparison. The rest are blanks.
         self.assertEqual(results[0][0], expected, 'Problem with technical appraisal subtotal, no files match criteria')
 
     def test_other_risk_subtotal(self):
@@ -168,11 +169,12 @@ class MyTestCase(unittest.TestCase):
                                ['Other_Risk', 'FITS_Format_Name'], totals_dict)
         results = df_subtotal.values.tolist()
 
-        # Makes a list with the expected values.
+        # Makes a string with the expected value of the first cell in the first (only) row.
+        # Just use that for comparison because the rest of the cells are blank and using np.NaN
+        # for those blanks in expected prevents assertEqual from seeing them as equal.
         expected = 'No data of this type'
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        # Just the first item in the list (the message) is used for the comparison. The rest is blanks.
         self.assertEqual(results[0][0], expected, 'Problem with other risk subtotal, no files match criteria')
 
 
