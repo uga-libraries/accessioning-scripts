@@ -18,29 +18,32 @@ class MyTestCase(unittest.TestCase):
             os.remove('accession_fits.csv')
 
     def test_fits(self):
-        """Test for reading of accession_fits.csv.
-        Result for testing is the contents of the dataframe."""
+        """
+        Test for reading the FITS spreadsheet (different for each accession).
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
 
         # Makes an abbreviated FITS CSV (fewer columns) with no special characters to use for testing.
         with open('accession_fits.csv', 'w', newline='') as file:
             file_write = csv.writer(file)
             file_write.writerow(['File_Path', 'Format_Name', 'Format_Version', 'Multiple_IDs'])
-            file_write.writerow([r'C:\Coll\accession\CD001_Images\IMG1.JPG', 'JPEG EXIF', '1.01', False])
-            file_write.writerow([r'C:\Coll\accession\CD002_Web\index.html', 'Hypertext Markup Language', '4.01', True])
-            file_write.writerow([r'C:\Coll\accession\CD002_Web\index.html', 'HTML Transitional', 'HTML 4.01', True])
-        df_result = csv_to_dataframe('accession_fits.csv')
+            file_write.writerow(['C:\\Coll\\accession\\CD1_Images\\IMG1.JPG', 'JPEG EXIF', '1.01', False])
+            file_write.writerow(['C:\\Coll\\accession\\CD2_Web\\index.html', 'Hypertext Markup Language', '4.01', True])
+            file_write.writerow(['C:\\Coll\\accession\\CD2_Web\\index.html', 'HTML Transitional', 'HTML 4.01', True])
 
-        # Makes a dataframe with the expected values in df_fits after the CSV is read with encoding_errors="ignore".
-        # This causes characters to be skipped if they can't be read.
-        rows = [[r'C:\Coll\accession\CD001_Images\IMG1.JPG', 'JPEG EXIF', '1.01', False],
-                [r'C:\Coll\accession\CD002_Web\index.html', 'Hypertext Markup Language', '4.01', True],
-                [r'C:\Coll\accession\CD002_Web\index.html', 'HTML Transitional', 'HTML 4.01', True]]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs']
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Runs the function being tested and makes a list of lists from the dataframe.
+        # The first list is the column headers and the rest are one list per row.
+        df = csv_to_dataframe('accession_fits.csv')
+        results = [df.columns.to_list()] + df.values.tolist()
 
-        # Compares the contents of the FITS dataframe to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_result, df_expected)
+        # Creates a list with the expected results.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs'],
+                    ['C:\\Coll\\accession\\CD1_Images\\IMG1.JPG', 'JPEG EXIF', '1.01', False],
+                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'Hypertext Markup Language', '4.01', True],
+                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'HTML Transitional', 'HTML 4.01', True]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with FITS')
 
     def test_ita(self):
         """
@@ -50,11 +53,12 @@ class MyTestCase(unittest.TestCase):
 
         # Runs the function being tested and makes a list from the dataframe.
         df = csv_to_dataframe(c.ITA)
-        results = df.values.tolist()
+        results = [df.columns.to_list()] + df.values.tolist()
 
         # Creates a list with the expected results.
         # NOTE: this must be when new things are added to the spreadsheet.
-        expected = [['Adobe Font Metric', np.NaN],
+        expected = [['FITS_FORMAT', 'NOTES'],
+                    ['Adobe Font Metric', np.NaN],
                     ['DOS batch file', np.NaN],
                     ['DOS/Windows Executable', 'Also high risk'],
                     ['empty', np.NaN],
@@ -76,11 +80,12 @@ class MyTestCase(unittest.TestCase):
 
         # Runs the function being tested and makes a list from the dataframe.
         df = csv_to_dataframe(c.RISK)
-        results = df.values.tolist()
+        results = [df.columns.to_list()] + df.values.tolist()
 
         # Creates a list with the expected results.
         # NOTE: this must be when new things are added to the spreadsheet.
-        expected = [['Adobe Photoshop file', 'Layered image file'],
+        expected = [['FITS_FORMAT', 'RISK_CRITERIA'],
+                    ['Adobe Photoshop file', 'Layered image file'],
                     ['Cascading Style Sheet', 'Possible saved web page'],
                     ['CorelDraw Drawing', 'Layered image file'],
                     ['Encapsulated Postscript File', 'Layered image file'],
@@ -116,32 +121,32 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(result_empty, expected_empty, 'Problem with nara - dataframe empty')
         self.assertEqual(result_columns, expected_columns, 'Problem with nara - dataframe columns')
 
-    def test_encoding_error(self):
-        """Tests unicode error handling when reading a CSV into a dataframe."""
-
-        # Makes a FITS CSV with special characters (copyright symbol and accented e) to use for testing.
-        # In format_analysis.py, this would be made earlier in the script and have more columns.
-        with open('accession_fits.csv', 'w', newline='') as file:
-            file_write = csv.writer(file)
-            file_write.writerow(['File_Path', 'Format_Name', 'Format_Version', 'Multiple_IDs'])
-            file_write.writerow([r'C:\Coll\accession\CD001_Images\©Image.JPG', 'JPEG EXIF', '1.01', False])
-            file_write.writerow([r'C:\Coll\accession\CD002_Web\indexé.html', 'Hypertext Markup Language', '4.01', True])
-            file_write.writerow([r'C:\Coll\accession\CD002_Web\indexé.html', 'HTML Transitional', 'HTML 4.01', True])
-
-        # Runs the function being tested, which will print a message to the terminal if working correctly.
-        df_result = csv_to_dataframe('accession_fits.csv')
-
-        # Makes a dataframe with the expected values in df_fits after the CSV is read with encoding_errors="ignore".
-        # This causes characters to be skipped if they can't be read.
-        rows = [[r'C:\Coll\accession\CD001_Images\Image.JPG', 'JPEG EXIF', '1.01', False],
-                [r'C:\Coll\accession\CD002_Web\index.html', 'Hypertext Markup Language', '4.01', True],
-                [r'C:\Coll\accession\CD002_Web\index.html', 'HTML Transitional', 'HTML 4.01', True]]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs']
-        df_expected = pd.DataFrame(rows, columns=column_names)
-
-        # Compares the contents of the FITS dataframe to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_result, df_expected)
+    # def test_encoding_error(self):
+    #     """Tests unicode error handling when reading a CSV into a dataframe."""
+    #
+    #     # Makes a FITS CSV with special characters (copyright symbol and accented e) to use for testing.
+    #     # In format_analysis.py, this would be made earlier in the script and have more columns.
+    #     with open('accession_fits.csv', 'w', newline='') as file:
+    #         file_write = csv.writer(file)
+    #         file_write.writerow(['File_Path', 'Format_Name', 'Format_Version', 'Multiple_IDs'])
+    #         file_write.writerow([r'C:\\Coll\\accession\\CD001_Images\\©Image.JPG', 'JPEG EXIF', '1.01', False])
+    #         file_write.writerow([r'C:\\Coll\\accession\\CD002_Web\\indexé.html', 'Hypertext Markup Language', '4.01', True])
+    #         file_write.writerow([r'C:\\Coll\\accession\\CD002_Web\\indexé.html', 'HTML Transitional', 'HTML 4.01', True])
+    #
+    #     # Runs the function being tested, which will print a message to the terminal if working correctly.
+    #     df_result = csv_to_dataframe('accession_fits.csv')
+    #
+    #     # Makes a dataframe with the expected values in df_fits after the CSV is read with encoding_errors="ignore".
+    #     # This causes characters to be skipped if they can't be read.
+    #     rows = [[r'C:\\Coll\\accession\\CD001_Images\\Image.JPG', 'JPEG EXIF', '1.01', False],
+    #             [r'C:\\Coll\\accession\\CD002_Web\\index.html', 'Hypertext Markup Language', '4.01', True],
+    #             [r'C:\\Coll\\accession\\CD002_Web\\index.html', 'HTML Transitional', 'HTML 4.01', True]]
+    #     column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs']
+    #     df_expected = pd.DataFrame(rows, columns=column_names)
+    #
+    #     # Compares the contents of the FITS dataframe to the expected values.
+    #     # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
+    #     pd.testing.assert_frame_equal(df_result, df_expected)
 
 
 if __name__ == '__main__':
