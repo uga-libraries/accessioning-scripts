@@ -7,12 +7,6 @@ from format_analysis_functions import media_subtotal
 
 class MyTestCase(unittest.TestCase):
 
-    def setUp(self):
-        """
-        Accession folder variable used for all of the tests.
-        """
-        self.accession_folder = 'C:\\ACC'
-
     def test_nara_high(self):
         """
         Test for NARA risk level subtotal with files that are high risk.
@@ -26,7 +20,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\photo5.crw', 5000, 'High Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -50,7 +44,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\flyer5.ai', 5000, 'Moderate Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -74,7 +68,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -98,7 +92,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file5.uk', 5000, 'No Match', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -122,7 +116,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\command3.bat', 5000, 'Moderate Risk', 'Format', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -146,7 +140,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\command3.bat', 5000, 'Moderate Risk', 'Format', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -171,7 +165,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -195,7 +189,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -219,7 +213,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\backup3.gz', 5000, 'Low Risk', 'Not for TA', 'Archive format']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -243,7 +237,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\theme.css', 5000, 'Low Risk', 'Not for TA', 'Possible saved web page']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -267,7 +261,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -291,7 +285,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -315,7 +309,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file5.txt', 5.456, 'Low Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
@@ -341,7 +335,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
-        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+        df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
 
         # Makes lists of the actual results from the test and the expected results.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
