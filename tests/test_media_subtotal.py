@@ -302,5 +302,30 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with files')
 
+    def test_rounding(self):
+        """
+        Test for subtotal when file sizes result in more than 3 decimal places for the subtotal.
+        Result for testing is the media subtotal dataframe, converted to a list for easier comparison.
+        """
+        # Makes a dataframe to use as test input and runs the function being tested.
+        rows = [['C:\\ACC\\Disk1\\file1.txt', 0.2, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file2.txt', 0.3, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file3.txt', 0.4, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\file4.txt', 4.123, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\file5.txt', 5.456, 'Low Risk', 'Not for TA', 'Not for Other']]
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        df_results = pd.DataFrame(rows, columns=column_names)
+        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+
+        # Makes lists of the actual results from the test and the expected results.
+        # Uses reset_index() to include the index value in the dataframe, which is the media name.
+        results = df_media_subtotal.reset_index().values.tolist()
+        expected = [['Disk1', 3, 0.001, 0, 0, 3, 0, 0, 0],
+                    ['Disk2', 2, 0.01, 0, 0, 2, 0, 0, 0]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with rounding')
+
+
 if __name__ == '__main__':
     unittest.main()
