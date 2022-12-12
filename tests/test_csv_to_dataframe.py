@@ -2,11 +2,12 @@
 handles encoding errors if encountered, and edits column names for 2 of them."""
 
 import csv
+import numpy as np
 import os
 import pandas as pd
 import unittest
 from format_analysis_functions import csv_to_dataframe
-from configuration import *
+import configuration as c
 
 
 class MyTestCase(unittest.TestCase):
@@ -42,29 +43,37 @@ class MyTestCase(unittest.TestCase):
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_ita(self):
-        """Tests the function worked by verifying the column names and that the dataframe isn't empty.
-           The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently."""
-        # TODO: this one actually could be a test of the dataframe contents.
+        """
+        Test for reading the technical appraisal spreadsheet (ITAfileformats.csv).
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
 
-        df = csv_to_dataframe(ITA)
+        # Runs the function being tested and makes a list from the dataframe.
+        df = csv_to_dataframe(c.ITA)
+        results = df.values.tolist()
 
-        # First test is that the dataframe is not empty.
-        result_empty = len(df) != 0
-        expected_empty = True
+        # Creates a list with the expected results.
+        # NOTE: this must be when new things are added to the spreadsheet.
+        expected = [['Adobe Font Metric', np.NaN],
+                    ['DOS batch file', np.NaN],
+                    ['DOS/Windows Executable', 'Also high risk'],
+                    ['empty', np.NaN],
+                    ['Microsoft Windows Autorun', np.NaN],
+                    ['MS Windows icon resource', 'Also high risk'],
+                    ['PE32 executable', 'Also high risk'],
+                    ['TFF/TrueType Font', np.NaN],
+                    ['Unknown Binary', np.NaN],
+                    ['x86 boot sector', 'Also high risk']]
 
-        # Second test is the columns in the dataframe.
-        result_columns = df.columns.to_list()
-        expected_columns = ['FITS_FORMAT', 'NOTES']
-
-        self.assertEqual(result_empty, expected_empty, 'Problem with ita - dataframe empty')
-        self.assertEqual(result_columns, expected_columns, 'Problem with ita - dataframe columns')
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with ITA')
 
     def test_other_risk(self):
         """Tests the function worked by verifying the column names and that the dataframe isn't empty.
            The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently."""
         # TODO: this one actually could be a test of the dataframe contents.
 
-        df = csv_to_dataframe(RISK)
+        df = csv_to_dataframe(c.RISK)
 
         # First test is that the dataframe is not empty.
         result_empty = len(df) != 0
@@ -81,7 +90,7 @@ class MyTestCase(unittest.TestCase):
         """Tests the function worked by verifying the column names and that the dataframe isn't empty.
            The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently."""
 
-        df = csv_to_dataframe(NARA)
+        df = csv_to_dataframe(c.NARA)
 
         # First test is that the dataframe is not empty.
         result_empty = len(df) != 0
