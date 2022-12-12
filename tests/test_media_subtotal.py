@@ -21,9 +21,9 @@ class MyTestCase(unittest.TestCase):
         # Makes a dataframe to use as test input and runs the function being tested.
         rows = [['C:\\ACC\\Disk1\\file1.txt', 1000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk1\\file2.txt', 2000, 'Low Risk', 'Not for TA', 'Not for Other'],
-                ['C:\\ACC\\Disk1\\file3.txt', 3000, 'Low Risk', 'Format', 'Not for Other'],
-                ['C:\\ACC\\Disk2\\file4.txt', 4000, 'Low Risk', 'Format', 'Not for Other'],
-                ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Format', 'Not for Other']]
+                ['C:\\ACC\\Disk1\\command1.bat', 3000, 'Low Risk', 'Format', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\command2.bat', 4000, 'Low Risk', 'Format', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\command3.bat', 5000, 'Low Risk', 'Format', 'Not for Other']]
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
         df_media_subtotal = media_subtotal(df_results, self.accession_folder)
