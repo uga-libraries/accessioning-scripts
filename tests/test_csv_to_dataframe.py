@@ -69,22 +69,29 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(results, expected, 'Problem with ITA')
 
     def test_other_risk(self):
-        """Tests the function worked by verifying the column names and that the dataframe isn't empty.
-           The test can't check the data in the dataframe since it uses the real CSVs, which are updated frequently."""
-        # TODO: this one actually could be a test of the dataframe contents.
+        """
+        Test for reading the other risks spreadsheet (Riskfileformats.csv).
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
 
+        # Runs the function being tested and makes a list from the dataframe.
         df = csv_to_dataframe(c.RISK)
+        results = df.values.tolist()
 
-        # First test is that the dataframe is not empty.
-        result_empty = len(df) != 0
-        expected_empty = True
+        # Creates a list with the expected results.
+        # NOTE: this must be when new things are added to the spreadsheet.
+        expected = [['Adobe Photoshop file', 'Layered image file'],
+                    ['Cascading Style Sheet', 'Possible saved web page'],
+                    ['CorelDraw Drawing', 'Layered image file'],
+                    ['Encapsulated Postscript File', 'Layered image file'],
+                    ['GZIP', 'Archive format'],
+                    ['Microsoft Cabinet Archive Data', 'Archive format'],
+                    ['StuffIt Archive', 'Archive format'],
+                    ['ZIP', 'Archive format'],
+                    ['ZIP Format', 'Archive format']]
 
-        # Second test is the columns in the dataframe.
-        result_columns = df.columns.to_list()
-        expected_columns = ['FITS_FORMAT', 'RISK_CRITERIA']
-
-        self.assertEqual(result_empty, expected_empty, 'Problem with other risk - dataframe empty')
-        self.assertEqual(result_columns, expected_columns, 'Problem with other risk - dataframe columns')
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with other risk')
 
     def test_nara(self):
         """Tests the function worked by verifying the column names and that the dataframe isn't empty.
