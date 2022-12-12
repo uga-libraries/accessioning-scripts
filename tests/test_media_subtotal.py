@@ -13,6 +13,126 @@ class MyTestCase(unittest.TestCase):
         """
         self.accession_folder = 'C:\\ACC'
 
+    def test_nara_high(self):
+        """
+        Test for NARA risk level subtotal with files that are high risk.
+        Result for testing is the media subtotal dataframe, converted to a list for easier comparison.
+        """
+        # Makes a dataframe to use as test input and runs the function being tested.
+        rows = [['C:\\ACC\\Disk1\\photo1.crw', 1000, 'High Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\photo2.crw', 2000, 'High Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\photo3.crw', 3000, 'High Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\photo4.crw', 4000, 'High Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\photo5.crw', 5000, 'High Risk', 'Not for TA', 'Not for Other']]
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        df_results = pd.DataFrame(rows, columns=column_names)
+        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+
+        # Makes lists of the actual results from the test and the expected results.
+        # Uses reset_index() to include the index value in the dataframe, which is the media name.
+        results = df_media_subtotal.reset_index().values.tolist()
+        expected = [['Disk1', 3, 6, 3, 0, 0, 0, 0, 0],
+                    ['Disk2', 2, 9, 2, 0, 0, 0, 0, 0]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with NARA, high risk')
+
+    def test_nara_moderate(self):
+        """
+        Test for NARA risk level subtotal with files that are moderate risk.
+        Result for testing is the media subtotal dataframe, converted to a list for easier comparison.
+        """
+        # Makes a dataframe to use as test input and runs the function being tested.
+        rows = [['C:\\ACC\\Disk1\\flyer1.ai', 1000, 'Moderate Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\flyer2.ai', 2000, 'Moderate Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\flyer3.ai', 3000, 'Moderate Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\flyer4.ai', 4000, 'Moderate Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\flyer5.ai', 5000, 'Moderate Risk', 'Not for TA', 'Not for Other']]
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        df_results = pd.DataFrame(rows, columns=column_names)
+        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+
+        # Makes lists of the actual results from the test and the expected results.
+        # Uses reset_index() to include the index value in the dataframe, which is the media name.
+        results = df_media_subtotal.reset_index().values.tolist()
+        expected = [['Disk1', 3, 6, 0, 3, 0, 0, 0, 0],
+                    ['Disk2', 2, 9, 0, 2, 0, 0, 0, 0]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with NARA, moderate risk')
+
+    def test_nara_low(self):
+        """
+        Test for NARA risk level subtotal with files that are low risk.
+        Result for testing is the media subtotal dataframe, converted to a list for easier comparison.
+        """
+        # Makes a dataframe to use as test input and runs the function being tested.
+        rows = [['C:\\ACC\\Disk1\\file1.txt', 1000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file2.txt', 2000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file3.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\file4.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        df_results = pd.DataFrame(rows, columns=column_names)
+        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+
+        # Makes lists of the actual results from the test and the expected results.
+        # Uses reset_index() to include the index value in the dataframe, which is the media name.
+        results = df_media_subtotal.reset_index().values.tolist()
+        expected = [['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
+                    ['Disk2', 2, 9, 0, 0, 2, 0, 0, 0]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with NARA, low risk')
+
+    def test_nara_no_match(self):
+        """
+        Test for NARA risk level subtotal with files that do not match.
+        Result for testing is the media subtotal dataframe, converted to a list for easier comparison.
+        """
+        # Makes a dataframe to use as test input and runs the function being tested.
+        rows = [['C:\\ACC\\Disk1\\file1.uk', 1000, 'No Match', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file2.uk', 2000, 'No Match', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file3.uk', 3000, 'No Match', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\file4.uk', 4000, 'No Match', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\file5.uk', 5000, 'No Match', 'Not for TA', 'Not for Other']]
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        df_results = pd.DataFrame(rows, columns=column_names)
+        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+
+        # Makes lists of the actual results from the test and the expected results.
+        # Uses reset_index() to include the index value in the dataframe, which is the media name.
+        results = df_media_subtotal.reset_index().values.tolist()
+        expected = [['Disk1', 3, 6, 0, 0, 0, 3, 0, 0],
+                    ['Disk2', 2, 9, 0, 0, 0, 2, 0, 0]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with NARA, no match')
+
+    def test_nara_mix(self):
+        """
+        Test for NARA risk level subtotal with files that are different risk levels.
+        Result for testing is the media subtotal dataframe, converted to a list for easier comparison.
+        """
+        # Makes a dataframe to use as test input and runs the function being tested.
+        rows = [['C:\\ACC\\Disk1\\file1.txt', 1000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file2.txt', 2000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\photo3.crw', 3000, 'High Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\command2.bat', 4000, 'Moderate Risk', 'Format', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\command3.bat', 5000, 'Moderate Risk', 'Format', 'Not for Other']]
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        df_results = pd.DataFrame(rows, columns=column_names)
+        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+
+        # Makes lists of the actual results from the test and the expected results.
+        # Uses reset_index() to include the index value in the dataframe, which is the media name.
+        results = df_media_subtotal.reset_index().values.tolist()
+        expected = [['Disk1', 3, 6, 1, 0, 2, 0, 0, 0],
+                    ['Disk2', 2, 9, 0, 2, 0, 0, 2, 0]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with NARA, mix of risk levels')
+
     def test_ta(self):
         """
         Test for technical appraisal subtotal with some files that require technical appraisal ('Format').
@@ -158,6 +278,29 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with other risk, none have risk')
 
+    def test_files(self):
+        """
+        Test for subtotal when some files are not in a media folder.
+        Result for testing is the media subtotal dataframe, converted to a list for easier comparison.
+        """
+        # Makes a dataframe to use as test input and runs the function being tested.
+        rows = [['C:\\ACC\\Disk1\\file1.txt', 1000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk1\\file2.txt', 2000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\Disk2\\file3.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\file4.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
+                ['C:\\ACC\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        df_results = pd.DataFrame(rows, columns=column_names)
+        df_media_subtotal = media_subtotal(df_results, self.accession_folder)
+
+        # Makes lists of the actual results from the test and the expected results.
+        # Uses reset_index() to include the index value in the dataframe, which is the media name.
+        results = df_media_subtotal.reset_index().values.tolist()
+        expected = [['Disk1', 2, 3, 0, 0, 2, 0, 0, 0],
+                    ['Disk2', 1, 4, 0, 0, 1, 0, 0, 0]]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(results, expected, 'Problem with files')
 
 if __name__ == '__main__':
     unittest.main()
