@@ -119,13 +119,11 @@ class MyTestCase(unittest.TestCase):
                                               ['Technical_Appraisal', 'FITS_Format_Name'], totals_dict)
         results = df_subtotal.values.tolist()
 
-        # Makes a string with the expected value of the first cell in the first (only) row.
-        # Just use that for comparison because the rest of the cells are blank and using np.NaN
-        # for those blanks in expected prevents assertEqual from seeing them as equal.
-        expected = 'No data of this type'
+        # Makes a list with the expected values.
+        expected = [['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results[0][0], expected, 'Problem with technical appraisal subtotal, no files match criteria')
+        self.assertEqual(results, expected, 'Problem with technical appraisal subtotal, no files match criteria')
 
     def test_other_risk_subtotal(self):
         """
@@ -158,7 +156,7 @@ class MyTestCase(unittest.TestCase):
 
         # Makes a dataframe and dictionary with file and size counts to use as input for the subtotal() function.
         rows = [['Unknown Binary', 301.333, 'No Match', 'Format', 'Not for Other'],
-                ['XLSX', 302.0, 'Low Risk', 'Not for TA', 'Not for Other'],]
+                ['XLSX', 302.0, 'Low Risk', 'Not for TA', 'Not for Other']]
         columns = ['FITS_Format_Name', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=columns)
         totals_dict = {'Files': len(df_results.index), 'MB': df_results['FITS_Size_KB'].sum() / 1000}
@@ -169,13 +167,11 @@ class MyTestCase(unittest.TestCase):
                                ['Other_Risk', 'FITS_Format_Name'], totals_dict)
         results = df_subtotal.values.tolist()
 
-        # Makes a string with the expected value of the first cell in the first (only) row.
-        # Just use that for comparison because the rest of the cells are blank and using np.NaN
-        # for those blanks in expected prevents assertEqual from seeing them as equal.
-        expected = 'No data of this type'
+        # Makes a list with the expected values
+        expected = [['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results[0][0], expected, 'Problem with other risk subtotal, no files match criteria')
+        self.assertEqual(results, expected, 'Problem with other risk subtotal, no files match criteria')
 
 
 if __name__ == '__main__':

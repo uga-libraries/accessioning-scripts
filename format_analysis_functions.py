@@ -442,11 +442,10 @@ def subtotal(df, criteria, totals):
     df_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
     df_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
-    # Adds default text if there were no files of this type and the dataframe is empty.
+    # If the dataframe is empty (no files that meet the criteria), the dataframe is given a default value.
     # This prevents an error from trying to save an empty dataframe to Excel later.
     if len(df_subtotals) == 0:
-        df_subtotals.loc[len(df_subtotals)] = ["No data of this type", np.NaN, np.NaN, np.NaN]
-
+        df_subtotals = pd.DataFrame([["No data of this type"]])
     return df_subtotals
 
 
