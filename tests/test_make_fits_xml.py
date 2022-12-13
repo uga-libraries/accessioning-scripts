@@ -27,24 +27,22 @@ class MyTestCase(unittest.TestCase):
         # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist
         # and also exits the script if there is an error.
         os.mkdir('accession_FITS')
-        subprocess.run(f'"{c.FITS}" -r -i "{os.path.join("accession", "folder")}" -o "accession_FITS"', shell=True, stderr=subprocess.PIPE)
+        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True, stderr=subprocess.PIPE)
 
-        # Makes a dataframe with the files that should be in the accession_FITS folder.
-        df_expected = pd.DataFrame(["file.txt.fits.xml", "file.txt-1.fits.xml", "other.txt.fits.xml"],
-                                   columns=["Files"])
+        # Makes a list with the files that should be in the accession_FITS folder.
+        expected = ["file.txt-1.fits.xml", "file.txt.fits.xml", "other.txt.fits.xml"]
 
-        # Makes a dataframe with the files that are actually in the accession_fits folder after running the test.
-        fits_files = []
-        for root, dirs, files in os.walk("accession_FITS"):
-            fits_files.extend(files)
-        df_fits_files = pd.DataFrame(fits_files, columns=["Files"])
+        # Makes a list with the files that are actually in the accession_fits folder after running the test.
+        results = []
+        for file in os.listdir("accession_FITS"):
+            results.append(file)
 
         # Deletes the test files.
         shutil.rmtree("accession")
         shutil.rmtree("accession_FITS")
 
         # Compares the contents of the FITS folder to the expected values.
-        self.assertEqual(df_fits_files, df_expected, 'Problem with make fits')
+        self.assertEqual(results, expected, 'Problem with make fits')
 
     def test_fits_class_error(self):
         """Tests the error handling for FITS when it is in a different directory than the source files.
@@ -63,8 +61,7 @@ class MyTestCase(unittest.TestCase):
         # Makes the directory for FITS files and calls FITS to make the FITS XML files.
         # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist.
         os.mkdir("accession_FITS")
-        fits_result = subprocess.run(f'"{fits_path}" -r -i "accession" -o ""accession_FITS""',
-                                     shell=True, stderr=subprocess.PIPE)
+        fits_result = subprocess.run(f'"{fits_path}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True, stderr=subprocess.PIPE)
 
         # Deletes the test files.
         shutil.rmtree("accession")
