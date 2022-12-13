@@ -1,7 +1,5 @@
 """Tests the command for making FITS files when there is not already a folder of FITs XML from a previous script
-iteration. Tests the error handling for FITS when it is in a different directory than the source files.
-For this test to work, the fits.bat file must be in the specified location. """
-# TODO: this code isn't in functions.
+iteration, including error handling for  FITS when it is in a different directory letter than the accession."""
 
 import os
 import pandas as pd
@@ -18,56 +16,58 @@ class MyTestCase(unittest.TestCase):
         Makes an accession folder for testing. Includes a folder and files.
         """
         os.makedirs(os.path.join('accession', 'folder'))
-        for file_path in ("file.txt", r"folder\file.txt", r"folder\other.txt"):
-            with open(fr"accession\{file_path}", "w") as file:
-                file.write("Text")
+        for file_path in ('file.txt', 'folder\\file.txt', 'folder\\other.txt'):
+            with open(f'accession\\{file_path}', 'w') as file:
+                file.write('Text')
 
     def tearDown(self):
         """
         Deletes the initial test accession folder and the FITS folder produced during testing.
         """
-        shutil.rmtree("accession")
-        shutil.rmtree("accession_FITS")
+        shutil.rmtree('accession')
+        shutil.rmtree('accession_FITS')
 
     def test_make_fits(self):
-        """Tests the command for making FITS files when there is not already a folder of FITs XML
-            from a previous script iteration."""
+        """
+        Test for correctly making new FITS files.
+        Result for testing is the contents of the FITS folder.
+        """
 
-        # RUNS THE CODE BEING TESTED.
-        # Makes the directory for FITS files and calls FITS to make the FITS XML files.
-        # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist
-        # and also exits the script if there is an error.
+        # Runs the code being tested. Does not include printing messages to the terminal that are in the main script.
         os.mkdir('accession_FITS')
-        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True, stderr=subprocess.PIPE)
-
-        # Makes a list with the files that should be in the accession_FITS folder.
-        expected = ["file.txt-1.fits.xml", "file.txt.fits.xml", "other.txt.fits.xml"]
+        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}',
+                       shell=True, stderr=subprocess.PIPE)
 
         # Makes a list with the files that are actually in the accession_fits folder after running the test.
         results = []
-        for file in os.listdir("accession_FITS"):
+        for file in os.listdir('accession_FITS'):
             results.append(file)
 
-        # Compares the contents of the FITS folder to the expected values.
+        # Makes a list with the files that should be in the accession_FITS folder.
+        expected = ['file.txt-1.fits.xml', 'file.txt.fits.xml', 'other.txt.fits.xml']
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(results, expected, 'Problem with make fits')
 
     def test_fits_class_error(self):
-        """Tests the error handling for FITS when it is in a different directory than the source files.
-            For this test to work, the fits.bat file must be in the specified location."""
+        """
+        Test for error handling when FITS is in a different directory letter than the accession folder.
+        Result for testing is the error message.
+        """
 
-        # Makes a variable with a FITS file path in a different directory from the accession folder.
+        # Makes a variable with a FITS file path in a different directory letter from the accession folder.
+        # For this test to work, the fits.bat file must be in the specified location.
         # In format_analysis.py, the FITS path is taken from the configuration.py file.
-        fits_path = r"X:\test\fits.bat"
+        fits_path = 'X:\\test\\fits.bat'
 
-        # RUNS THE CODE BEING TESTED.
-        # Makes the directory for FITS files and calls FITS to make the FITS XML files.
-        # In format_analysis.py, this is done in the main body of the script after testing that the folder doesn't exist.
-        os.mkdir("accession_FITS")
-        fits_result = subprocess.run(f'"{fits_path}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True, stderr=subprocess.PIPE)
+        # Runs the code being tested. Does not include printing messages to the terminal that are in the main script.
+        os.mkdir('accession_FITS')
+        fits_result = subprocess.run(f'"{fits_path}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}',
+                                     shell=True, stderr=subprocess.PIPE)
 
         # Compares the error message generated by the script to the expected value.
-        result = fits_result.stderr.decode("utf-8")
-        expected = "Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n"
+        result = fits_result.stderr.decode('utf-8')
+        expected = 'Error: Could not find or load main class edu.harvard.hul.ois.fits.Fits\r\n'
         self.assertEqual(result, expected, 'Problem with fits class error')
 
 
