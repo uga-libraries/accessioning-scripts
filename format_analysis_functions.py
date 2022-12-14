@@ -119,32 +119,37 @@ def update_fits(accession_folder, fits_output, collection_folder, accession_numb
             sys.exit()
 
 
+def get_text(parent, element):
+    """Returns a single string, regardless of if the element is missing, appears once, or repeats.
+    The parent element does not need to be a child of root.
+    This function cannot be used if the desired value is an attribute instead of element text.
+    This function's output is used by fits_row as part of combining data from one XML into a list."""
+
+    # FITS namespace. All elements in the FITS XML are part of this namespace.
+    ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
+
+    # If one or more instances of the element are present, returns the element value(s) as a string.
+    # For multiple instances, puts a semicolon between the value for each instance.
+    try:
+        value = ""
+        value_list = parent.findall(f"fits:{element}", ns)
+        for item in value_list:
+            if value == "":
+                value += item.text
+            else:
+                value += f"; {item.text}"
+        return value
+    # If the element is missing, item.text raises an AttributeError.
+    # Returns None, which results in a blank cell in the CSV.
+    except AttributeError:
+        return None
+
+
 def fits_row(fits_file):
     """Extracts desired fields from a FITS XML file, reformatting when necessary, for each format identification.
     A single file may have multiple possible format identifications.
     Returns a list of lists, where each list is the information for a single format identification.
     This function's output is used by make_fits_csv() to combine all FITS information into a single CSV."""
-
-    def get_text(parent, element):
-        """Returns a single string, regardless of if the element is missing, appears once, or repeats.
-        The parent element does not need to be a child of root.
-        This function cannot be used if the desired value is an attribute instead of element text."""
-
-        # If one or more instances of the element are present, returns the element value(s) as a string.
-        # For multiple instances, puts a semicolon between the value for each instance.
-        try:
-            value = ""
-            value_list = parent.findall(f"fits:{element}", ns)
-            for item in value_list:
-                if value == "":
-                    value += item.text
-                else:
-                    value += f"; {item.text}"
-            return value
-        # If the element is missing, item.text raises an AttributeError.
-        # Returns None, which results in a blank cell in the CSV.
-        except AttributeError:
-            return None
 
     # Reads the FITS XML file. If there is a read error (rare), prints the filename and continues the script.
     try:
