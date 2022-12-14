@@ -109,9 +109,14 @@ if len(df_nara_risk) == 0:
     df_nara_risk = pd.DataFrame([['No data of this type']])
 
 # Subset: multiple FITS format identifications for the same file.
-# TODO: this is not working correctly. It should not count as multiple if it is due to multiple NARA matches.
-df_multiple = df_results[df_results.duplicated("FITS_File_Path", keep=False) == True].copy()
-df_multiple.drop(["FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
+# The format name, version, and PUID need to be the same to be considered the same identification.
+# Makes a subset with duplicate file paths (so files in multiple places aren't counted),
+# removes NARA columns (so duplicates from different NARA identifications aren't counted),
+# and drops duplicate rows.
+df_multiple = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
+df_multiple.drop(['FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message', 'NARA_Risk Level',
+                  'NARA_Proposed Preservation Plan', 'NARA_Match_Type'], inplace=True, axis=1)
+df_multiple.drop_duplicates(inplace=True)
 if len(df_multiple) == 0:
     df_multiple = pd.DataFrame([['No data of this type']])
 
