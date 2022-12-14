@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.5.0" timestamp="12/14/22 1:56 PM">
+  <identification status="CONFLICT">
+    <identity format="GZIP Format" mimetype="application/gzip" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="Droid" toolversion="6.4" />
+      <tool toolname="Tika" toolversion="1.21" />
+      <externalIdentifier toolname="Droid" toolversion="6.4" type="puid">x-fmt/266</externalIdentifier>
+    </identity>
+    <identity format="GZIP Format" mimetype="application/x-gzip" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="file utility" toolversion="5.03" />
+      <tool toolname="Exiftool" toolversion="11.54" />
+      <tool toolname="ffident" toolversion="0.2" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <lastmodified toolname="Exiftool" toolversion="11.54" status="SINGLE_RESULT">2022:12:14 13:56:13-05:00</lastmodified>
+    <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">C:\accession\disk2\multi_keep_puid.gz</filepath>
+    <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">multi_keep_puid.gz</filename>
+    <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1993</size>
+    <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">6749b0ec1fbc96faab1a1f98dd7b8a74</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1671044173076</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata />
+  <statistics fitsExecutionTime="466">
+    <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+    <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="Droid" toolversion="6.4" executionTime="3" />
+    <tool toolname="Jhove" toolversion="1.20.1" executionTime="54" />
+    <tool toolname="file utility" toolversion="5.03" executionTime="105" />
+    <tool toolname="Exiftool" toolversion="11.54" executionTime="460" />
+    <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="did not run" />
+    <tool toolname="OIS File Information" toolversion="1.0" executionTime="2" />
+    <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+    <tool toolname="ffident" toolversion="0.2" executionTime="6" />
+    <tool toolname="Tika" toolversion="1.21" executionTime="17" />
+  </statistics>
+</fits>
+

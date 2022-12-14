@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.5.0" timestamp="12/14/22 1:56 PM">
+  <identification status="CONFLICT">
+    <identity format="Plain text" mimetype="text/plain" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="Droid" toolversion="6.4" />
+      <externalIdentifier toolname="Droid" toolversion="6.4" type="puid">x-fmt/111</externalIdentifier>
+    </identity>
+    <identity format="empty" mimetype="application/x-empty" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="file utility" toolversion="5.03" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">C:\accession\disk2\multi_keep_empty.txt</filepath>
+    <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">multi_keep_empty.txt</filename>
+    <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">0</size>
+    <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">d41d8cd98f00b204e9800998ecf8427e</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1671044173070</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata />
+  <statistics fitsExecutionTime="110">
+    <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+    <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="Droid" toolversion="6.4" executionTime="5" />
+    <tool toolname="Jhove" toolversion="1.20.1" executionTime="36" />
+    <tool toolname="file utility" toolversion="5.03" executionTime="105" />
+    <tool toolname="Exiftool" toolversion="11.54" status="did not run" />
+    <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="did not run" />
+    <tool toolname="OIS File Information" toolversion="1.0" executionTime="4" />
+    <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+    <tool toolname="ffident" toolversion="0.2" executionTime="7" />
+    <tool toolname="Tika" toolversion="1.21" executionTime="4" />
+  </statistics>
+</fits>
+
