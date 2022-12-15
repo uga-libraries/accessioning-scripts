@@ -1,8 +1,9 @@
 """Tests the function fits_row, which extracts desired fields from a FITS XML file, reformatting when necessary,
-for each format identification. For input, tests use FITS files that are in the tests folder of this script repo.
+for each format identification. In the main script, it is called by make_fits_csv(), so it is implied to work
+if tests of that function pass. These tests make it easier to identify the problem with this specific function.
 
-In the main script, it is called by make_fits_csv(), so it is implied to work if tests of that function pass.
-These tests make it easier to identify the problem with this specific function."""
+For input, tests use FITS files that are in the tests folder of this script repo.
+"""
 
 import datetime
 import unittest
@@ -19,17 +20,17 @@ class MyTestCase(unittest.TestCase):
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'puid.csv.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\puid.csv', 'Comma-Separated Values (CSV)', '',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/18', 'Droid version 6.4', False,
                      datetime.date(2022, 12, 14), 6002.01, 'f95a4c954014342e4bf03f51fcefaecd', '', '', '', '']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with contains PUID')
+        self.assertEqual(result, expected, 'Problem with PUID')
 
-    def test_tools(self):
+    def test_multiple_tools(self):
         """
         Test for FITS with more than one tool, which are combined into a single string.
         Result for testing is the list returned by the function.
@@ -37,16 +38,16 @@ class MyTestCase(unittest.TestCase):
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'tools.txt.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\tools.txt', 'Plain text', '',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/111',
                      'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', False,
                      datetime.date(2022, 12, 14), 2, '7b71af3fdf4a2f72a378e3e77815e497', '', 'true', 'true', '']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with multiple tools')
+        self.assertEqual(result, expected, 'Problem with multiple tools')
 
     def test_multi_keep_all(self):
         """
@@ -56,9 +57,9 @@ class MyTestCase(unittest.TestCase):
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'multi_keep_all.xlsx.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\multi_keep_all.xlsx', 'ZIP Format', '2.0',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/263',
                      'Droid version 6.4; file utility version 5.03; ffident version 0.2', True,
@@ -72,7 +73,7 @@ class MyTestCase(unittest.TestCase):
                      'Microsoft Excel', '', '', '']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with multiple format ids - keep all')
+        self.assertEqual(result, expected, 'Problem with multiple format ids - keep all')
 
     def test_multi_keep_empty(self):
         """
@@ -82,32 +83,32 @@ class MyTestCase(unittest.TestCase):
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'multi_keep_empty.txt.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\multi_keep_empty.txt', 'empty', '', '', 'file utility version 5.03',
                      False, datetime.date(2022, 12, 14), 0, 'd41d8cd98f00b204e9800998ecf8427e', '', '', '', '']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with multiple format ids - keep empty')
+        self.assertEqual(result, expected, 'Problem with multiple format ids - keep empty')
 
     def test_multi_keep_puid(self):
         """
-        Test for FITS with multiple format identifications, where just the one witha PUID should be included.
+        Test for FITS with multiple format identifications, where just the one with a PUID should be included.
         Result for testing is the list returned by the function.
         """
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'multi_keep_puid.gz.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\multi_keep_puid.gz', 'GZIP Format', '',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Droid version 6.4; Tika version 1.21',
                      False, datetime.date(2022, 12, 14), 1.993, '6749b0ec1fbc96faab1a1f98dd7b8a74', '', '', '', '']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with multiple format ids - keep PUID')
+        self.assertEqual(result, expected, 'Problem with multiple format ids - keep PUID')
 
     def test_size_less(self):
         """
@@ -117,16 +118,16 @@ class MyTestCase(unittest.TestCase):
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'size_less.txt.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\size_less.txt', 'Plain text', '',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/111',
                      'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', False,
                      datetime.date(2022, 12, 14), .000345, 'e700d0871d44af1a217f0bf32320f25c', '', 'true', 'true', '']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with size less than rounding threshold')
+        self.assertEqual(result, expected, 'Problem with size less than rounding threshold')
 
     def test_size_equal(self):
         """
@@ -136,16 +137,16 @@ class MyTestCase(unittest.TestCase):
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'size_equal.html.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\size_equal.html', 'Extensible Markup Language', '1.0',
                      '', 'Jhove version 1.20.1', False, datetime.date(2022, 12, 14), .001,
                      'e080b3394eaeba6b118ed15453e49a34', '', 'true', 'true',
                      'Not able to determine type of end of line severity=info']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with size equal to rounding threshold')
+        self.assertEqual(result, expected, 'Problem with size equal to rounding threshold')
 
     def test_size_greater(self):
         """
@@ -155,16 +156,16 @@ class MyTestCase(unittest.TestCase):
         # Defines variables (defined earlier in the main script) and runs the function being tested.
         accession_folder = 'test'
         fits_xml = 'size_greater.csv.fits.xml'
-        results = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
 
-        # Makes a list of the expected results.
+        # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\size_greater.csv', 'Comma-Separated Values (CSV)', '',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/18',
                      'Droid version 6.4', False, datetime.date(2022, 12, 14), 4.404, 'd5e857a4bd33d2b5a2f96b78ccffe1f3',
                      '', '', '', '']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(results, expected, 'Problem with size large enough to round')
+        self.assertEqual(result, expected, 'Problem with size large enough to round')
 
 
 if __name__ == '__main__':
