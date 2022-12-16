@@ -1,162 +1,218 @@
-import datetime
-import gzip
-import numpy as np
+"""Tests the function make_fits_csv, which reads the FITS XML in an accession folder and
+saves the data to a CSV, with error handling for encoding errors.
+
+For test input, uses FITS XML saved in the script repository tests folder."""
+
+import csv
 import os
-import pandas as pd
-import shutil
-import subprocess
 import unittest
-import configuration as c
 from format_analysis_functions import make_fits_csv
 
 
 class MyTestCase(unittest.TestCase):
 
     def tearDown(self):
-        """Deletes test outputs, if present."""
+        """
+        Deletes the CSVs and encode error logs created by the different tests, if present.
+        """
+        filenames = ('csv_multi_id_fits.csv', 'csv_multi_id_encoding_fits.csv',
+                     'csv_multi_id_encoding_encode_errors.txt', 'csv_one_file_fits.csv',
+                     'csv_one_id_fits.csv', 'csv_one_id_encoding_fits.csv',
+                     'csv_one_id_encoding_encode_errors.txt')
 
-        # These are present for all tests.
-        shutil.rmtree("accession")
-        shutil.rmtree("accession_FITS")
-        os.remove("accession_fits.csv")
+        for name in filenames:
+            if os.path.exists(name):
+                os.remove(name)
 
-        if os.path.exists("accession_encode_errors.txt"):
-            os.remove("accession_encode_errors.txt")
+    def test_multiple_ids(self):
+        """
+        Test for FITS XML where all have multiple format identifications.
+        Result for testing is the contents of the CSV created by the function.
+        """
+        # Creates variables for the test input (in the repo) and runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'csv_multi_id_FITS')
+        collection_folder = os.getcwd()
+        accession_number = 'csv_multi_id'
+        make_fits_csv(fits_output, collection_folder, accession_number)
 
-    def test_make_fits_csv(self):
-        """Tests all known variations for FITS data extraction and reformatting."""
+        # Reads the CSV created by the function into a list.
+        result = []
+        with open('csv_multi_id_fits.csv', 'r') as file:
+            file_read = csv.reader(file)
+            for row in file_read:
+                result.append(row)
 
-        # Makes an accession folder with files organized into 2 folders.
-        # Formats included: csv, gzip, html, plain text, xlsx
-        # Variations: one and multiple format ids, with and without optional fields, one or multiple tools,
-        #             empty with another format id, file with multiple ids with same name and one has PUID (gzip).
-        os.makedirs(r"accession\disk1")
-        df_spreadsheet = pd.DataFrame({"C1": ["text" * 1000], "C2": ["text" * 1000], "C3": ["text" * 1000]})
-        df_spreadsheet = pd.concat([df_spreadsheet] * 500, ignore_index=True)
-        df_spreadsheet.to_csv(r"accession\disk1\data.csv", index=False)
-        df_spreadsheet.to_excel(r"accession\disk1\data.xlsx", index=False)
-        df_spreadsheet["C3"] = "New Text" * 10000
-        df_spreadsheet.to_csv(r"accession\disk1\data_update.csv", index=False)
-        with open(r"accession\disk1\file.txt", "w") as file:
-            file.write("Text" * 500)
-        os.makedirs(r"accession\disk2")
-        with open(r"accession\disk2\file.txt", "w") as file:
-            file.write("Text" * 550)
-        with open(r"accession\disk2\error.html", "w") as file:
-            file.write("<body>This isn't really html</body>")
-        open(r"accession\disk2\empty.txt", "w").close()
-        with gzip.open(r"accession\disk2\zipping.gz", "wb") as file:
-            file.write(b"Test Text\n" * 100000)
+        # Creates a list with the expected result.
+        expected = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
+                     'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
+                     'Status_Message'],
+                    ['C:\\csv_multi_id\\disk2\\backup.gz', 'GZIP Format', '',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Droid version 6.4; Tika version 1.21',
+                     'True', '2022-12-14', '1.993', '6749b0ec1fbc96faab1a1f98dd7b8a74', '', '', '', ''],
+                    ['C:\\csv_multi_id\\disk2\\backup.gz', 'ZIP Format', '', '',
+                     'file utility version 5.03; Exiftool version 11.54; ffident version 0.2',
+                     'True', '2022-12-14', '1.993', '6749b0ec1fbc96faab1a1f98dd7b8a74', '', '', '', ''],
+                    ['C:\\csv_multi_id\\disk1\\spreadsheet.xlsx', 'ZIP Format', '2.0',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/263',
+                     'Droid version 6.4; file utility version 5.03; ffident version 0.2', 'True',
+                     '2022-12-14', '20.56', 'db4c3079e3805469c1b47c4864234e66', 'Microsoft Excel',
+                     '', '', ''],
+                    ['C:\\csv_multi_id\\disk1\\spreadsheet.xlsx', 'XLSX', '', '', 'Exiftool version 11.54', 'True',
+                     '2022-12-14', '20.56', 'db4c3079e3805469c1b47c4864234e66', 'Microsoft Excel',
+                     '', '', ''],
+                    ['C:\\csv_multi_id\\disk1\\spreadsheet.xlsx', 'Office Open XML Workbook', '', '',
+                     'Tika version 1.21', 'True', '2022-12-14', '20.56', 'db4c3079e3805469c1b47c4864234e66',
+                     'Microsoft Excel', '', '', '']]
 
-        # Makes FITS XML for the accession to use for testing.
-        # In format_analysis.py, there is also error handling for if FITS has a load class error.
-        os.mkdir('accession_FITS')
-        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with multiple ids')
 
-        # Runs the function being tested.
-        make_fits_csv('accession_FITS', 'accession', os.getcwd(), 'accession')
+    def test_multiple_ids_encoding(self):
+        """
+        Test for FITS XML where all have multiple format identifications
+        and two (the spreadsheets) of the three have a special character (pi) that cause encoding errors.
+        Results for testing are the contents of the CSV and error log created by the function.
+        """
+        # Creates variables for the test input (in the repo) and runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'csv_multi_id_encoding_FITS')
+        collection_folder = os.getcwd()
+        accession_number = 'csv_multi_id_encoding'
+        make_fits_csv(fits_output, collection_folder, accession_number)
 
-        # Makes a dataframe with the expected values.
-        # Calculates size for XLSX because the size varies every time it is made.
-        today = datetime.date.today().strftime('%Y-%m-%d')
-        rows = [[fr"{os.getcwd()}\accession\disk1\data.csv", "Comma-Separated Values (CSV)", np.NaN,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", False, today, 6002.01,
-                 "f95a4c954014342e4bf03f51fcefaecd", np.NaN, np.NaN, np.NaN, np.NaN],
-                [fr"{os.getcwd()}\accession\disk1\data.xlsx", "ZIP Format", 2,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/263",
-                 "Droid version 6.4; file utility version 5.03; ffident version 0.2", True, today,
-                 round(os.path.getsize(fr"accession\disk1\data.xlsx") / 1000, 3), "XXXXXXXXXX",
-                 "Microsoft Excel", np.NaN, np.NaN, np.NaN],
-                [fr"{os.getcwd()}\accession\disk1\data.xlsx", "XLSX", np.NaN, np.NaN, "Exiftool version 11.54", True, today,
-                 round(os.path.getsize(fr"accession\disk1\data.xlsx") / 1000, 3), "XXXXXXXXXX",
-                 "Microsoft Excel", np.NaN, np.NaN, np.NaN],
-                [fr"{os.getcwd()}\accession\disk1\data.xlsx", "Office Open XML Workbook", np.NaN, np.NaN,
-                 "Tika version 1.21",
-                 True, today, round(os.path.getsize(fr"accession\disk1\data.xlsx") / 1000, 3),
-                 "XXXXXXXXXX", "Microsoft Excel", np.NaN, np.NaN, np.NaN],
-                [fr"{os.getcwd()}\accession\disk1\data_update.csv", "Comma-Separated Values (CSV)", np.NaN,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/18", "Droid version 6.4", False, today, 44002.01,
-                 "d5e857a4bd33d2b5a2f96b78ccffe1f3", np.NaN, np.NaN, np.NaN, np.NaN],
-                [fr"{os.getcwd()}\accession\disk2\empty.txt", "empty", np.NaN, np.NaN, "file utility version 5.03", False,
-                 today,
-                 0, "d41d8cd98f00b204e9800998ecf8427e", np.NaN, np.NaN, np.NaN, np.NaN],
-                [fr"{os.getcwd()}\accession\disk2\error.html", "Extensible Markup Language", 1, np.NaN,
-                 "Jhove version 1.20.1",
-                 False, today, 0.035, "e080b3394eaeba6b118ed15453e49a34", np.NaN, True, True,
-                 "Not able to determine type of end of line severity=info"],
-                [fr"{os.getcwd()}\accession\disk2\file.txt", "Plain text", np.NaN,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-                 "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 2.2,
-                 "e700d0871d44af1a217f0bf32320f25c", np.NaN, True, True, np.NaN],
-                [fr"{os.getcwd()}\accession\disk1\file.txt", "Plain text", np.NaN,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-                 "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False, today, 2,
-                 "7b71af3fdf4a2f72a378e3e77815e497", np.NaN, True, True, np.NaN],
-                [fr"{os.getcwd()}\accession\disk2\zipping.gz", "GZIP Format", np.NaN,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/266", "Droid version 6.4; Tika version 1.21",
-                 False, today, 1.993, "XXXXXXXXXX", np.NaN, np.NaN, np.NaN, np.NaN]]
-        column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-                        "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed",
-                        "Status_Message"]
-        df_expected = pd.DataFrame(rows, columns=column_names)
+        # Reads the CSV created by the function into a list.
+        result_csv = []
+        with open('csv_multi_id_encoding_fits.csv', 'r') as file:
+            file_read = csv.reader(file)
+            for row in file_read:
+                result_csv.append(row)
 
-        # Reads the script output into a dataframe.
-        # Provides a default MD5 value for data.xlsx and zipping.gz because fixity is different every time they are made.
-        df_fits = pd.read_csv("accession_fits.csv")
-        replace_md5 = (df_fits["File_Path"].str.endswith("data.xlsx")) | (
-            df_fits["File_Path"].str.endswith("zipping.gz"))
-        df_fits.loc[replace_md5, "MD5"] = "XXXXXXXXXX"
+        # Creates a list with the expected result for the CSV.
+        expected_csv = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
+                         'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
+                         'Status_Message'],
+                        ['C:\\csv_multi_id_encoding\\disk2\\backup.gz', 'GZIP Format', '',
+                         'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Droid version 6.4; Tika version 1.21',
+                         'True', '2022-12-14', '1.993', '6749b0ec1fbc96faab1a1f98dd7b8a74', '', '', '', ''],
+                        ['C:\\csv_multi_id_encoding\\disk2\\backup.gz', 'ZIP Format', '', '',
+                         'file utility version 5.03; Exiftool version 11.54; ffident version 0.2',
+                         'True', '2022-12-14', '1.993', '6749b0ec1fbc96faab1a1f98dd7b8a74', '', '', '', '']]
 
-        # Compares the script output to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_fits, df_expected)
+        # Reads the log created by the function into a list.
+        with open('csv_multi_id_encoding_encode_errors.txt', 'r') as file:
+            result_log = file.readlines()
 
-    def test_encoding_error(self):
-        """Tests encoding error handling when saving FITS file data to the CSV."""
+        # Creates a list with the expected result for the log.
+        expected_log = ['C:\\csv_multi_id_encoding\\diskÏ€\\data1.xlsx\n',
+                        'C:\\csv_multi_id_encoding\\diskÏ€\\data2.xlsx\n']
 
-        # Makes an accession folder with plain text files.
-        # Variations: one with no encoding error, two with encoding errors (from pi symbol and smiley face).
-        os.makedirs(fr"accession\disk1")
-        with open(r"accession\disk1\file.txt", "w") as file:
-            file.write("Text" * 1000)
-        with open(r"accession\disk1\pi_errorπ.txt", "w") as file:
-            file.write("Text" * 2500)
-        with open(r"accession\disk1\smiley_error.txt", "w") as file:
-            file.write("Text" * 1500)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result_csv, expected_csv, 'Problem with multiple ids, encoding errors - csv')
+        self.assertEqual(result_log, expected_log, 'Problem with multiple ids, encoding errors - log')
 
-        # Makes FITS XML for the accession to use for testing.
-        # In format_analysis.py, there is also error handling for if FITS has a load class error.
-        os.mkdir('accession_FITS')
-        subprocess.run(f'"{c.FITS}" -r -i {os.path.join(os.getcwd(), "accession")} -o {os.path.join(os.getcwd(), "accession_FITS")}', shell=True)
+    def test_one_file(self):
+        """
+        Test for an accession with only one FITS XML.
+        Result for testing is the contents of the CSV created by the function.
+        """
+        # Creates variables for the test input (in the repo) and runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'csv_one_file_FITS')
+        collection_folder = os.getcwd()
+        accession_number = 'csv_one_file'
+        make_fits_csv(fits_output, collection_folder, accession_number)
 
-        # RUNS THE FUNCTION BEING TESTED.
-        make_fits_csv(fr"accession_FITS", "accession", os.getcwd(), "accession")
+        # Reads the CSV created by the function into a list.
+        result = []
+        with open('csv_one_file_fits.csv', 'r') as file:
+            file_read = csv.reader(file)
+            for row in file_read:
+                result.append(row)
 
-        # Makes a dataframe with the expected values for accession_encode_errors.txt.
-        rows = [[fr"{os.getcwd()}\accession\disk1\pi_errorπ.txt"],
-                [fr"{os.getcwd()}\accession\disk1\smiley_error.txt"]]
-        df_encode_expected = pd.DataFrame(rows, columns=["Paths"])
+        # Creates a list with the expected result.
+        expected = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
+                     'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
+                     'Status_Message'],
+                    ['C:\\csv_one_file\\disk2\\web.html', 'Extensible Markup Language', '1.0', '',
+                     'Jhove version 1.20.1', 'False', '2022-12-14', '0.001', 'e080b3394eaeba6b118ed15453e49a34', '',
+                     'true', 'true', 'Not able to determine type of end of line severity=info']]
 
-        # Makes a dataframe with the expected values for accession_fits.csv.
-        rows = [[fr"{os.getcwd()}\accession\disk1\file.txt", "Plain text", np.NaN,
-                 "https://www.nationalarchives.gov.uk/pronom/x-fmt/111",
-                 "Droid version 6.4; Jhove version 1.20.1; file utility version 5.03", False,
-                 datetime.date.today().strftime('%Y-%m-%d'), 4.0, "1a640a2c9c60ffea3174b2f73a536c48", np.NaN, True,
-                 True,
-                 np.NaN]]
-        column_names = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-                        "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed",
-                        "Status_Message"]
-        df_fits_csv_expected = pd.DataFrame(rows, columns=column_names)
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with one file')
 
-        # Reads the script outputs into dataframes.
-        df_encode = pd.read_csv("accession_encode_errors.txt", header=None, names=["Paths"])
-        df_fits_csv = pd.read_csv("accession_fits.csv")
+    def test_one_id(self):
+        """
+        Test for FITS XML where all have one format identification.
+        Result for testing is the contents of the CSV created by the function.
+        """
+        # Creates variables for the test input (in the repo) and runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'csv_one_id_FITS')
+        collection_folder = os.getcwd()
+        accession_number = 'csv_one_id'
+        make_fits_csv(fits_output, collection_folder, accession_number)
 
-        # Compares the script outputs to the expected values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_encode, df_encode_expected)
-        pd.testing.assert_frame_equal(df_fits_csv, df_fits_csv_expected)
+        # Reads the CSV created by the function into a list.
+        result = []
+        with open('csv_one_id_fits.csv', 'r') as file:
+            file_read = csv.reader(file)
+            for row in file_read:
+                result.append(row)
+
+        # Creates a list with the expected result.
+        expected = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
+                     'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
+                     'Status_Message'],
+                    ['C:\\csv_one_id\\disk1\\file.txt', 'Plain text', '',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/111',
+                     'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', 'False',
+                     '2022-12-14', '2.0', '7b71af3fdf4a2f72a378e3e77815e497', '', 'true', 'true', ''],
+                    ['C:\\csv_one_id\\disk1\\spreadsheet1.csv', 'Comma-Separated Values (CSV)', '',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/18', 'Droid version 6.4', 'False',
+                     '2022-12-14', '6002.01', 'f95a4c954014342e4bf03f51fcefaecd', '', '', '', ''],
+                    ['C:\\csv_one_id\\disk1\\spreadsheet2.csv', 'Comma-Separated Values (CSV)', '',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/18',
+                     'Droid version 6.4', 'False', '2022-12-14', '4.404', 'd5e857a4bd33d2b5a2f96b78ccffe1f3',
+                     '', '', '', '']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with one id')
+
+    def test_one_id_encoding(self):
+        """
+        Test for FITS XML where all have one format identification
+        and two (the text files) of the three have a special character (pi) that cause encoding errors.
+        Results for testing are the contents of the CSV and error log created by the function.
+        """
+        # Creates variables for the test input (in the repo) and runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'csv_one_id_encoding_FITS')
+        collection_folder = os.getcwd()
+        accession_number = 'csv_one_id_encoding'
+        make_fits_csv(fits_output, collection_folder, accession_number)
+
+        # Reads the CSV created by the function into a list.
+        result_csv = []
+        with open('csv_one_id_encoding_fits.csv', 'r') as file:
+            file_read = csv.reader(file)
+            for row in file_read:
+                result_csv.append(row)
+
+        # Creates a list with the expected result for the CSV.
+        expected_csv = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
+                         'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
+                         'Status_Message'],
+                        ['C:\\csv_one_id_encoding\\disk1\\spreadsheet1.csv', 'Comma-Separated Values (CSV)', '',
+                         'https://www.nationalarchives.gov.uk/pronom/x-fmt/18', 'Droid version 6.4', 'False',
+                         '2022-12-14', '6002.01', 'f95a4c954014342e4bf03f51fcefaecd', '', '', '', '']]
+
+        # Reads the log created by the function into a list.
+        with open('csv_one_id_encoding_encode_errors.txt', 'r') as file:
+            result_log = file.readlines()
+
+        # Creates a list with the expected result for the log.
+        expected_log = ['C:\\csv_one_id_encoding\\diskÏ€\\file.txt\n',
+                        'C:\\csv_one_id_encoding\\diskÏ€\\file2.txt\n']
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result_csv, expected_csv, 'Problem with one id, encoding errors - csv')
+        self.assertEqual(result_log, expected_log, 'Problem with one id, encoding errors - log')
 
 
 if __name__ == '__main__':
