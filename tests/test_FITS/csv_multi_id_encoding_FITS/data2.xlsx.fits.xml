@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.5.0" timestamp="12/14/22 1:56 PM">
+  <identification status="CONFLICT">
+    <identity format="ZIP Format" mimetype="application/zip" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="Droid" toolversion="6.4" />
+      <tool toolname="file utility" toolversion="5.03" />
+      <tool toolname="ffident" toolversion="0.2" />
+      <version toolname="file utility" toolversion="5.03">2.0</version>
+      <externalIdentifier toolname="Droid" toolversion="6.4" type="puid">x-fmt/263</externalIdentifier>
+    </identity>
+    <identity format="XLSX" mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="Exiftool" toolversion="11.54" />
+    </identity>
+    <identity format="Office Open XML Workbook" mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="Tika" toolversion="1.21" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <lastmodified toolname="Exiftool" toolversion="11.54" status="CONFLICT">2022:12:14 18:56:11Z</lastmodified>
+    <lastmodified toolname="Tika" toolversion="1.21" status="CONFLICT">2022-12-14T18:56:11Z</lastmodified>
+    <created toolname="Exiftool" toolversion="11.54" status="SINGLE_RESULT">2022:12:14 18:56:11Z</created>
+    <creatingApplicationName toolname="Tika" toolversion="1.21" status="SINGLE_RESULT">Microsoft Excel</creatingApplicationName>
+    <creatingApplicationVersion toolname="Tika" toolversion="1.21" status="SINGLE_RESULT">3.0</creatingApplicationVersion>
+    <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">C:\csv_multi_id_encoding\diskπ\data2.xlsx</filepath>
+    <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">data2.xlsx</filename>
+    <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">20560</size>
+    <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">db4c3079e3805469c1b47c4864234e66</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1671044172170</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata />
+  <statistics fitsExecutionTime="657">
+    <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+    <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="Droid" toolversion="6.4" executionTime="6" />
+    <tool toolname="Jhove" toolversion="1.20.1" executionTime="338" />
+    <tool toolname="file utility" toolversion="5.03" executionTime="275" />
+    <tool toolname="Exiftool" toolversion="11.54" executionTime="647" />
+    <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="did not run" />
+    <tool toolname="OIS File Information" toolversion="1.0" executionTime="2" />
+    <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+    <tool toolname="ffident" toolversion="0.2" executionTime="56" />
+    <tool toolname="Tika" toolversion="1.21" executionTime="377" />
+  </statistics>
+</fits>
+
