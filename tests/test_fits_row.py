@@ -6,6 +6,7 @@ For input, tests use FITS files that are in the tests folder of this script repo
 """
 
 import datetime
+import os
 import unittest
 from format_analysis_functions import fits_row
 
@@ -17,10 +18,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS with a PUID, which is reformatted.
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'puid.csv.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\puid.csv', 'Comma-Separated Values (CSV)', '',
@@ -35,10 +36,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS with more than one tool, which are combined into a single string.
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'tools.txt.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\tools.txt', 'Plain text', '',
@@ -54,10 +55,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS with multiple format identifications, where all should be included.
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'multi_keep_all.xlsx.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\multi_keep_all.xlsx', 'ZIP Format', '2.0',
@@ -80,10 +81,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS with multiple format identifications, where just the empty id should be included.
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'multi_keep_empty.txt.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\multi_keep_empty.txt', 'empty', '', '', 'file utility version 5.03',
@@ -97,10 +98,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS with multiple format identifications, where just the one with a PUID should be included.
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'multi_keep_puid.gz.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\multi_keep_puid.gz', 'GZIP Format', '',
@@ -115,10 +116,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS for a file with a size that is too small to round (less than 0.001).
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'size_less.txt.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\size_less.txt', 'Plain text', '',
@@ -134,10 +135,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS for a file with a size that is too small to round (equal to 0.001).
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'size_equal.html.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\size_equal.html', 'Extensible Markup Language', '1.0',
@@ -153,10 +154,10 @@ class MyTestCase(unittest.TestCase):
         Test for FITS for a file with a size large enough to round.
         Result for testing is the list returned by the function.
         """
-        # Defines variables (defined earlier in the main script) and runs the function being tested.
-        accession_folder = 'test'
+        # Runs the function being tested.
+        fits_output = os.path.join('test_FITS', 'fits_row_FITS')
         fits_xml = 'size_greater.csv.fits.xml'
-        result = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        result = fits_row(os.path.join(fits_output, fits_xml))
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\size_greater.csv', 'Comma-Separated Values (CSV)', '',
