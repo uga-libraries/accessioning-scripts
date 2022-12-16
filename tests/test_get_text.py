@@ -20,7 +20,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the string returned by the function.
         """
         # Reads the FITS XML (fits_row function usually does this) for test input.
-        fits_file = os.path.join('test_FITS', 'element_none.csv.fits.xml')
+        fits_file = os.path.join('test_FITS', 'get_text_FITS', 'element_none.csv.fits.xml')
         ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
         tree = ET.parse(fits_file)
         root = tree.getroot()
@@ -42,7 +42,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the string returned by the function.
         """
         # Reads the FITS XML (fits_row function usually does this) for test input.
-        fits_file = os.path.join('test_FITS', 'element_one.csv.fits.xml')
+        fits_file = os.path.join('test_FITS', 'get_text_FITS', 'element_one.csv.fits.xml')
         ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
         tree = ET.parse(fits_file)
         root = tree.getroot()
@@ -64,7 +64,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the string returned by the function.
         """
         # Reads the FITS XML (fits_row function usually does this) for test input.
-        fits_file = os.path.join('test_FITS', 'element_multi.csv.fits.xml')
+        fits_file = os.path.join('test_FITS', 'get_text_FITS', 'element_multi.csv.fits.xml')
         ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
         tree = ET.parse(fits_file)
         root = tree.getroot()
