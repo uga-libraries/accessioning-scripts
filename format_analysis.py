@@ -69,7 +69,7 @@ else:
         sys.exit()
 
 # Combines the FITS data into a CSV. If one is already present, this will replace it.
-make_fits_csv(fits_output, accession_folder, collection_folder, accession_number)
+make_fits_csv(fits_output, collection_folder, accession_number)
 
 # Read the CSVs with data (FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA)
 # into pandas for analysis and summarizing, and prints a warning if encoding errors have to be ignored.

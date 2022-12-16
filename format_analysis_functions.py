@@ -269,7 +269,7 @@ def fits_row(fits_file):
     return fits_rows
 
 
-def make_fits_csv(fits_output, accession_folder, collection_folder, accession_number):
+def make_fits_csv(fits_output, collection_folder, accession_number):
     """Makes a single CSV with FITS information for all files in the accession.
     Each row in the CSV is a single format identification. A file may have multiple identifications."""
 
@@ -283,7 +283,7 @@ def make_fits_csv(fits_output, accession_folder, collection_folder, accession_nu
     # Extracts select format information for each FITS file, with some data reformatting, and saves it to a CSV.
     # If it cannot save due to an encoding error, saves the filepath to a text file.
     for fits_xml in os.listdir(fits_output):
-        rows_list = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        rows_list = fits_row(os.path.join(fits_output, fits_xml))
         for row in rows_list:
             try:
                 csv_write.writerow(row)
