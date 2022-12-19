@@ -23,12 +23,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\File.txt', 'Plain text', 'Not for TA'], 
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\CD1\\File.txt', 'Plain text', 'Not for TA'],
                     ['C:\\CD1\\File2.txt', 'Plain text', 'Not for TA']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -47,12 +48,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD_Trash\\File.txt', 'Plain text', 'Not for TA'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\CD_Trash\\File.txt', 'Plain text', 'Not for TA'],
                     ['C:\\CD_Trash_2\\File.txt', 'Plain text', 'Not for TA'],
                     ['C:\\Trash_Pickup\\File2.txt', 'Plain text', 'Not for TA']]
 
@@ -73,12 +75,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\FD1\\doc.txt', 'empty', 'Format'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\FD1\\doc.txt', 'empty', 'Format'],
                     ['C:\\FD1\\icon.ico', 'MS Windows icon resource', 'Format'],
                     ['C:\\FD1\\program.dll', 'PE32 executable', 'Format'],
                     ['C:\\FD1\\unknown', 'Unknown Binary', 'Format']]
@@ -98,12 +101,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\FD1\\new.txt', 'empty file', 'Format'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\FD1\\new.txt', 'empty file', 'Format'],
                     ['C:\\FD1\\unknown', 'Error/Unknown Binary', 'Format']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -122,12 +126,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\FD1\\doc.txt', 'EMPTY', 'Format'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\FD1\\doc.txt', 'EMPTY', 'Format'],
                     ['C:\\FD1\\icon.ico', 'ms windows icon resource', 'Format'],
                     ['C:\\FD1\\program.dll', 'PE32 Executable', 'Format'],
                     ['C:\\FD1\\unknown', 'unknown binary', 'Format']]
@@ -147,12 +152,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\FD1\\new.txt', 'EMPTYFILE', 'Format'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\FD1\\new.txt', 'EMPTYFILE', 'Format'],
                     ['C:\\FD1\\unknown', 'error/unknown binary', 'Format']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -169,12 +175,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\trash\\File.txt', 'Plain text', 'Trash'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\CD1\\trash\\File.txt', 'Plain text', 'Trash'],
                     ['C:\\CD1\\trash\\File2.txt', 'Plain text', 'Trash']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -191,12 +198,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\Trash\\File.txt', 'Plain text', 'Trash'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\CD1\\Trash\\File.txt', 'Plain text', 'Trash'],
                     ['C:\\CD1\\Trash\\File2.txt', 'Plain text', 'Trash']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -213,12 +221,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\trashes\\File.txt', 'Plain text', 'Trash'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\CD1\\trashes\\File.txt', 'Plain text', 'Trash'],
                     ['C:\\CD1\\trashes\\File2.txt', 'Plain text', 'Trash']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -235,12 +244,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\Trashes\\File.txt', 'Plain text', 'Trash'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\CD1\\Trashes\\File.txt', 'Plain text', 'Trash'],
                     ['C:\\CD1\\Trashes\\File2.txt', 'Plain text', 'Trash']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -258,12 +268,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name'])
         df_ita = csv_to_dataframe(c.ITA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_technical_appraisal(df_results, df_ita)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\Trash\\program.bat', 'DOS batch file', 'Trash'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'Technical_Appraisal'],
+                    ['C:\\CD1\\Trash\\program.bat', 'DOS batch file', 'Trash'],
                     ['C:\\CD1\\Trash\\font.ttf', 'TTF/TrueType Font', 'Trash']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.

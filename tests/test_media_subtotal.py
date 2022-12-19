@@ -21,13 +21,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 3, 0, 0, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 3, 0, 0, 0, 0, 0],
                     ['Disk2', 2, 9, 2, 0, 0, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -47,13 +50,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 3, 0, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 3, 0, 0, 0, 0],
                     ['Disk2', 2, 9, 0, 2, 0, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -73,13 +79,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
                     ['Disk2', 2, 9, 0, 0, 2, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -99,13 +108,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 0, 0, 3, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 0, 0, 3, 0, 0],
                     ['Disk2', 2, 9, 0, 0, 0, 2, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -125,13 +137,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 1, 0, 2, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 1, 0, 2, 0, 0, 0],
                     ['Disk2', 2, 9, 0, 2, 0, 0, 2, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -151,13 +166,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 1, 2, 0, 1, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 1, 2, 0, 1, 0],
                     ['Disk2', 2, 9, 0, 2, 0, 0, 2, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -178,13 +196,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
                     ['Disk2', 2, 9, 0, 0, 2, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -204,13 +225,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
                     ['Disk2', 2, 9, 0, 0, 2, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -230,13 +254,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 0, 3, 0, 0, 3],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 0, 3, 0, 0, 3],
                     ['Disk2', 2, 9, 0, 0, 2, 0, 0, 2]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -256,13 +283,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 1, 0, 2, 0, 0, 1],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 1, 0, 2, 0, 0, 1],
                     ['Disk2', 2, 9, 0, 0, 2, 0, 0, 1]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -282,13 +312,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
                     ['Disk2', 2, 9, 0, 0, 2, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -308,13 +341,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 2, 3, 0, 0, 2, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 2, 3, 0, 0, 2, 0, 0, 0],
                     ['Disk2', 1, 4, 0, 0, 1, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -334,13 +370,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 0.001, 0, 0, 3, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 0.001, 0, 0, 3, 0, 0, 0],
                     ['Disk2', 2, 0.01, 0, 0, 2, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -362,13 +401,16 @@ class MyTestCase(unittest.TestCase):
         column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including column headers.
         # Uses reset_index() to include the index value in the dataframe, which is the media name.
         df_media_subtotal = media_subtotal(df_results, accession_folder='C:\\ACC')
-        result = df_media_subtotal.reset_index().values.tolist()
+        result = [df_media_subtotal.columns.to_list()] + df_media_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
+        expected = [['File Count', 'Size (MB)', 'NARA High Risk (File Count)', 'NARA Moderate Risk (File Count)',
+                     'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                     'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                    ['Disk1', 3, 6, 0, 0, 3, 0, 0, 0],
                     ['Disk2', 2, 9, 0, 0, 2, 0, 0, 0]]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.

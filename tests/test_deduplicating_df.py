@@ -22,13 +22,14 @@ class MyTestCase(unittest.TestCase):
                         'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the code being tested and converts the resulting dataframe to a list.
+        # Runs the code being tested and converts the resulting dataframe to a list, including the column headers.
         df_results.drop(['NARA_Format Name', 'NARA_File Extension(s)', 'NARA_PRONOM URL'], inplace=True, axis=1)
         df_results.drop_duplicates(inplace=True)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\acc\\disk1\\data.csv', 'Comma-Separated Values (CSV)', 'Low Risk', 'Retain'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'],
+                    ['C:\\acc\\disk1\\data.csv', 'Comma-Separated Values (CSV)', 'Low Risk', 'Retain'],
                     ['C:\\acc\\disk1\\data.xlsx', 'Open Office XML Workbook', 'Low Risk', 'Retain'],
                     ['C:\\acc\\disk1\\data.xlsx', 'XLSX', 'Low Risk', 'Retain']]
 
@@ -53,13 +54,14 @@ class MyTestCase(unittest.TestCase):
                         'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the code being tested and converts the resulting dataframe to a list.
+        # Runs the code being tested and converts the resulting dataframe to a list, including the column headers.
         df_results.drop(['NARA_Format Name', 'NARA_File Extension(s)', 'NARA_PRONOM URL'], inplace=True, axis=1)
         df_results.drop_duplicates(inplace=True)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\acc\\disk1\\empty.txt', 'empty', 'Low Risk', 'Retain']]
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'],
+                    ['C:\\acc\\disk1\\empty.txt', 'empty', 'Low Risk', 'Retain']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with duplicates, same risk')
@@ -80,13 +82,14 @@ class MyTestCase(unittest.TestCase):
                         'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan']
         df_results = pd.DataFrame(rows, columns=column_names)
 
-        # Runs the code being tested and converts the resulting dataframe to a list.
+        # Runs the code being tested and converts the resulting dataframe to a list, including the column headers.
         df_results.drop(['NARA_Format Name', 'NARA_File Extension(s)', 'NARA_PRONOM URL'], inplace=True, axis=1)
         df_results.drop_duplicates(inplace=True)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\acc\\disk1\\file.pdf', 'PDF', 'Moderate Risk', 'Retain'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'],
+                    ['C:\\acc\\disk1\\file.pdf', 'PDF', 'Moderate Risk', 'Retain'],
                     ['C:\\acc\\disk1\\file.pdf', 'PDF', 'Low Risk', 'Retain']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.

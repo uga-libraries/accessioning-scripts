@@ -24,12 +24,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_other_risk(df_results, df_other)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['empty', np.NaN, np.NaN, 'Not for Other'],
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['empty', np.NaN, np.NaN, 'Not for Other'],
                     ['Advanced Systems Format', 'Moderate Risk', 'Retain', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -48,12 +49,13 @@ class MyTestCase(unittest.TestCase):
                                   columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_other_risk(df_results, df_other)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Audio Video Interleave Format (AVI)', 'Low Risk', 'Retain', 'Not for Other'],
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['Audio Video Interleave Format (AVI)', 'Low Risk', 'Retain', 'Not for Other'],
                     ['Broadcast Wave (BWF) v. 0', 'Low Risk', 'Retain', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -71,12 +73,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_other_risk(df_results, df_other)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['AutoCAD Drawing (2000-2002)', 'Moderate Risk', 'Transform to a TBD format', 'Not for Other'],
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['AutoCAD Drawing (2000-2002)', 'Moderate Risk', 'Transform to a TBD format', 'Not for Other'],
                     ['FoxPro 2.0', 'Moderate Risk', 'Transform to CSV', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -94,12 +97,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_other_risk(df_results, df_other)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['iCalendar', 'Low Risk', 'Transform to CSV', 'NARA Low/Transform'],
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['iCalendar', 'Low Risk', 'Transform to CSV', 'NARA Low/Transform'],
                     ['MBOX Email Format', 'Low Risk', 'Transform to EML but also retain MBOX', 'NARA Low/Transform']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -118,12 +122,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_other_risk(df_results, df_other)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Adobe Photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['Adobe Photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
                     ['CorelDraw Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'Layered image file'],
                     ['ZIP Format', 'Low Risk', 'Retain', 'Archive format']]
 
@@ -145,12 +150,13 @@ class MyTestCase(unittest.TestCase):
     #                               columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
     #     df_other = csv_to_dataframe(c.RISK)
     #
-    #     # Runs the function being tested and converts the resulting dataframe to a list.
+    #     # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
     #     df_results = match_other_risk(df_results, df_other)
-    #     result = df_results.values.tolist()
+    #     result = [df_results.columns.to_list()] + df_results.values.tolist()
     #
     #     # Creates a list with the expected result.
-    #     expected = [['Adobe Photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
+    #     expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+    #                 ['Adobe Photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
     #                 ['A CorelDraw Drawing v1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF',
     #                  'Layered image file'],
     #                 ['XYZIP Format', 'Low Risk', 'Retain', 'Archive format']]
@@ -173,12 +179,13 @@ class MyTestCase(unittest.TestCase):
                                   columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_other_risk(df_results, df_other)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['adobe photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['adobe photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
                     ['CorelDRAW Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF',
                      'Layered image file'],
                     ['Zip Format', 'Low Risk', 'Retain', 'Archive format']]
@@ -201,12 +208,13 @@ class MyTestCase(unittest.TestCase):
     #                               columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
     #     df_other = csv_to_dataframe(c.RISK)
     #
-    #     # Runs the function being tested and converts the resulting dataframe to a list.
+    #     # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
     #     df_results = match_other_risk(df_results, df_other)
-    #     result = df_results.values.tolist()
+    #     result = [df_results.columns.to_list()] + df_results.values.tolist()
     #
     #     # Creates a list with the expected result.
-    #     expected = [['adobe photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
+    #     expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+    #                 ['adobe photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
     #                 ['ACORELDRAW DRAWING V1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF',
     #                  'Layered image file'],
     #                 ['WYzip format', 'Low Risk', 'Retain', 'Archive format']]
@@ -227,12 +235,13 @@ class MyTestCase(unittest.TestCase):
                                   columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_other_risk(df_results, df_other)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Cascading Style Sheet', 'Low Risk', 'Retain', 'Possible saved web page'],
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['Cascading Style Sheet', 'Low Risk', 'Retain', 'Possible saved web page'],
                     ['ZIP Format', 'Low Risk', 'Retain', 'Archive format']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.

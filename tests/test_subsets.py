@@ -22,11 +22,14 @@ class MyTestCase(unittest.TestCase):
         if len(df_nara_risk) == 0:
             df_nara_risk = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_nara_risk.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_nara_risk.columns.to_list()] + df_nara_risk.values.tolist()
 
         # Creates a list with the expected result. 
-        expected = [['C:\\CD1\\file.bak', 'Backup File', np.NaN, False, '5/5/2022', 1.23,
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
+                     'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk Level',
+                     'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                    ['C:\\CD1\\file.bak', 'Backup File', np.NaN, False, '5/5/2022', 1.23,
                      'ab1e0b017c8eex694eb379e354571234', 'High Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other'],
                     ['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN, True, '5/5/2022', 57.01,
                      'le1b6b058c8rrb684ex370e354572936', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'PRONOM',
@@ -65,11 +68,11 @@ class MyTestCase(unittest.TestCase):
         if len(df_nara_risk) == 0:
             df_nara_risk = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_nara_risk.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_nara_risk.columns.to_list()] + df_nara_risk.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with NARA risk subset when empty')
@@ -90,11 +93,14 @@ class MyTestCase(unittest.TestCase):
         if len(df_multiple) == 0:
             df_multiple = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_multiple.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_multiple.columns.to_list()] + df_multiple.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN,
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                     'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                     'FITS_MD5', 'FITS_Creating_Application', 'Technical_Appraisal', 'Other_Risk'],
+                    ['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN,
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/92', 'file utility version 5.03', True,
                      '5/5/2022', 57.01, 'le1b6b058c8rrb684ex370e354572936', np.NaN, 'Not for TA', 'Layered image file'],
                     ['C:\\CD1\\file.psd', 'Adobe Photoshop file', '1',
@@ -143,12 +149,11 @@ class MyTestCase(unittest.TestCase):
         if len(df_multiple) == 0:
             df_multiple = pd.DataFrame([['No data of this type']])
 
-
-        # Converts the resulting dataframe to a list.
-        result = df_multiple.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_multiple.columns.to_list()] + df_multiple.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with multiple ids subset when empty')
@@ -169,11 +174,16 @@ class MyTestCase(unittest.TestCase):
         if len(df_validation) == 0:
             df_validation = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_validation.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_validation.columns.to_list()] + df_validation.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD1\\file.bak', 'Backup File', np.NaN, np.NaN, 'file utility version 5.03', False,
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                     'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                     'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message',
+                     'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal',
+                     'Other_Risk'],
+                    ['C:\\CD1\\file.bak', 'Backup File', np.NaN, np.NaN, 'file utility version 5.03', False,
                      '5/5/2022', 1.23, 'ab1e0b017c8eex694eb379e354571234', np.NaN, False, True, np.NaN, 'High Risk',
                      'Retain', 'Format Name', 'Not for TA', 'Not for Other'],
                     ['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN,
@@ -224,11 +234,11 @@ class MyTestCase(unittest.TestCase):
         if len(df_validation) == 0:
             df_validation = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_validation.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_validation.columns.to_list()] + df_validation.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with validation subset when empty')
@@ -248,11 +258,14 @@ class MyTestCase(unittest.TestCase):
         if len(df_tech_appraisal) == 0:
             df_tech_appraisal = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_tech_appraisal.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_tech_appraisal.columns.to_list()] + df_tech_appraisal.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\CD2\\blank.docx', 'empty', np.NaN, 'file utility version 5.03', False, 0.0, np.NaN,
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
+                     'FITS_Multiple_IDs', 'FITS_Size_KB', 'FITS_Creating_Application', 'NARA_Risk Level',
+                     'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                    ['C:\\CD2\\blank.docx', 'empty', np.NaN, 'file utility version 5.03', False, 0.0, np.NaN,
                      'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other'],
                     ['C:\\CD2\\Trash\\Junk.txt', 'Plain text', np.NaN,
                      'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', False, 0.4, np.NaN,
@@ -277,11 +290,11 @@ class MyTestCase(unittest.TestCase):
         if len(df_tech_appraisal) == 0:
             df_tech_appraisal = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_tech_appraisal.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_tech_appraisal.columns.to_list()] + df_tech_appraisal.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with technical appraisal subset when empty')
@@ -301,11 +314,14 @@ class MyTestCase(unittest.TestCase):
         if len(df_other_risk) == 0:
             df_other_risk = pd.DataFrame([['No data of this type']])
         
-        # Converts the resulting dataframe to a list.
-        result = df_other_risk.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_other_risk.columns.to_list()] + df_other_risk.values.tolist()
         
         # Creates a list with the expected result. 
-        expected = [['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN, 'file utility version 5.03', True, 57.01,
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
+                     'FITS_Multiple_IDs', 'FITS_Size_KB', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                    ['C:\\CD1\\file.psd', 'Adobe Photoshop file', np.NaN, 'file utility version 5.03', True, 57.01,
                      'Moderate Risk', 'Transform to TIFF or JPEG2000', 'PRONOM', 'Not for TA', 'Layered image file'],
                     ['C:\\CD1\\file.psd', 'Adobe Photoshop file', '1', 'Droid version 6.4', True, 57.01,
                      'Moderate Risk', 'Transform to TIFF or JPEG2000', 'PRONOM', 'Not for TA', 'Layered image file'],
@@ -338,11 +354,11 @@ class MyTestCase(unittest.TestCase):
         if len(df_other_risk) == 0:
             df_other_risk = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_other_risk.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_other_risk.columns.to_list()] + df_other_risk.values.tolist()
         
         # Creates a list with the expected result. 
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with other risk subset when empty')
@@ -365,11 +381,12 @@ class MyTestCase(unittest.TestCase):
         if len(df_duplicates) == 0:
             df_duplicates = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_duplicates.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_duplicates.columns.to_list()] + df_duplicates.values.tolist()
         
         # Creates a list with the expected result. 
-        expected = [['C:\\FD1\\Worksheet CSV Version.csv', 0.178, '97e4f6e6f35e5606855d0917e22740b9'],
+        expected = [['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5'],
+                    ['C:\\FD1\\Worksheet CSV Version.csv', 0.178, '97e4f6e6f35e5606855d0917e22740b9'],
                     ['C:\\FD1\\Worksheets.zip', 11.374, 'b335c9b47034466907b169e04cbbfa'],
                     ['C:\\FD2\\Worksheet CSV Version.csv', 0.178, '97e4f6e6f35e5606855d0917e22740b9'],
                     ['C:\\FD2\\Worksheets.zip', 11.374, 'b335c9b47034466907b169e04cbbfa']]
@@ -394,11 +411,11 @@ class MyTestCase(unittest.TestCase):
         if len(df_duplicates) == 0:
             df_duplicates = pd.DataFrame([['No data of this type']])
 
-        # Converts the resulting dataframe to a list.
-        result = df_duplicates.values.tolist()
+        # Converts the resulting dataframe to a list, including the column headers.
+        result = [df_duplicates.columns.to_list()] + df_duplicates.values.tolist()
         
         # Creates a list with the expected result. 
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with duplicates subset when empty')

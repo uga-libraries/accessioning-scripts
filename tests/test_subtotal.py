@@ -38,13 +38,14 @@ class MyTestCase(unittest.TestCase):
         and multiple formats with the same NARA risk level.
         Result for testing is the dataframe returned by the function, converted to a list for an easier comparison.
         """
-        # Runs the function being tested and converts the resulting dataframe into a list.
+        # Runs the function being tested and converts the resulting dataframe into a list, including the column headers.
         # Uses reset_index() to include the index values in the dataframe, which are the two subtotal criteria.
         df_subtotal = subtotal(self.df_results, ['FITS_Format_Name', 'NARA_Risk Level'], self.totals_dict)
-        result = df_subtotal.reset_index().values.tolist()
+        result = [df_subtotal.columns.to_list()] + df_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Adobe Photoshop', 'Moderate Risk', 2, 14.286, 0.201, 7.873],
+        expected = [['File Count', 'File %', 'Size (MB)', 'Size %'],
+                    ['Adobe Photoshop', 'Moderate Risk', 2, 14.286, 0.201, 7.873],
                     ['Cascading Style Sheet', 'Low Risk', 1, 7.143, 0.102, 3.995],
                     ['DOS/Windows Executable', 'High Risk', 1, 7.143, 0.103, 4.035],
                     ['Encapsulated Postscript File', 'Low Risk', 1, 7.143, 0.104, 4.074],
@@ -65,13 +66,14 @@ class MyTestCase(unittest.TestCase):
         and multiple formats with the same risk level.
         Result for testing is the dataframe returned by the function, converted to a list for an easier comparison.
         """
-        # Runs the function being tested and converts the resulting dataframe into a list.
+        # Runs the function being tested and converts the resulting dataframe into a list, including the column headers.
         # Uses reset_index() to include the index values in the dataframe, which are the subtotal criteria.
         df_subtotal = subtotal(self.df_results, ['NARA_Risk Level'], self.totals_dict)
-        result = df_subtotal.reset_index().values.tolist()
+        result = [df_subtotal.columns.to_list()] + df_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['High Risk', 1, 7.143, 0.103, 4.035],
+        expected = [['File Count', 'File %', 'Size (MB)', 'Size %'],
+                    ['High Risk', 1, 7.143, 0.103, 4.035],
                     ['Low Risk', 7, 50, 1.335, 52.292],
                     ['Moderate Risk', 3, 21.429, 0.504, 19.742],
                     ['No Match', 3, 21.429, 0.611, 23.933]]
@@ -86,14 +88,15 @@ class MyTestCase(unittest.TestCase):
         and multiple formats with the same category.
         Result for testing is the dataframe returned by the function, converted to a list for an easier comparison.
         """
-        # Runs the function being tested and converts the resulting dataframe into a list.
+        # Runs the function being tested and converts the resulting dataframe into a list, including the column headers.
         # Uses reset_index() to include the index values in the dataframe, which are the two subtotal criteria.
         df_subtotal = subtotal(self.df_results[self.df_results["Technical_Appraisal"] != "Not for TA"],
                                ['Technical_Appraisal', 'FITS_Format_Name'], self.totals_dict)
-        result = df_subtotal.reset_index().values.tolist()
+        result = [df_subtotal.columns.to_list()] + df_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Format', 'DOS/Windows Executable', 1, 7.143, 0.103, 4.035],
+        expected = [['File Count', 'File %', 'Size (MB)', 'Size %'],
+                    ['Format', 'DOS/Windows Executable', 1, 7.143, 0.103, 4.035],
                     ['Format', 'Unknown Binary', 3, 21.429, 0.611, 23.933],
                     ['Trash', 'JPEG EXIF', 1, 7.143, 0.205, 8.03]]
 
@@ -113,13 +116,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=columns)
         totals_dict = {'Files': len(df_results.index), 'MB': df_results['FITS_Size_KB'].sum() / 1000}
 
-        # Runs the function being tested and converts the resulting dataframe into a list.
+        # Runs the function being tested and converts the resulting dataframe into a list, including the column headers.
         df_subtotal = subtotal(df_results[df_results["Technical_Appraisal"] != "Not for TA"],
                                ['Technical_Appraisal', 'FITS_Format_Name'], totals_dict)
-        result = df_subtotal.values.tolist()
+        result = [df_subtotal.columns.to_list()] + df_subtotal.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with technical appraisal subtotal, no files match criteria')
@@ -131,14 +134,15 @@ class MyTestCase(unittest.TestCase):
         and multiple formats with the same category.
         Result for testing is the dataframe returned by the function, converted to a list for an easier comparison.
         """
-        # Runs the function being tested and converts the resulting dataframe into a list.
+        # Runs the function being tested and converts the resulting dataframe into a list, including the column headers.
         # Uses reset_index() to include the index values in the dataframe, which are the two subtotal criteria.
         df_subtotal = subtotal(self.df_results[self.df_results["Other_Risk"] != "Not for Other"],
                                ['Other_Risk', 'FITS_Format_Name'], self.totals_dict)
-        result = df_subtotal.reset_index().values.tolist()
+        result = [df_subtotal.columns.to_list()] + df_subtotal.reset_index().values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['Archive format', 'Zip Format', 1, 7.143, 0.303, 11.869],
+        expected = [['File Count', 'File %', 'Size (MB)', 'Size %'],
+                    ['Archive format', 'Zip Format', 1, 7.143, 0.303, 11.869],
                     ['Layered image file', 'Adobe Photoshop', 2, 14.286, 0.201, 7.873],
                     ['NARA Low/Transform', 'Encapsulated Postscript File', 1, 7.143, 0.104, 4.074],
                     ['NARA Low/Transform', 'QuickTime', 1, 7.143, 0.208, 8.147],
@@ -159,13 +163,13 @@ class MyTestCase(unittest.TestCase):
         df_results = pd.DataFrame(rows, columns=columns)
         totals_dict = {'Files': len(df_results.index), 'MB': df_results['FITS_Size_KB'].sum() / 1000}
 
-        # Runs the function being tested and converts the resulting dataframe into a list.
+        # Runs the function being tested and converts the resulting dataframe into a list, including the column headers.
         df_subtotal = subtotal(df_results[df_results["Other_Risk"] != "Not for Other"],
                                ['Other_Risk', 'FITS_Format_Name'], totals_dict)
-        result = df_subtotal.values.tolist()
+        result = [df_subtotal.columns.to_list()] + df_subtotal.values.tolist()
 
         # Makes a list with the expected values
-        expected = [['No data of this type']]
+        expected = [[0], ['No data of this type']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with other risk subtotal, no files match criteria')

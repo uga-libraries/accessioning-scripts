@@ -24,12 +24,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\PUID\\file.ai', 'Adobe Illustrator', '6', 'https://www.nationalarchives.gov.uk/pronom/fmt/422',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\PUID\\file.ai', 'Adobe Illustrator', '6', 'https://www.nationalarchives.gov.uk/pronom/fmt/422',
                      'Adobe Illustrator 6.0', 'ai', 'https://www.nationalarchives.gov.uk/pronom/fmt/422',
                      'Moderate Risk', 'Transform to PDF', 'PRONOM'],
                     ['C:\\PUID\\file.psd', 'Adobe Photoshop', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92',
@@ -51,12 +54,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102',
                      'eXtensible Hypertext Markup Language 1.0', 'xhtm|xhtml',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/102', 'Low Risk', 'Retain', 'PRONOM'],
                     ['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102',
@@ -84,12 +90,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\NameVer\\file.wk3', 'Lotus 1-2-3 Worksheet', '3.0', '', 'Lotus 1-2-3 Worksheet 3.0',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\NameVer\\file.wk3', 'Lotus 1-2-3 Worksheet', '3.0', '', 'Lotus 1-2-3 Worksheet 3.0',
                      'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
                     ['C:\\NameVer\\file.swf', 'Macromedia Flash', '7', '', 'Macromedia Flash 7', 'swf',
@@ -109,12 +118,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\NameVer\\file.wk3', 'lotus 1-2-3 worksheet', '3.0', '', 'Lotus 1-2-3 Worksheet 3.0',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\NameVer\\file.wk3', 'lotus 1-2-3 worksheet', '3.0', '', 'Lotus 1-2-3 Worksheet 3.0',
                      'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
                     ['C:\\NameVer\\file.swf', 'macromedia flash', '7', '', 'Macromedia Flash 7', 'swf',
@@ -134,12 +146,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\Name\\file.bat', 'Batch Script', '', '', 'Batch Script', 'bat|cmd|btm',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\Name\\file.bat', 'Batch Script', '', '', 'Batch Script', 'bat|cmd|btm',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.eml', 'Electronic Mail Format', '', '', 'Electronic Mail Format', 'eml',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name']]
@@ -158,12 +173,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\Name\\file.bat', 'batch script', '', '', 'Batch Script', 'bat|cmd|btm',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\Name\\file.bat', 'batch script', '', '', 'Batch Script', 'bat|cmd|btm',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.eml', 'electronic mail format', '', '', 'Electronic Mail Format', 'eml',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name']]
@@ -181,12 +199,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\Name\\file.smil', 'Synchronized Multimedia Integration Language', '', '',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\Name\\file.smil', 'Synchronized Multimedia Integration Language', '', '',
                      'Synchronized Multimedia Integration Language', 'smi|sami',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/205', 'Low Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.smil', 'Synchronized Multimedia Integration Language', '', '',
@@ -207,12 +228,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\ext\\file.mxf', 'MXF', '', '', 'Material Exchange Format', 'mxf',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\ext\\file.mxf', 'MXF', '', '', 'Material Exchange Format', 'mxf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
                     ['C:\\ext\\file.crl', 'Raster', '', '', 'Intergraph Raster Format', 'crl',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
@@ -232,12 +256,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\ext\\file.MXF', 'MXF', '', '', 'Material Exchange Format', 'mxf',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\ext\\file.MXF', 'MXF', '', '', 'Material Exchange Format', 'mxf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
                     ['C:\\ext\\file.CRL', 'Raster', '', '', 'Intergraph Raster Format', 'crl',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
@@ -257,12 +284,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\Ext\\file.gz', 'g-zip', '', '', 'GZIP', 'gz|tgz',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\Ext\\file.gz', 'g-zip', '', '', 'GZIP', 'gz|tgz',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
                     ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.0',
@@ -283,12 +313,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\Ext\\file.GZ', 'g-zip', '', '', 'GZIP', 'gz|tgz',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\Ext\\file.GZ', 'g-zip', '', '', 'GZIP', 'gz|tgz',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
                     ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.0',
@@ -309,12 +342,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'Advanced Audio Coding (AAC) MPEG-2 Audio', 'aac',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'Advanced Audio Coding (AAC) MPEG-2 Audio', 'aac',
                      np.NaN, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
                     ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'Advanced Audio Coding MPEG-4 Low Complexity Object',
                      'aac|mp4|m4a', np.NaN, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
@@ -342,12 +378,15 @@ class MyTestCase(unittest.TestCase):
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
-        # Runs the function being tested and converts the resulting dataframe to a list.
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
         df_results = match_nara_risk(df_fits, df_nara)
-        result = df_results.values.tolist()
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['C:\\None\\file.abc', 'New Format', '', '', np.NaN, np.NaN, np.NaN, 'No Match', np.NaN,
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\None\\file.abc', 'New Format', '', '', np.NaN, np.NaN, np.NaN, 'No Match', np.NaN,
                      'No NARA Match'],
                     ['C:\\None\\file', 'Unknown Binary', '', '', np.NaN, np.NaN, np.NaN, 'No Match', np.NaN,
                      'No NARA Match']]
