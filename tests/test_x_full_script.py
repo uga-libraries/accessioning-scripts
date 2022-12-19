@@ -1,14 +1,22 @@
 """Tests running the entire script through multiple iterations."""
-# TODO: This was copied from the previous test script but is no longe working.
-# Get a permissions error from make_fits_csv.
 
 import datetime
-import numpy as np
+import hashlib
 import os
 import pandas as pd
 import shutil
 import subprocess
 import unittest
+
+
+def md5(file_path):
+    """Calculates the MD5 of the specified file path. Reads the file in chunks to avoid memory issues.
+    Returns the MD5."""
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 class MyTestCase(unittest.TestCase):
@@ -20,11 +28,13 @@ class MyTestCase(unittest.TestCase):
         Variations: duplicate files, empty file, file with multiple identifications (xlsx),
                     file with validation error (html), technical appraisal (empty, trash), other risk (zip)
         All subtotals and subsets in the final format analysis report will have some information.
+
+        Also makes variables with the expected values for each tab in the final format analysis report.
         """
         # Makes a folder named collection, which contains a folder named accession,
         # which contains 2 folders named disk1 and disk2. The folder disk1 contains a folder named trash.
-        self.disk1_path = os.path.join('collection', 'accession', 'disk1')
-        self.disk2_path = os.path.join('collection', 'accession', 'disk2')
+        self.disk1_path = os.path.join(os.getcwd(), 'collection', 'accession', 'disk1')
+        self.disk2_path = os.path.join(os.getcwd(), 'collection', 'accession', 'disk2')
         self.trash_path = os.path.join(self.disk1_path, 'trash')
         os.makedirs(self.trash_path)
         os.makedirs(self.disk2_path)
@@ -78,7 +88,7 @@ class MyTestCase(unittest.TestCase):
             2. Use existing FITS files (updating to match the accession folder), and
             3. Use existing full risk data csv.
         Results for testing are the messages indicating which iteration of the script is running and
-        the contents of the format_analysis.xlsx spreadsheet produced at the end of the test.
+        the contents of the format_analysis.xlsx spreadsheet produced after 3 rounds of running the code.
         """
         # ROUND ONE
 
@@ -98,7 +108,7 @@ class MyTestCase(unittest.TestCase):
         shutil.rmtree(self.trash_path)
         with open(os.path.join(self.disk2_path, 'new.txt'), 'w') as file:
             file.write('Text' * 300)
-        os.remove(os.path.join('collection', 'accession_full_risk_data.csv'))
+        os.remove(os.path.join(os.getcwd(), 'collection', 'accession_full_risk_data.csv'))
 
         # Runs the script again on the test accession folder.
         # It will update the FITS files to match the accession folder and update the three spreadsheets.
@@ -114,14 +124,14 @@ class MyTestCase(unittest.TestCase):
         # Edits the full_risk_data.csv to simulate archivist cleaning up risk matches.
         # Removes the FITS format ID of Zip Format from the Excel file and
         # removes all NARA matches for empty.txt except for Plain Text.
-        df_risk = pd.read_csv(os.path.join('collection', 'accession_full_risk_data.csv'))
-        xlsx_to_drop = df_risk[(df_risk['FITS_File_Path'] == fr'accession\disk1\data.xlsx') &
+        df_risk = pd.read_csv(os.path.join(os.getcwd(), 'collection', 'accession_full_risk_data.csv'))
+        xlsx_to_drop = df_risk[(df_risk['FITS_File_Path'].str.endswith('data.xlsx')) &
                                (df_risk['FITS_Format_Name'] == 'ZIP Format')]
-        empty_to_drop = df_risk[(df_risk['FITS_File_Path'] == fr'accession\disk2\empty.txt') &
+        empty_to_drop = df_risk[(df_risk['FITS_File_Path'].str.endswith('empty.txt')) &
                                 (df_risk['NARA_Format Name'] != 'Plain Text')]
         df_risk.drop(xlsx_to_drop.index, inplace=True)
         df_risk.drop(empty_to_drop.index, inplace=True)
-        df_risk.to_csv(os.path.join('collection', 'accession_full_risk_data.csv'), index=False)
+        df_risk.to_csv(os.path.join(os.getcwd(), 'collection', 'accession_full_risk_data.csv'), index=False)
 
         # Runs the script again on the test accession folder.
         # It will use existing fits.csv and full_risk_data.csv to update format_analysis.xlsx.
@@ -132,163 +142,170 @@ class MyTestCase(unittest.TestCase):
               'Updating the analysis report using existing risk data.\r\n'
         self.assertEqual(iteration_three.stdout.decode('utf-8'), msg, 'Problem with Iteration_Message_3')
 
-        # The next several code blocks makes dataframes with the expected values for each tab in format_analysis.xlsx.
+        # Makes a dataframe with the values from each tab in format_analysis.xlsx made by the script.
+        # Replaces NaN with 'BLANK' to avoid comparison problems with NaN.
+        xlsx = pd.ExcelFile(os.path.join('collection', 'accession_format-analysis.xlsx'))
+        df_format_subtotal = pd.read_excel(xlsx, 'Format Subtotal')
+        df_format_subtotal.fillna('BLANK', inplace=True)
+        df_nara_risk_subtotal = pd.read_excel(xlsx, 'NARA Risk Subtotal')
+        df_nara_risk_subtotal.fillna('BLANK', inplace=True)
+        df_tech_appraisal_subtotal = pd.read_excel(xlsx, 'Tech Appraisal Subtotal')
+        df_tech_appraisal_subtotal.fillna('BLANK', inplace=True)
+        df_other_risk_subtotal = pd.read_excel(xlsx, 'Other Risk Subtotal')
+        df_other_risk_subtotal.fillna('BLANK', inplace=True)
+        df_media_subtotal = pd.read_excel(xlsx, 'Media Subtotal')
+        df_media_subtotal.fillna('BLANK', inplace=True)
+        df_nara_risk = pd.read_excel(xlsx, 'NARA Risk')
+        df_nara_risk.fillna('BLANK', inplace=True)
+        df_tech_appraisal = pd.read_excel(xlsx, 'For Technical Appraisal')
+        df_tech_appraisal.fillna('BLANK', inplace=True)
+        df_other_risk = pd.read_excel(xlsx, 'Other Risks')
+        df_other_risk.fillna('BLANK', inplace=True)
+        df_multiple_ids = pd.read_excel(xlsx, 'Multiple Formats')
+        df_multiple_ids.fillna('BLANK', inplace=True)
+        df_duplicates = pd.read_excel(xlsx, 'Duplicates')
+        df_duplicates.fillna('BLANK', inplace=True)
+        df_validation = pd.read_excel(xlsx, 'Validation')
+        df_validation.fillna('BLANK', inplace=True)
+        xlsx.close()
 
-        # Expected values for things that change (date and size and MD5 for XLSX and ZIP) are calculated
-        # instead of using a constant for comparison.
+        # Makes a list from each result dataframe, including the column headers, for easier comparison.
+        result01 = [df_format_subtotal.columns.to_list()] + df_format_subtotal.values.tolist()
+        result02 = [df_nara_risk_subtotal.columns.to_list()] + df_nara_risk_subtotal.values.tolist()
+        result03 = [df_tech_appraisal_subtotal.columns.to_list()] + df_tech_appraisal_subtotal.values.tolist()
+        result04 = [df_other_risk_subtotal.columns.to_list()] + df_other_risk_subtotal.values.tolist()
+        result05 = [df_media_subtotal.columns.to_list()] + df_media_subtotal.values.tolist()
+        result06 = [df_nara_risk.columns.to_list()] + df_nara_risk.values.tolist()
+        result07 = [df_tech_appraisal.columns.to_list()] + df_tech_appraisal.values.tolist()
+        result08 = [df_other_risk.columns.to_list()] + df_other_risk.values.tolist()
+        result09 = [df_multiple_ids.columns.to_list()] + df_multiple_ids.values.tolist()
+        result10 = [df_duplicates.columns.to_list()] + df_duplicates.values.tolist()
+        result11 = [df_validation.columns.to_list()] + df_validation.values.tolist()
+
+        # The next several code blocks makes lists with the expected values for each tab in format_analysis.xlsx.
+
+        # Expected values for things that change (XLSX and ZIP) and are in more than one list are calculated here.
+        # There are 3 copies of the zip file and this information is the same for all 3.
         today = datetime.date.today().strftime('%Y-%m-%d')
         xlsx_kb = round(os.path.getsize(os.path.join(self.disk1_path, 'data.xlsx')) / 1000, 3)
         xlsx_mb = round(xlsx_kb / 1000, 3)
+        xlsx_md5 = md5(os.path.join(self.disk1_path, 'data.xlsx'))
         zip_kb = round(os.path.getsize(os.path.join(self.disk2_path, 'disk1backup.zip')) / 1000, 3)
-        three_zip_mb = round((os.path.getsize(os.path.join(self.disk2_path, 'disk1backup.zip')) / 1000 * 3) / 1000, 3)
+        zip_mb = round((os.path.getsize(os.path.join(self.disk2_path, 'disk1backup.zip')) / 1000 * 3) / 1000, 3)
+        zip_md5 = md5(os.path.join(self.disk2_path, 'disk1backup.zip'))
         total_mb = df_risk['FITS_Size_KB'].sum() / 1000
 
         # Expected values for the format subtotal.
-        rows = [['empty', 'Low Risk', 1, 10, 0, 0],
-                ['Extensible Markup Language', 'Low Risk', 1, 10, 0, 0],
-                ['Office Open XML Workbook', 'Low Risk', 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
-                ['Plain text', 'Low Risk', 3, 30, 0.008, round((0.008 / total_mb) * 100, 3)],
-                ['XLSX', 'Low Risk', 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
-                ['ZIP Format', 'Moderate Risk', 3, 30, three_zip_mb, round((three_zip_mb / total_mb) * 100, 3)]]
-        column_names = ['FITS_Format_Name', 'NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %']
-        df_format_subtotal_expected = pd.DataFrame(rows, columns=column_names)
+        expected01 = [['FITS_Format_Name', 'NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                      ['empty', 'Low Risk', 1, 10, 0, 0],
+                      ['Extensible Markup Language', 'Low Risk', 1, 10, 0, 0],
+                      ['Office Open XML Workbook', 'Low Risk', 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
+                      ['Plain text', 'Low Risk', 3, 30, 0.008, round((0.008 / total_mb) * 100, 3)],
+                      ['XLSX', 'Low Risk', 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
+                      ['ZIP Format', 'Moderate Risk', 3, 30, zip_mb, round((zip_mb / total_mb) * 100, 3)]]
 
         # Expected values for the NARA risk subtotal.
         low_mb = round(df_risk[df_risk['NARA_Risk Level'] == 'Low Risk']['FITS_Size_KB'].sum() / 1000, 3)
-        rows = [['Low Risk', 7, 70, low_mb, round((low_mb / total_mb) * 100, 3)],
-                ['Moderate Risk', 3, 30, three_zip_mb, round((three_zip_mb / total_mb) * 100, 3)]]
-        column_names = ['NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %']
-        df_nara_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
+        expected02 = [['NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                      ['Low Risk', 7, 70, low_mb, round((low_mb / total_mb) * 100, 3)],
+                      ['Moderate Risk', 3, 30, zip_mb, round((zip_mb / total_mb) * 100, 3)]]
 
         # Expected values for the tech appraisal subtotal.
-        rows = [['Format', 'empty', 1, 10, 0, 0]]
-        column_names = ['Technical_Appraisal', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %']
-        df_tech_appraisal_subtotal_expected = pd.DataFrame(rows, columns=column_names)
+        expected03 = [['Technical_Appraisal', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                      ['Format', 'empty', 1, 10, 0, 0]]
 
         # Expected values for the other risk subtotal.
-        rows = [['Archive format', 'ZIP Format', 3, 30, three_zip_mb, round((three_zip_mb / total_mb) * 100, 3)]]
-        column_names = ['Other_Risk', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %']
-        df_other_risk_subtotal_expected = pd.DataFrame(rows, columns=column_names)
+        expected04 = [['Other_Risk', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                      ['Archive format', 'ZIP Format', 3, 30, zip_mb, round((zip_mb / total_mb) * 100, 3)]]
 
         # Expected values for the media subtotal.
         disk1_mb = round(df_risk[df_risk['FITS_File_Path'].str.contains(r'\\disk1\\')]['FITS_Size_KB'].sum() / 1000, 3)
         disk2_mb = round(df_risk[df_risk['FITS_File_Path'].str.contains(r'\\disk2\\')]['FITS_Size_KB'].sum() / 1000, 3)
-        rows = [['disk1', 3, disk1_mb, 0, 0, 3, 0, 0, 0], ['disk2', 7, disk2_mb, 0, 3, 4, 0, 1, 3]]
-        column_names = ['Media', 'File Count', 'Size (MB)', 'NARA High Risk (File Count)',
-                        'NARA Moderate Risk (File Count)', 'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
-                        'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)']
-        df_media_subtotal_expected = pd.DataFrame(rows, columns=column_names)
+        expected05 = [['Media', 'File Count', 'Size (MB)', 'NARA High Risk (File Count)',
+                       'NARA Moderate Risk (File Count)', 'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                       'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                      ['disk1', 3, disk1_mb, 0, 0, 3, 0, 0, 0], ['disk2', 7, disk2_mb, 0, 3, 4, 0, 1, 3]]
 
         # Expected values for the NARA risk subset.
-        rows = [['\\accession\\disk2\\disk1backup.zip', 'ZIP Format', 2, False, today, zip_kb, 'XXXXXXXXXX',
-                 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                 'Archive format'],
-                ['\\accession\\disk2\\disk1backup2.zip', 'ZIP Format', 2, False, today, zip_kb, 'XXXXXXXXXX',
-                 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                 'Archive format'],
-                ['\\accession\\disk2\\disk1backup3.zip', 'ZIP Format', 2, False, today, zip_kb, 'XXXXXXXXXX',
-                 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                 'Archive format']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
-                        'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk Level',
-                        'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk']
-        df_nara_risk_expected = pd.DataFrame(rows, columns=column_names)
+        expected06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
+                       'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk Level',
+                       'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                      [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2, False, today, zip_kb, zip_md5,
+                       'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
+                       'Archive format'],
+                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2, False, today, zip_kb, zip_md5,
+                       'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
+                       'Archive format'],
+                      [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, today, zip_kb, zip_md5,
+                       'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
+                       'Archive format']]
 
         # Expected values for the tech appraisal subset.
-        rows = [['\\accession\\disk2\\empty.txt', 'empty', np.NaN, 'file utility version 5.03',
-                 False, 0, np.NaN, 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
-                        'FITS_Multiple_IDs', 'FITS_Size_KB', 'FITS_Creating_Application', 'NARA_Risk Level',
-                        'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk']
-        df_tech_appraisal_expected = pd.DataFrame(rows, columns=column_names)
+        expected07 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
+                       'FITS_Multiple_IDs', 'FITS_Size_KB', 'FITS_Creating_Application', 'NARA_Risk Level',
+                       'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                      [os.path.join(self.disk2_path, 'empty.txt'), 'empty', 'BLANK', 'file utility version 5.03',
+                       False, 0, 'BLANK', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other']]
 
         # Expected values for the other risk subset.
-        rows = [['\\accession\\disk2\\disk1backup.zip', 'ZIP Format', 2,
-                 'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
-                 False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                 'Archive format'],
-                ['\\accession\\disk2\\disk1backup2.zip', 'ZIP Format', 2,
-                 'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
-                 False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                 'Archive format'],
-                ['\\accession\\disk2\\disk1backup3.zip', 'ZIP Format', 2,
-                 'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
-                 False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                 'Archive format']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
-                        'FITS_Multiple_IDs', 'FITS_Size_KB', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
-                        'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk']
-        df_other_risk_expected = pd.DataFrame(rows, columns=column_names)
+        expected08 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
+                       'FITS_Multiple_IDs', 'FITS_Size_KB', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                      [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2,
+                       'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
+                       False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
+                       'Not for TA', 'Archive format'],
+                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2,
+                       'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
+                       False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
+                       'Not for TA', 'Archive format'],
+                      [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2,
+                       'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
+                       False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
+                       'Not for TA', 'Archive format']]
 
         # Expected values for the multiple format identifications subset.
-        rows = [['\\accession\\disk1\\data.xlsx', 'XLSX', np.NaN, np.NaN, 'Exiftool version 11.54', True, today,
-                 xlsx_kb, 'XXXXXXXXXX', 'Microsoft Excel', 'Low Risk', 'Retain', 'File Extension', 'Not for TA',
-                 'Not for Other'],
-                ['\\accession\\disk1\\data.xlsx', 'Office Open XML Workbook', np.NaN, np.NaN,
-                 'Tika version 1.21',
-                 True, today, xlsx_kb, 'XXXXXXXXXX', 'Microsoft Excel', 'Low Risk', 'Retain', 'File Extension',
-                 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
-                        'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
-                        'FITS_MD5', 'FITS_Creating_Application', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
-                        'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk']
-        df_multiple_ids_expected = pd.DataFrame(rows, columns=column_names)
+        expected09 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                       'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                       'FITS_MD5', 'FITS_Creating_Application', 'Technical_Appraisal', 'Other_Risk'],
+                      [os.path.join(self.disk1_path, 'data.xlsx'), 'XLSX', 'BLANK', 'BLANK',
+                       'Exiftool version 11.54', True, today, xlsx_kb, xlsx_md5, 'Microsoft Excel', 'Not for TA',
+                       'Not for Other'],
+                      [os.path.join(self.disk1_path, 'data.xlsx'), 'Office Open XML Workbook', 'BLANK', 'BLANK',
+                       'Tika version 1.21', True, today, xlsx_kb, xlsx_md5, 'Microsoft Excel', 'Not for TA',
+                       'Not for Other']]
 
         # Expected values for the duplicates subset.
-        rows = [['\\accession\\disk2\\disk1backup.zip', zip_kb, 'XXXXXXXXXX'],
-                ['\\accession\\disk2\\disk1backup2.zip', zip_kb, 'XXXXXXXXXX'],
-                ['\\accession\\disk2\\disk1backup3.zip', zip_kb, 'XXXXXXXXXX'],
-                ['\\accession\\disk2\\duplicate_file.txt', 3.6, 'c0090e0840270f422e0c357b719e8857'],
-                ['\\accession\\disk1\\duplicate_file.txt', 3.6, 'c0090e0840270f422e0c357b719e8857']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5']
-        df_duplicates_expected = pd.DataFrame(rows, columns=column_names)
+        expected10 = [['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5'],
+                      [os.path.join(self.disk2_path, 'disk1backup.zip'), zip_kb, zip_md5],
+                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), zip_kb, zip_md5],
+                      [os.path.join(self.disk2_path, 'disk1backup3.zip'), zip_kb, zip_md5],
+                      [os.path.join(self.disk2_path, 'duplicate_file.txt'), 3.6, 'c0090e0840270f422e0c357b719e8857'],
+                      [os.path.join(self.disk1_path, 'duplicate_file.txt'), 3.6, 'c0090e0840270f422e0c357b719e8857']]
 
         # Expected values for the validation subset.
-        rows = [['\\accession\\disk2\\error.html', 'Extensible Markup Language', 1, np.NaN, 'Jhove version 1.20.1',
-                 False, today, 0.035, 'e080b3394eaeba6b118ed15453e49a34', np.NaN, True, True,
-                 'Not able to determine type of end of line severity=info',
-                 'Low Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
-                        'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
-                        'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed',
-                        'FITS_Status_Message', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
-                        'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk']
-        df_validation_expected = pd.DataFrame(rows, columns=column_names)
+        expected11 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                       'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                       'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed',
+                       'FITS_Status_Message', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                      [os.path.join(self.disk2_path, 'error.html'), 'Extensible Markup Language', 1,
+                       'BLANK', 'Jhove version 1.20.1', False, today, 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
+                       'BLANK', True, True, 'Not able to determine type of end of line severity=info',
+                       'Low Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other']]
 
-        # Makes a dataframe with the values from each tab in format_analysis.xlsx made by the script.
-        # Provides a default MD5 for XLSX or ZIP files, since those have a different MD5 each time they are made.
-        # If the df is all XLSX or ZIP, the column is filled with the default. Otherwise, it is filtered by format first.
-        xlsx = pd.ExcelFile(os.path.join('collection', 'accession_format-analysis.xlsx'))
-        df_format_subtotal = pd.read_excel(xlsx, 'Format Subtotal')
-        df_nara_risk_subtotal = pd.read_excel(xlsx, 'NARA Risk Subtotal')
-        df_tech_appraisal_subtotal = pd.read_excel(xlsx, 'Tech Appraisal Subtotal')
-        df_other_risk_subtotal = pd.read_excel(xlsx, 'Other Risk Subtotal')
-        df_media_subtotal = pd.read_excel(xlsx, 'Media Subtotal')
-        df_nara_risk = pd.read_excel(xlsx, 'NARA Risk')
-        df_nara_risk['FITS_MD5'] = 'XXXXXXXXXX'
-        df_tech_appraisal = pd.read_excel(xlsx, 'For Technical Appraisal')
-        df_other_risk = pd.read_excel(xlsx, 'Other Risks')
-        df_multiple_ids = pd.read_excel(xlsx, 'Multiple Formats')
-        df_multiple_ids['FITS_MD5'] = 'XXXXXXXXXX'
-        df_duplicates = pd.read_excel(xlsx, 'Duplicates')
-        replace_md5 = df_duplicates['FITS_File_Path'].str.endswith('zip')
-        df_duplicates.loc[replace_md5, 'FITS_MD5'] = 'XXXXXXXXXX'
-        df_validation = pd.read_excel(xlsx, 'Validation')
-        xlsx.close()
-
-        # Compares the expected values to the actual script values.
-        # Using pandas test functionality because unittest assertEqual is unable to compare dataframes.
-        pd.testing.assert_frame_equal(df_format_subtotal, df_format_subtotal_expected)
-        pd.testing.assert_frame_equal(df_tech_appraisal_subtotal, df_tech_appraisal_subtotal_expected)
-        pd.testing.assert_frame_equal(df_nara_risk_subtotal, df_nara_risk_subtotal_expected)
-        pd.testing.assert_frame_equal(df_other_risk_subtotal, df_other_risk_subtotal_expected)
-        pd.testing.assert_frame_equal(df_media_subtotal, df_media_subtotal_expected)
-        pd.testing.assert_frame_equal(df_nara_risk, df_nara_risk_expected)
-        pd.testing.assert_frame_equal(df_tech_appraisal, df_tech_appraisal_expected)
-        pd.testing.assert_frame_equal(df_other_risk, df_other_risk_expected)
-        pd.testing.assert_frame_equal(df_multiple_ids, df_multiple_ids_expected)
-        pd.testing.assert_frame_equal(df_duplicates, df_duplicates_expected)
-        pd.testing.assert_frame_equal(df_validation, df_validation_expected)
+        # Compares the script results to the expected values.
+        self.assertEqual(result01.sort(), expected01.sort(), 'Problem with format subtotal')
+        self.assertEqual(result02, expected02, 'Problem with NARA risk subtotal')
+        self.assertEqual(result03, expected03, 'Problem with technical appraisal subtotal')
+        self.assertEqual(result04, expected04, 'Problem with other risk subtotal')
+        self.assertEqual(result05, expected05, 'Problem with media subtotal')
+        self.assertEqual(result06, expected06, 'Problem with NARA risk subset')
+        self.assertEqual(result07, expected07, 'Problem with technical appraisal subset')
+        self.assertEqual(result08, expected08, 'Problem with other risk subset')
+        self.assertEqual(result09, expected09, 'Problem with multiple ids subset')
+        self.assertEqual(result10, expected10, 'Problem with duplicates subset')
+        self.assertEqual(result11, expected11, 'Problem with validation subset')
 
 
 if __name__ == '__main__':
