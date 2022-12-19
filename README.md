@@ -20,6 +20,8 @@ The CSV can then be used as a change log to document the new shortened paths.
 
 Script usage: `python path/to/format-analysis.py path/to/accession_folder`
 
+Use an absolute path for the accession_folder. A relative path may prevent FITS XML from being generated.
+
 Before running the script, download [NARA's Preservation Action Plans CSV](https://github.com/usnationalarchives/digital-preservation/tree/master/Digital_Preservation_Plan_Spreadsheet) 
 and create a file named configuration.py from the configuration_template.py in the accessioning-scripts repo.
 
