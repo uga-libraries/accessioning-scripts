@@ -1,46 +1,63 @@
-"""Tests the code from the main body of the script which provides error handling
-for a missing or incorrect script argument, which is the path to the accession folder.
+"""Tests the function argument, which checks for a missing or incorrect script argument (accession folder).
 
-Test for the correct argument is part of test_x_full_script."""
+Note: the function will print messages about the errors if it works correctly."""
 
 import os
-import subprocess
 import unittest
+from format_analysis_functions import argument
 
 
 class MyTestCase(unittest.TestCase):
 
-    def test_no_argument_error(self):
+    def test_argument_correct(self):
         """
-        Test for running with script without the required argument.
+        Test for correctly providing the required argument, which is a valid path.
+        Result for testing is the string returned by the function.
+        """
+        # Creates a list of arguments to simulate the contents of sys.argv when running the script.
+        # The first list item is the script path and the second is the accession folder (what the function tests).
+        arguments = [os.path.join('..', 'format_analysis.py'), os.getcwd()]
+
+        # Runs the function being tested.
+        result = argument(arguments)
+
+        # Compares the results to what was expected.
+        # assertEqual prints "OK" or the differences between the two strings.
+        self.assertEqual(result, os.getcwd(), 'Problem with argument correct')
+
+    def test_error_no_argument(self):
+        """
+        Test for not including the required argument.
+        Result for testing is the value (False) returned by the function.
+        """
+        # Creates a list of arguments to simulate the contents of sys.argv when running the script.
+        # It only contains the script path.
+        arguments = [os.path.join('..', 'format_analysis.py')]
+
+        # Runs the function being tested.
+        result = argument(arguments)
+
+        # Compares the results to what was expected.
+        # assertEqual prints "OK" or the differences between the two strings.
+        self.assertEqual(result, False, 'Problem with error - no argument')
+
+    def test_error_path(self):
+        """
+        Test for running the script with an argument that that isn't a valid path.
         Result for testing is the error message.
         """
-        # Runs the script from the command line and converts the resulting error message to a string.
-        script_path = os.path.join('..', 'format_analysis.py')
-        script_output = subprocess.run(f'python {script_path}', shell=True, stdout=subprocess.PIPE)
-        result = script_output.stdout.decode("utf-8")
+        # Creates a list of arguments to simulate the contents of sys.argv when running the script.
+        # The first list item is the script path and the second is the accession folder (what the function tests).
+        arguments = [os.path.join('..', 'format_analysis.py'), os.path.join(os.getcwd(), 'MISSING_FOLDER')]
 
-        # Creates a string with the expected result.
-        expected = '\r\nThe required script argument (accession_folder) is missing.\r\n'
+        # Runs the function being tested.
+        result = argument(arguments)
 
-        # Compares the results. assertEqual prints "OK" or the differences between the two strings.
-        self.assertEqual(result, expected, 'Problem with no argument')
-
-    def test_path_error(self):
-        """
-        Trest for running the script with an argument that that isn't a valid path.
-        Result for testing is the error message.
-        """
-        # Runs the script from the command line and converts the resulting error message to a string.
-        script_path = os.path.join('..', 'format_analysis.py')
-        script_output = subprocess.run(f"python {script_path} C:/User/Wrong/Path", shell=True, stdout=subprocess.PIPE)
-        result = script_output.stdout.decode("utf-8")
-
-        # Creates a string with the expected result.
-        expected = "\r\nThe provided accession folder 'C:/User/Wrong/Path' is not a valid directory.\r\n"
+        # Compares the results to what was expected.
+        # assertEqual prints "OK" or the differences between the two strings.
 
         # Compares the results. assertEqual prints "OK" or the differences between the two strings.
-        self.assertEqual(result, expected, 'Problem with path error')
+        self.assertEqual(result, False, 'Problem with error - path')
 
 
 if __name__ == '__main__':

@@ -25,14 +25,8 @@ except ModuleNotFoundError:
 
 # Gets the accession folder path from the script argument and verifies it is correct.
 # If there is an error, ends the script.
-try:
-    accession_folder = sys.argv[1]
-except IndexError:
-    print("\nThe required script argument (accession_folder) is missing.")
-    sys.exit()
-
-if not os.path.exists(accession_folder):
-    print(f"\nThe provided accession folder '{accession_folder}' is not a valid directory.")
+accession_folder = argument(sys.argv)
+if accession_folder is False:
     sys.exit()
 
 # Verifies the configuration file has all of the required variables and the file paths are valid.

@@ -17,6 +17,27 @@ except ModuleNotFoundError:
     sys.exit()
 
 
+def argument(arg_list):
+    """Gets the accession folder path from the script argument and verifies it is correct.
+       Prints an explanation of any error encountered.
+       Returns the path or False if there is an error."""
+
+    # Tests if the required argument was given.
+    try:
+        accession_folder = arg_list[1]
+    except IndexError:
+        print("\nThe required script argument (accession_folder) is missing.")
+        return False
+
+    # If the argument is given, tests that it is a valid path.
+    if not os.path.exists(accession_folder):
+        print(f"\nThe provided accession folder '{accession_folder}' is not a valid directory.")
+        return False
+
+    # If the tests are passed, returns the path.
+    return accession_folder
+
+
 def check_configuration():
     """Verifies all the expected variables are in the configuration file and paths are valid.
     Returns a list of errors or an empty list if there are no errors."""
