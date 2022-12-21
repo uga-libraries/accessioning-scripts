@@ -23,60 +23,125 @@ class MyTestCase(unittest.TestCase):
 
     def setUp(self):
         """
-        Makes a collection folder with one accession folder that has files organized into 2 disks to use for testing.
-        Formats included: csv, html, plain text, xlsx, zip
-        Variations: duplicate files, empty file, file with multiple identifications (xlsx),
-                    file with validation error (html), technical appraisal (empty, trash), other risk (zip)
-        All subtotals and subsets in the final format analysis report will have some information.
-
+        Copies test files organized into 1 accession with 2 disks to use for testing.
+        The tests edit these files, so a copy must be used.
         Also makes variables with the expected values for each tab in the final format analysis report.
         """
-        # Makes a folder named collection, which contains a folder named accession,
-        # which contains 2 folders named disk1 and disk2. The folder disk1 contains a folder named trash.
+        # Copies the folder to use for testing.
+        # Formats included: csv, html, plain text, xlsx, zip
+        # Variations: duplicate files, empty file, file with multiple identifications (xlsx),
+        #             file with validation error (html), technical appraisal (empty, trash), other risk (zip)
+        # All subtotals and subsets in the final format analysis report will have some information.
+        shutil.copytree('test_collection', 'collection')
+
+        # Paths to the folders in the copied collection to use throughout the tests.
         self.disk1_path = os.path.join(os.getcwd(), 'collection', 'accession', 'disk1')
         self.disk2_path = os.path.join(os.getcwd(), 'collection', 'accession', 'disk2')
-        self.trash_path = os.path.join(self.disk1_path, 'trash')
-        os.makedirs(self.trash_path)
-        os.makedirs(self.disk2_path)
+        self.trash_path = os.path.join(os.getcwd(), 'collection', 'accession', 'disk1', 'trash')
 
-        # Makes 3 text files in the trash folder, which are candidates for technical appraisal.
-        with open(os.path.join(self.trash_path, 'trash.txt'), 'w') as file:
-            file.write('Trash Text ' * 20)
-        with open(os.path.join(self.trash_path, 'trash1.txt'), 'w') as file:
-            file.write('Trash Text ' * 21)
-        with open(os.path.join(self.trash_path, 'trash2.txt'), 'w') as file:
-            file.write('Trash Text ' * 22)
+        # Expected values for each tab in accession_format-analysis.xlsx
+        # These could be in the main code for the test, but it is already long.
 
-        # Uses pandas to make an Excel spreadsheet in the disk1 folder, which have multiple FITs format ids.
-        df_spreadsheet = pd.DataFrame()
-        df_spreadsheet[['C1', 'C2', 'C2', 'C3', 'C4', 'C5']] = 'Text' * 5000
-        df_spreadsheet = pd.concat([df_spreadsheet] * 3000, ignore_index=True)
-        df_spreadsheet.to_excel(os.path.join(self.disk1_path, 'data.xlsx'), index=False)
+        # Expected values for the format subtotal.
+        self.ex01 = [['FITS_Format_Name', 'NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                     ['empty', 'Low Risk', 1, 10, 0, 0],
+                     ['Extensible Markup Language', 'Low Risk', 1, 10, 0, 0],
+                     ['Office Open XML Workbook', 'Low Risk', 1, 10, 0.005, 14.002],
+                     ['Plain text', 'Low Risk', 3, 30, 0.008, 22.403],
+                     ['XLSX', 'Low Risk', 1, 10, .005, 14.002],
+                     ['ZIP Format', 'Moderate Risk', 3, 30, 0.016, 44.805]]
 
-        # Makes a text file in the disk1 folder and copies it to the disk2 folder to make a duplicate.
-        with open(os.path.join(self.disk1_path, 'duplicate_file.txt'), 'w') as file:
-            file.write('Text' * 900)
-        shutil.copyfile(os.path.join(self.disk1_path, 'duplicate_file.txt'),
-                        os.path.join(self.disk2_path, 'duplicate_file.txt'))
+        # Expected values for the NARA risk subtotal.
+        self.ex02 = [['NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                     ['Low Risk', 7, 70, 0.019, 53.206],
+                     ['Moderate Risk', 3, 30, 0.016, 44.805]]
 
-        # Makes a zip file of the contents of the disk1 folder and saves it to the disk2 folder.
-        # Then makes 2 copies of the zip file and saves those to the disk2 folder.
-        # Zip files are a format that meets the other risk criteria.
-        shutil.make_archive(os.path.join(self.disk2_path, 'disk1backup'), 'zip', self.disk1_path)
-        shutil.copyfile(os.path.join(self.disk2_path, 'disk1backup.zip'), os.path.join(self.disk2_path, 'disk1backup2.zip'))
-        shutil.copyfile(os.path.join(self.disk2_path, 'disk1backup.zip'), os.path.join(self.disk2_path, 'disk1backup3.zip'))
+        # Expected values for the tech appraisal subtotal.
+        self.ex03 = [['Technical_Appraisal', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                     ['Format', 'empty', 1, 10, 0, 0]]
 
-        # Makes an empty text file in the disk2 folder, which is a candidate for technical appraisal.
-        open(os.path.join(self.disk2_path, 'empty.txt'), 'w').close()
+        # Expected values for the other risk subtotal.
+        self.ex04 = [['Other_Risk', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+                     ['Archive format', 'ZIP Format', 3, 30, 0.016, 44.805]]
 
-        # Makes a file that claims to be HTML but is in fact a text file, to get a validation error in the FITS.
-        with open(os.path.join(self.disk2_path, 'error.html'), 'w') as file:
-            file.write('<body>This is not really html</body>')
+        # Expected values for the media subtotal.
+        self.ex05 = [['Media', 'File Count', 'Size (MB)', 'NARA High Risk (File Count)',
+                      'NARA Moderate Risk (File Count)', 'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
+                      'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
+                     ['disk1', 3, 0.014, 0, 0, 3, 0, 0, 0], ['disk2', 7, 0.021, 0, 3, 4, 0, 1, 3]]
+
+        # Expected values for the NARA risk subset.
+        self.ex06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
+                      'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk Level',
+                      'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                     [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2, False, '2022-12-21', 5.488,
+                      'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
+                      'Retain but extract files from the container', 'PRONOM', 'Not for TA',
+                      'Archive format'],
+                     [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2, False, '2022-12-21', 5.488,
+                      'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
+                      'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format'],
+                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, '2022-12-21', 5.488,
+                      'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
+                      'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format']]
+
+        # Expected values for the tech appraisal subset.
+        self.ex07 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
+                      'FITS_Multiple_IDs', 'FITS_Size_KB', 'FITS_Creating_Application', 'NARA_Risk Level',
+                      'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                     [os.path.join(self.disk2_path, 'empty.txt'), 'empty', 'BLANK', 'file utility version 5.03',
+                      False, 0, 'BLANK', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other']]
+
+        # Expected values for the other risk subset.
+        self.ex08 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
+                      'FITS_Multiple_IDs', 'FITS_Size_KB', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                      'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                     [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2,
+                      'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
+                      False, 5.488, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
+                      'Not for TA', 'Archive format'],
+                     [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2,
+                      'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
+                      False, 5.488, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
+                      'Not for TA', 'Archive format'],
+                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2,
+                      'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
+                      False, 5.488, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
+                      'Not for TA', 'Archive format']]
+
+        # Expected values for the multiple format identifications subset.
+        self.ex09 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                      'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                      'FITS_MD5', 'FITS_Creating_Application', 'Technical_Appraisal', 'Other_Risk'],
+                     [os.path.join(self.disk1_path, 'data.xlsx'), 'XLSX', 'BLANK', 'BLANK',
+                      'Exiftool version 11.54', True, '2022-12-21', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
+                      'Microsoft Excel', 'Not for TA', 'Not for Other'],
+                     [os.path.join(self.disk1_path, 'data.xlsx'), 'Office Open XML Workbook', 'BLANK', 'BLANK',
+                      'Tika version 1.21', True, '2022-12-21', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
+                      'Microsoft Excel', 'Not for TA', 'Not for Other']]
+
+        # Expected values for the duplicates subset.
+        self.ex10 = [['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5'],
+                      [os.path.join(self.disk2_path, 'disk1backup.zip'), 5.488, 'd585e96a134ddb7ca6764d41a62f20a1'],
+                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), 5.488, 'd585e96a134ddb7ca6764d41a62f20a1'],
+                      [os.path.join(self.disk2_path, 'disk1backup3.zip'), 5.488, 'd585e96a134ddb7ca6764d41a62f20a1'],
+                      [os.path.join(self.disk2_path, 'duplicate_file.txt'), 3.6, 'c0090e0840270f422e0c357b719e8857'],
+                      [os.path.join(self.disk1_path, 'duplicate_file.txt'), 3.6, 'c0090e0840270f422e0c357b719e8857']]
+
+        # Expected values for the validation subset.
+        self.ex11 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                      'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                      'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed',
+                      'FITS_Status_Message', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                      'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                     [os.path.join(self.disk2_path, 'error.html'), 'Extensible Markup Language', 1,
+                      'BLANK', 'Jhove version 1.20.1', False, '2022-12-21', 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
+                      'BLANK', True, True, 'Not able to determine type of end of line severity=info',
+                      'Low Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other']]
 
     def tearDown(self):
         """
-        Deletes the test files.
-        The initial test files and all script products are in the collection folder.
+        Deletes the collection folder, with the altered copy of the test files and script outputs.
         """
         shutil.rmtree('collection')
 
@@ -182,130 +247,18 @@ class MyTestCase(unittest.TestCase):
         result10 = [df_duplicates.columns.to_list()] + df_duplicates.values.tolist()
         result11 = [df_validation.columns.to_list()] + df_validation.values.tolist()
 
-        # The next several code blocks makes lists with the expected values for each tab in format_analysis.xlsx.
-
-        # Expected values for things that change (XLSX and ZIP) and are in more than one list are calculated here.
-        # There are 3 copies of the zip file and this information is the same for all 3.
-        today = datetime.date.today().strftime('%Y-%m-%d')
-        xlsx_kb = round(os.path.getsize(os.path.join(self.disk1_path, 'data.xlsx')) / 1000, 3)
-        xlsx_mb = round(xlsx_kb / 1000, 3)
-        xlsx_md5 = md5(os.path.join(self.disk1_path, 'data.xlsx'))
-        zip_kb = round(os.path.getsize(os.path.join(self.disk2_path, 'disk1backup.zip')) / 1000, 3)
-        zip_mb = round((os.path.getsize(os.path.join(self.disk2_path, 'disk1backup.zip')) / 1000 * 3) / 1000, 3)
-        zip_md5 = md5(os.path.join(self.disk2_path, 'disk1backup.zip'))
-        total_mb = df_risk['FITS_Size_KB'].sum() / 1000
-
-        # Expected values for the format subtotal.
-        expected01 = [['FITS_Format_Name', 'NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                      ['empty', 'Low Risk', 1, 10, 0, 0],
-                      ['Extensible Markup Language', 'Low Risk', 1, 10, 0, 0],
-                      ['Office Open XML Workbook', 'Low Risk', 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
-                      ['Plain text', 'Low Risk', 3, 30, 0.008, round((0.008 / total_mb) * 100, 3)],
-                      ['XLSX', 'Low Risk', 1, 10, xlsx_mb, round((xlsx_mb / total_mb) * 100, 3)],
-                      ['ZIP Format', 'Moderate Risk', 3, 30, zip_mb, round((zip_mb / total_mb) * 100, 3)]]
-
-        # Expected values for the NARA risk subtotal.
-        low_mb = round(df_risk[df_risk['NARA_Risk Level'] == 'Low Risk']['FITS_Size_KB'].sum() / 1000, 3)
-        expected02 = [['NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                      ['Low Risk', 7, 70, low_mb, round((low_mb / total_mb) * 100, 3)],
-                      ['Moderate Risk', 3, 30, zip_mb, round((zip_mb / total_mb) * 100, 3)]]
-
-        # Expected values for the tech appraisal subtotal.
-        expected03 = [['Technical_Appraisal', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                      ['Format', 'empty', 1, 10, 0, 0]]
-
-        # Expected values for the other risk subtotal.
-        expected04 = [['Other_Risk', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                      ['Archive format', 'ZIP Format', 3, 30, zip_mb, round((zip_mb / total_mb) * 100, 3)]]
-
-        # Expected values for the media subtotal.
-        disk1_mb = round(df_risk[df_risk['FITS_File_Path'].str.contains(r'\\disk1\\')]['FITS_Size_KB'].sum() / 1000, 3)
-        disk2_mb = round(df_risk[df_risk['FITS_File_Path'].str.contains(r'\\disk2\\')]['FITS_Size_KB'].sum() / 1000, 3)
-        expected05 = [['Media', 'File Count', 'Size (MB)', 'NARA High Risk (File Count)',
-                       'NARA Moderate Risk (File Count)', 'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
-                       'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
-                      ['disk1', 3, disk1_mb, 0, 0, 3, 0, 0, 0], ['disk2', 7, disk2_mb, 0, 3, 4, 0, 1, 3]]
-
-        # Expected values for the NARA risk subset.
-        expected06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
-                       'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk Level',
-                       'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
-                      [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2, False, today, zip_kb, zip_md5,
-                       'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                       'Archive format'],
-                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2, False, today, zip_kb, zip_md5,
-                       'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                       'Archive format'],
-                      [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, today, zip_kb, zip_md5,
-                       'Moderate Risk', 'Retain but extract files from the container', 'PRONOM', 'Not for TA',
-                       'Archive format']]
-
-        # Expected values for the tech appraisal subset.
-        expected07 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
-                       'FITS_Multiple_IDs', 'FITS_Size_KB', 'FITS_Creating_Application', 'NARA_Risk Level',
-                       'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
-                      [os.path.join(self.disk2_path, 'empty.txt'), 'empty', 'BLANK', 'file utility version 5.03',
-                       False, 0, 'BLANK', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other']]
-
-        # Expected values for the other risk subset.
-        expected08 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
-                       'FITS_Multiple_IDs', 'FITS_Size_KB', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
-                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
-                      [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2,
-                       'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
-                       False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
-                       'Not for TA', 'Archive format'],
-                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2,
-                       'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
-                       False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
-                       'Not for TA', 'Archive format'],
-                      [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2,
-                       'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
-                       False, zip_kb, 'Moderate Risk', 'Retain but extract files from the container', 'PRONOM',
-                       'Not for TA', 'Archive format']]
-
-        # Expected values for the multiple format identifications subset.
-        expected09 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
-                       'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
-                       'FITS_MD5', 'FITS_Creating_Application', 'Technical_Appraisal', 'Other_Risk'],
-                      [os.path.join(self.disk1_path, 'data.xlsx'), 'XLSX', 'BLANK', 'BLANK',
-                       'Exiftool version 11.54', True, today, xlsx_kb, xlsx_md5, 'Microsoft Excel', 'Not for TA',
-                       'Not for Other'],
-                      [os.path.join(self.disk1_path, 'data.xlsx'), 'Office Open XML Workbook', 'BLANK', 'BLANK',
-                       'Tika version 1.21', True, today, xlsx_kb, xlsx_md5, 'Microsoft Excel', 'Not for TA',
-                       'Not for Other']]
-
-        # Expected values for the duplicates subset.
-        expected10 = [['FITS_File_Path', 'FITS_Size_KB', 'FITS_MD5'],
-                      [os.path.join(self.disk2_path, 'disk1backup.zip'), zip_kb, zip_md5],
-                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), zip_kb, zip_md5],
-                      [os.path.join(self.disk2_path, 'disk1backup3.zip'), zip_kb, zip_md5],
-                      [os.path.join(self.disk2_path, 'duplicate_file.txt'), 3.6, 'c0090e0840270f422e0c357b719e8857'],
-                      [os.path.join(self.disk1_path, 'duplicate_file.txt'), 3.6, 'c0090e0840270f422e0c357b719e8857']]
-
-        # Expected values for the validation subset.
-        expected11 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
-                       'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
-                       'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed',
-                       'FITS_Status_Message', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
-                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
-                      [os.path.join(self.disk2_path, 'error.html'), 'Extensible Markup Language', 1,
-                       'BLANK', 'Jhove version 1.20.1', False, today, 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
-                       'BLANK', True, True, 'Not able to determine type of end of line severity=info',
-                       'Low Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other']]
-
         # Compares the script results to the expected values.
-        self.assertEqual(result01.sort(), expected01.sort(), 'Problem with format subtotal')
-        self.assertEqual(result02, expected02, 'Problem with NARA risk subtotal')
-        self.assertEqual(result03, expected03, 'Problem with technical appraisal subtotal')
-        self.assertEqual(result04, expected04, 'Problem with other risk subtotal')
-        self.assertEqual(result05, expected05, 'Problem with media subtotal')
-        self.assertEqual(result06, expected06, 'Problem with NARA risk subset')
-        self.assertEqual(result07, expected07, 'Problem with technical appraisal subset')
-        self.assertEqual(result08, expected08, 'Problem with other risk subset')
-        self.assertEqual(result09, expected09, 'Problem with multiple ids subset')
-        self.assertEqual(result10, expected10, 'Problem with duplicates subset')
-        self.assertEqual(result11, expected11, 'Problem with validation subset')
+        self.assertEqual(result01.sort(), self.ex01.sort(), 'Problem with format subtotal')
+        self.assertEqual(result02, self.ex02, 'Problem with NARA risk subtotal')
+        self.assertEqual(result03, self.ex03, 'Problem with technical appraisal subtotal')
+        self.assertEqual(result04, self.ex04, 'Problem with other risk subtotal')
+        self.assertEqual(result05, self.ex05, 'Problem with media subtotal')
+        self.assertEqual(result06, self.ex06, 'Problem with NARA risk subset')
+        self.assertEqual(result07, self.ex07, 'Problem with technical appraisal subset')
+        self.assertEqual(result08, self.ex08, 'Problem with other risk subset')
+        self.assertEqual(result09, self.ex09, 'Problem with multiple ids subset')
+        self.assertEqual(result10, self.ex10, 'Problem with duplicates subset')
+        self.assertEqual(result11, self.ex11, 'Problem with validation subset')
 
 
 if __name__ == '__main__':
