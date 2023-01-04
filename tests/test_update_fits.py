@@ -63,7 +63,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the contents of the accession_FITS folder.
         """
         # Deletes two files from the accession folder and runs the function being tested.
-        # There are no files anywhere in the accession folder with these file names.
+        # There are no files anywhere else in the accession folder with these file names.
         os.remove(os.path.join('accession', 'file.txt'))
         os.remove(os.path.join('accession', 'dir', 'additional.txt'))
         update_fits(self.accession_path, self.fits_path, os.getcwd(), 'accession')
@@ -132,7 +132,7 @@ class MyTestCase(unittest.TestCase):
     def test_add_duplicate(self):
         """
         Test for running the function after adding new files with name already in the accession folder.
-        Currently, this makes no change to FITS. Future development should change that.
+        Currently, this makes no change to FITS. Future development will change that.
         Result for testing is the contents of the accession_FITS folder.
         """
         # Adds two files to the accession folder and runs the function being tested.
