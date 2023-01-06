@@ -194,6 +194,7 @@ if __name__ == "__main__":
                     wr_revlog.writerow(data)
 
                 # Check the path length to see if it exceeds the Windows max path length
+                path.replace('\\', '\\\\')
                 if len(path) > 260:
                     data.append("Path exceeds 260 characters")
                     wr_revlog.writerow(data)
