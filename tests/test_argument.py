@@ -55,8 +55,6 @@ class MyTestCase(unittest.TestCase):
 
         # Compares the results to what was expected.
         # assertEqual prints "OK" or the differences between the two strings.
-
-        # Compares the results. assertEqual prints "OK" or the differences between the two strings.
         self.assertEqual(result, False, 'Problem with error - path')
 
 
