@@ -41,12 +41,23 @@ def scan_full_dir(dirpath):
         Inidividual os.DirEntry objects for each file or directory in the tree, as they are generated
         Description of os.DirEntry attributes: https://docs.python.org/3/library/os.html#os.DirEntry
     """
-
+    not_found = []
     for entry in os.scandir(dirpath):
-        if entry.is_dir():
-            yield from scan_full_dir(entry.path)
+        try: 
+            if entry.is_dir():
+                yield from scan_full_dir(entry.path)
+            else:
+                yield entry
+        except FileNotFoundError:
+            print (entry)
+            not_found.append(entry)
+    
+    for x in not_found:
+        ext_path = (f'\\\\?\\{x.path}')
+        if x.is_dir():
+            yield from scan_full_dir(ext_path)
         else:
-            yield entry
+            yield ext_path
 
 def find_init_manifest(dirpath):
     """Scans a directory and identifies a CSV file manifest created by this script
@@ -115,15 +126,6 @@ def get_file_info(entry):
     date_created = datetime.fromtimestamp(created).strftime('%Y-%m-%d')
 
     data.extend([path, sizeKB, date_modified, date_created])
-
-    if len(path) > 250:
-        path = (f'\\\\?\\{path}')
-    with open(path, 'rb') as f:
-        file_data = f.read()
-        md5 = hashlib.md5(file_data).hexdigest()
-        md5_generated = md5.upper()
-        data.append(md5_generated)
-
     return data
 
 if __name__ == "__main__":
@@ -165,39 +167,51 @@ if __name__ == "__main__":
             wr_revlog.writerow(header)
 
             # Scan through the full directory tree and write the relevant file information to the manifest
+            
             for entry in scan_full_dir(dir_to_log):
-                data = get_file_info(entry)
+                try:
+                    data = get_file_info(entry)
 
-                # Skip over log documents
-                if any(x in data[0] for x in log_docs):
-                    continue
-                else:
+                    # Skip over log documents
+                    if any(x in data[0] for x in log_docs):
+                        continue
+                    else:
+                        # Generate MD5 checksum for each file in initial manifest
+                        path = data[0]
+                        with open(path, 'rb') as f:
+                            file_data = f.read()
+                            md5 = hashlib.md5(file_data).hexdigest()
+                            md5_generated = md5.upper()
+                            data.append(md5_generated)
+                            wr_initman.writerow(data)
+                    # Look at the file path and check for any problematic characters
+                    filepath = data[0]
+                    path = str(filepath)
+
+                    tempfiles = ['~', '._']
+                    probchars = ['&', '$', '*', '?']
+                    smartquotes = ['“', '”', '’']
+
+                    # If the path contains any of these substrings, write the relevant file info to the review log and include the reason
+                    if any (t in path for t in tempfiles):
+                        data.append("Potential temp file")
+                        wr_revlog.writerow(data)
+                    if any (c in path for c in probchars):
+                        data.append("Path contains special characters")
+                        wr_revlog.writerow(data)
+                    if any (q in path for q in smartquotes):
+                        data.append("Path contains smart quotes or apostrophes")
+                        wr_revlog.writerow(data)
+
+                    # Check the path length to see if it exceeds the Windows max path length
+                    path.replace('\\', '\\\\')
+                    if len(path) > 260:
+                        data.append("Path exceeds 260 characters")
+                        wr_revlog.writerow(data)
+                except FileNotFoundError:
+                    data = ["Path not found", None, None, None, "FileNotFoundError"]
                     wr_initman.writerow(data)
-
-                # Look at the file path and check for any problematic characters
-                filepath = data[0]
-                path = str(filepath)
-
-                tempfiles = ['~', '._']
-                probchars = ['&', '$', '*', '?']
-                smartquotes = ['“', '”', '’']
-
-                # If the path contains any of these substrings, write the relevant file info to the review log and include the reason
-                if any (t in path for t in tempfiles):
-                    data.append("Potential temp file")
-                    wr_revlog.writerow(data)
-                if any (c in path for c in probchars):
-                    data.append("Path contains special characters")
-                    wr_revlog.writerow(data)
-                if any (q in path for q in smartquotes):
-                    data.append("Path contains smart quotes or apostrophes")
-                    wr_revlog.writerow(data)
-
-                # Check the path length to see if it exceeds the Windows max path length
-                path.replace('\\', '\\\\')
-                if len(path) > 260:
-                    data.append("Path exceeds 260 characters")
-                    wr_revlog.writerow(data)
+                    continue
     
     # If there's a "compare" argument, scan the directory and put current file information into a new dataframe
     if start_compare == "compare":
@@ -262,7 +276,3 @@ if __name__ == "__main__":
             deleted.to_csv(f'{dir_to_log}\\deletionlog_{date}.csv', encoding="utf-8", index=False)
 
     print(f'\nScript is finished running.')
-                
-
-
-                
