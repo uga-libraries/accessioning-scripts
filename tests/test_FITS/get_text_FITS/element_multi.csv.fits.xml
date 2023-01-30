@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.5.0" timestamp="12/14/22 1:56 PM">
+  <identification status="SINGLE_RESULT">
+    <identity format="Comma-Separated Values (CSV)" mimetype="text/csv" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="Droid" toolversion="6.4" />
+      <externalIdentifier toolname="Droid" toolversion="6.4" type="puid">x-fmt/18</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">C:\accession\disk1\element_multi.csv</filepath>
+    <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">element_multi.csv</filename>
+    <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">6002010</size>
+    <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">f95a4c954014342e4bf03f51fcefaecd</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1671044171723</fslastmodified>
+    <creatingApplicationName toolname="Exiftool" toolversion="11.54" status="CONFLICT">Creating_Tool_Option_One</creatingApplicationName>
+    <creatingApplicationName toolname="Droid" toolversion="6.4" status="CONFLICT">Creating_Tool_Option_Two</creatingApplicationName>
+  </fileinfo>
+  <filestatus />
+  <metadata />
+  <statistics fitsExecutionTime="574">
+    <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+    <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="Droid" toolversion="6.4" executionTime="138" />
+    <tool toolname="Jhove" toolversion="1.20.1" status="did not run" />
+    <tool toolname="file utility" toolversion="5.03" status="did not run" />
+    <tool toolname="Exiftool" toolversion="11.54" executionTime="568" />
+    <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="did not run" />
+    <tool toolname="OIS File Information" toolversion="1.0" executionTime="136" />
+    <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+    <tool toolname="ffident" toolversion="0.2" executionTime="528" />
+    <tool toolname="Tika" toolversion="1.21" executionTime="222" />
+  </statistics>
+</fits>
+

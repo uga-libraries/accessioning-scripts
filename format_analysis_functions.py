@@ -17,6 +17,27 @@ except ModuleNotFoundError:
     sys.exit()
 
 
+def argument(arg_list):
+    """Gets the accession folder path from the script argument and verifies it is correct.
+       Prints an explanation of any error encountered.
+       Returns the path or False if there is an error."""
+
+    # Tests if the required argument was given.
+    try:
+        accession_folder = arg_list[1]
+    except IndexError:
+        print("\nThe required script argument (accession_folder) is missing.")
+        return False
+
+    # If the argument is given, tests that it is a valid path.
+    if not os.path.exists(accession_folder):
+        print(f"\nThe provided accession folder '{accession_folder}' is not a valid directory.")
+        return False
+
+    # If the tests are passed, returns the path.
+    return accession_folder
+
+
 def check_configuration():
     """Verifies all the expected variables are in the configuration file and paths are valid.
     Returns a list of errors or an empty list if there are no errors."""
@@ -119,32 +140,37 @@ def update_fits(accession_folder, fits_output, collection_folder, accession_numb
             sys.exit()
 
 
+def get_text(parent, element):
+    """Returns a single string, regardless of if the element is missing, appears once, or repeats.
+    The parent element does not need to be a child of root.
+    This function cannot be used if the desired value is an attribute instead of element text.
+    This function's output is used by fits_row as part of combining data from one XML into a list."""
+
+    # FITS namespace. All elements in the FITS XML are part of this namespace.
+    ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
+
+    # If one or more instances of the element are present, returns the element value(s) as a string.
+    # For multiple instances, puts a semicolon between the value for each instance.
+    try:
+        value = ""
+        value_list = parent.findall(f"fits:{element}", ns)
+        for item in value_list:
+            if value == "":
+                value += item.text
+            else:
+                value += f"; {item.text}"
+        return value
+    # If the element is missing, item.text raises an AttributeError.
+    # Returns None, which results in a blank cell in the CSV.
+    except AttributeError:
+        return None
+
+
 def fits_row(fits_file):
     """Extracts desired fields from a FITS XML file, reformatting when necessary, for each format identification.
     A single file may have multiple possible format identifications.
     Returns a list of lists, where each list is the information for a single format identification.
     This function's output is used by make_fits_csv() to combine all FITS information into a single CSV."""
-
-    def get_text(parent, element):
-        """Returns a single string, regardless of if the element is missing, appears once, or repeats.
-        The parent element does not need to be a child of root.
-        This function cannot be used if the desired value is an attribute instead of element text."""
-
-        # If one or more instances of the element are present, returns the element value(s) as a string.
-        # For multiple instances, puts a semicolon between the value for each instance.
-        try:
-            value = ""
-            value_list = parent.findall(f"fits:{element}", ns)
-            for item in value_list:
-                if value == "":
-                    value += item.text
-                else:
-                    value += f"; {item.text}"
-            return value
-        # If the element is missing, item.text raises an AttributeError.
-        # Returns None, which results in a blank cell in the CSV.
-        except AttributeError:
-            return None
 
     # Reads the FITS XML file. If there is a read error (rare), prints the filename and continues the script.
     try:
@@ -264,7 +290,7 @@ def fits_row(fits_file):
     return fits_rows
 
 
-def make_fits_csv(fits_output, accession_folder, collection_folder, accession_number):
+def make_fits_csv(fits_output, collection_folder, accession_number):
     """Makes a single CSV with FITS information for all files in the accession.
     Each row in the CSV is a single format identification. A file may have multiple identifications."""
 
@@ -278,7 +304,7 @@ def make_fits_csv(fits_output, accession_folder, collection_folder, accession_nu
     # Extracts select format information for each FITS file, with some data reformatting, and saves it to a CSV.
     # If it cannot save due to an encoding error, saves the filepath to a text file.
     for fits_xml in os.listdir(fits_output):
-        rows_list = fits_row(f"{accession_folder}_FITS/{fits_xml}")
+        rows_list = fits_row(os.path.join(fits_output, fits_xml))
         for row in rows_list:
             try:
                 csv_write.writerow(row)
@@ -371,14 +397,10 @@ def match_technical_appraisal(df_results, df_ita):
     Technical appraisal candidates include formats specified in the ITA spreadsheet and files in trash folders.
     Returns an updated results dataframe."""
 
-    # Makes a list of FITS formats that are typically deleted during technical appraisal.
-    ta_list = df_ita["FITS_FORMAT"].tolist()
-
     # Makes a column Technical_Appraisal and puts the value "Format" for any row with a FITS_Format_Name
-    # that matches any formats in the ta_list. The match is case insensitive and will match partial strings.
+    # that exactly matches any formats in the ta_list (FITS_FORMAT column in ITAfileformats.csv).
     # re.escape prevents errors from characters in the format name that have regex meanings.
-    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
-                   "Technical_Appraisal"] = "Format"
+    df_results.loc[df_results["FITS_Format_Name"].isin(df_ita["FITS_FORMAT"].tolist()), "Technical_Appraisal"] = "Format"
 
     # Puts the value "Trash" in the Technical_Appraisal column for any row with a folder named trash or trashes.
     # Including the \ before and after the search term so it matches a complete folder name.
@@ -397,29 +419,23 @@ def match_other_risk(df_results, df_other):
     appraisal information. Other risk candidates include formats specified in the risk spreadsheet
     and formats with NARA low risk but a preservation plan to transform. Returns an updated results dataframe."""
 
-    # Makes a column Other_Risk and puts the value "NARA Low/Transform" for any row with a NARA risk level of low
+    # Adds information from Riskfileformats.csv to the dataframe if the format in both is exactly the same.
+    # If the format isn't a match, the cells for the two columns from Riskfileformats.csv will be empty for that row.
+    df_results = pd.merge(df_results, df_other, left_on="FITS_Format_Name", right_on="FITS_FORMAT", how="left")
+
+    # Cleans up the dataframe after the merge by removing the format column imported from the CSV and
+    # renaming the RISK_CRITERIA column (name in the CSV) to Other_Risk.
+    df_results.drop(["FITS_FORMAT"], inplace=True, axis=1)
+    df_results.rename(columns={"RISK_CRITERIA": "Other_Risk"}, inplace=True)
+
+    # For files that didn't match a format in Riskfileformats.csv (Other_Risk is empty),
+    # puts the value "NARA Low/Transform" for any row with a NARA risk level of low
     # and a NARA proposed preservation plan that starts with the word Transform.
-    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") & (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")), "Other_Risk"] = "NARA Low/Transform"
+    df_results.loc[(df_results["Other_Risk"].isnull()) &
+                   (df_results["NARA_Risk Level"] == "Low Risk") &
+                   (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")), "Other_Risk"] = "NARA Low/Transform"
 
-    # Makes a list of FITS formats that typically indicate a risk.
-    risk_list = df_other["FITS_FORMAT"].tolist()
-
-    # Gets a list of the row index for any row where the FITS_Format_Name matches a format on the risk list.
-    # The match is case insensitive and will match partial strings.
-    # re.escape prevents errors from characters in the format name that have regex meanings.
-    indexes = df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)),
-                                                                         case=False)].index
-
-    # For each index in the list, gets the FITS format name for that row and looks it up in the risk spreadsheet.
-    # The match to the risk spreadsheet is case insensitive by converting values to lower case.
-    # Puts the risk criteria from the risk spreadsheet in the Other_Risk column.
-    # If the row already has "NARA Low/Transform", it will be replaced with the risk criteria.
-    for index in indexes:
-        format_name = df_results.loc[index, "FITS_Format_Name"].lower()
-        risk_criteria = df_other[df_other["FITS_FORMAT"].str.lower() == format_name]["RISK_CRITERIA"].values[0]
-        df_results.loc[index, "Other_Risk"] = risk_criteria
-
-    # Puts a default value for any row that is blank because it didn't match either type of other risk.
+    # Fills blanks in Other_Risk (no match in the CSV and not NARA Low Risk/Transform) to a default value.
     df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
 
     return df_results
@@ -440,11 +456,10 @@ def subtotal(df, criteria, totals):
     df_subtotals = pd.concat([files, files_percent, size, size_percent], axis=1)
     df_subtotals.columns = ["File Count", "File %", "Size (MB)", "Size %"]
 
-    # Adds default text if there were no files of this type and the dataframe is empty.
+    # If the dataframe is empty (no files that meet the criteria), the dataframe is given a default value.
     # This prevents an error from trying to save an empty dataframe to Excel later.
     if len(df_subtotals) == 0:
-        df_subtotals.loc[len(df_subtotals)] = ["No data of this type", np.NaN, np.NaN, np.NaN]
-
+        df_subtotals = pd.DataFrame([["No data of this type"]])
     return df_subtotals
 
 
