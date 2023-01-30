@@ -16,6 +16,8 @@ class MyTestCase(unittest.TestCase):
     def test_no_risk(self):
         """
         Test for files that do not meet any risk criteria.
+        The format isn't in Riskfileformats.csv and the NARA data is not both a risk level of Low and
+        a preservation plan that starts with Transform.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
@@ -36,17 +38,73 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with no risk')
 
+    def test_no_risk_format_partial(self):
+        """
+        Test for files that do not meet any risk criteria.
+        The format partially matches the Riskfileformats.csv spreadsheet, but an exact match is required.
+        It also doesn't have the combination of NARA low risk with a plan to transform.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        rows = [['Adobe Photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000'],
+                ['A CorelDraw Drawing v1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF'],
+                ['Style Sheet', 'Low Risk', 'Retain'],
+                ['XYZIP Format', 'Low Risk', 'Retain']]
+        df_results = pd.DataFrame(rows,
+                                  columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
+        df_other = csv_to_dataframe(c.RISK)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_other_risk(df_results, df_other)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['Adobe Photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Not for Other'],
+                    ['A CorelDraw Drawing v1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'Not for Other'],
+                    ['Style Sheet', 'Low Risk', 'Retain', 'Not for Other'],
+                    ['XYZIP Format', 'Low Risk', 'Retain', 'Not for Other']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with no risk, format is only a partial match')
+
+    def test_no_risk_format_case(self):
+        """
+        Test for files that do not meet any risk criteria.
+        The format is in Riskfileformats.csv, but the case is different and an exact match is required.
+        It also doesn't have the combination of NARA low risk with a plan to transform.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        rows = [['adobe photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000'],
+                ['CorelDRAW Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF'],
+                ['Zip Format', 'Low Risk', 'Retain']]
+        df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
+        df_other = csv_to_dataframe(c.RISK)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_other_risk(df_results, df_other)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['adobe photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Not for Other'],
+                    ['CorelDRAW Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'Not for Other'],
+                    ['Zip Format', 'Low Risk', 'Retain', 'Not for Other']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with no risk, format is a different case')
+
     def test_no_risk_low_only(self):
         """
         Test for files that do not meet any risk criteria.
-        NARA risk is low but the plan is not transform, so it isn't a match.
+        The format isn't in Riskfileformats.csv and NARA risk is low but the plan is not transform, so it isn't a match.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
         rows = [['Audio Video Interleave Format (AVI)', 'Low Risk', 'Retain'],
                 ['Broadcast Wave (BWF) v. 0', 'Low Risk', 'Retain']]
-        df_results = pd.DataFrame(rows,
-                                  columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
+        df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -59,12 +117,12 @@ class MyTestCase(unittest.TestCase):
                     ['Broadcast Wave (BWF) v. 0', 'Low Risk', 'Retain', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with no risk, NARA low risk but not transform')
+        self.assertEqual(result, expected, 'Problem with no risk, NARA is low risk but not transform')
 
     def test_no_risk_transform_only(self):
         """
         Test for files that do not meet any risk criteria.
-        NARA plan is transform, but it isn't low risk, so it isn't a match.
+        The format isn't in Riskfileformats.csv and NARA plan is transform, but it isn't low risk, so it isn't a match.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
@@ -85,7 +143,34 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with no risk, NARA transform but not low risk')
 
-    def test_nara(self):
+    def test_format(self):
+        """
+        Test for files that match a format for other risk.
+        The format is not NARA low risk with a plan to transform.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        rows = [['Adobe Photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000'],
+                ['CorelDraw Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF'],
+                ['ZIP Format', 'Low Risk', 'Retain']]
+        df_results = pd.DataFrame(rows,
+                                  columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
+        df_other = csv_to_dataframe(c.RISK)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_other_risk(df_results, df_other)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['Adobe Photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
+                    ['CorelDraw Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'Layered image file'],
+                    ['ZIP Format', 'Low Risk', 'Retain', 'Archive format']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with format')
+
+    def test_nara_low_transform(self):
         """
         Test for files that are NARA low risk with a plan to transform.
         The format is not in the Riskfileformats.csv spreadsheet.
@@ -109,16 +194,15 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with NARA low risk/transform')
 
-    def test_format_case_match(self):
+    def test_format_and_nara_match(self):
         """
-        Test for files that match a format for other risk, where the case and full format name match.
-        The format is not NARA low risk with a plan to transform.
+        Test for files that are NARA Low Risk/Transform and the format is in the Riskfileformats.csv spreadsheet.
+        When a file matches both categories, the format risk is applied.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['Adobe Photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000'],
-                ['CorelDraw Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF'],
-                ['ZIP Format', 'Low Risk', 'Retain']]
+        rows = [['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000'],
+                ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000']]
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
@@ -128,124 +212,11 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-                    ['Adobe Photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
-                    ['CorelDraw Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'Layered image file'],
-                    ['ZIP Format', 'Low Risk', 'Retain', 'Archive format']]
+                    ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
+                    ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000', 'Layered image file']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with format, case matches')
-
-    # def test_format_case_match_partial(self):
-    #     """
-    #     Test for files that match a format for other risk,
-    #     where the case matches and only partially matching the format string.
-    #     The format is not NARA low risk with a plan to transform.
-    #     Result for testing is the df returned by the function, converted to a list for an easier comparison.
-    #     """
-    #     # Creates test input.
-    #     rows = [['Adobe Photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000'],
-    #             ['A CorelDraw Drawing v1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF'],
-    #             ['XYZIP Format', 'Low Risk', 'Retain']]
-    #     df_results = pd.DataFrame(rows,
-    #                               columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
-    #     df_other = csv_to_dataframe(c.RISK)
-    #
-    #     # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
-    #     df_results = match_other_risk(df_results, df_other)
-    #     result = [df_results.columns.to_list()] + df_results.values.tolist()
-    #
-    #     # Creates a list with the expected result.
-    #     expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-    #                 ['Adobe Photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
-    #                 ['A CorelDraw Drawing v1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF',
-    #                  'Layered image file'],
-    #                 ['XYZIP Format', 'Low Risk', 'Retain', 'Archive format']]
-    #
-    #     # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-    #     self.assertEqual(result, expected, 'Problem with format, case matches, partial string')
-
-    def test_format_case_no_match(self):
-        """
-        Test for files that match a format for other risk,
-        where case does not matching case and the entire format name is matched.
-        The format is not NARA low risk with a plan to transform.
-        Result for testing is the df returned by the function, converted to a list for an easier comparison.
-        """
-        # Creates test input.
-        rows = [['adobe photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000'],
-                ['CorelDRAW Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF'],
-                ['Zip Format', 'Low Risk', 'Retain']]
-        df_results = pd.DataFrame(rows,
-                                  columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
-        df_other = csv_to_dataframe(c.RISK)
-
-        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
-        df_results = match_other_risk(df_results, df_other)
-        result = [df_results.columns.to_list()] + df_results.values.tolist()
-
-        # Creates a list with the expected result.
-        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-                    ['adobe photoshop file', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
-                    ['CorelDRAW Drawing', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF',
-                     'Layered image file'],
-                    ['Zip Format', 'Low Risk', 'Retain', 'Archive format']]
-
-        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with format, case does not match')
-
-    # def test_format_case_no_match_partial(self):
-    #     """
-    #     Test for files that match a format for other risk,
-    #     where case does not match and only partially matching the format string.
-    #     The format is not NARA low risk with a plan to transform.
-    #     Result for testing is the df returned by the function, converted to a list for an easier comparison.
-    #     """
-    #     # Creates test input
-    #     rows = [['adobe photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000'],
-    #             ['ACORELDRAW DRAWING V1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF'],
-    #             ['XYzip format', 'Low Risk', 'Retain']]
-    #     df_results = pd.DataFrame(rows,
-    #                               columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
-    #     df_other = csv_to_dataframe(c.RISK)
-    #
-    #     # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
-    #     df_results = match_other_risk(df_results, df_other)
-    #     result = [df_results.columns.to_list()] + df_results.values.tolist()
-    #
-    #     # Creates a list with the expected result.
-    #     expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-    #                 ['adobe photoshop files', 'Moderate Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
-    #                 ['ACORELDRAW DRAWING V1', 'High Risk', 'Transform to a TBD format, possibly PDF or TIFF',
-    #                  'Layered image file'],
-    #                 ['WYzip format', 'Low Risk', 'Retain', 'Archive format']]
-    #
-    #     # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-    #     self.assertEqual(result, expected, 'Problem with format, case does not match, partial string')
-
-    def test_nara_and_format(self):
-        """
-        Test for files that are NARA Low Risk/Transform and the format is in the Riskfileformats.csv spreadsheet.
-        When a file matches both categories, the format risk is applied.
-        Result for testing is the df returned by the function, converted to a list for an easier comparison.
-        """
-        # Creates test input.
-        rows = [['Cascading Style Sheet', 'Low Risk', 'Retain'],
-                ['ZIP Format', 'Low Risk', 'Retain']]
-        df_results = pd.DataFrame(rows,
-                                  columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
-        df_other = csv_to_dataframe(c.RISK)
-
-        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
-        df_results = match_other_risk(df_results, df_other)
-        result = [df_results.columns.to_list()] + df_results.values.tolist()
-
-        # Creates a list with the expected result.
-        expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-                    ['Cascading Style Sheet', 'Low Risk', 'Retain', 'Possible saved web page'],
-                    ['ZIP Format', 'Low Risk', 'Retain', 'Archive format']]
-
-        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with NARA and format')
+        self.assertEqual(result, expected, 'Problem with format and NARA low risk/transform')
 
 
 if __name__ == '__main__':

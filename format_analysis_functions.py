@@ -424,30 +424,23 @@ def match_other_risk(df_results, df_other):
     appraisal information. Other risk candidates include formats specified in the risk spreadsheet
     and formats with NARA low risk but a preservation plan to transform. Returns an updated results dataframe."""
 
-    # Makes a column Other_Risk and puts the value "NARA Low/Transform" for any row with a NARA risk level of low
+    # Adds information from Riskfileformats.csv to the dataframe if the format in both is exactly the same.
+    # If the format isn't a match, the cells for the two columns from Riskfileformats.csv will be empty for that row.
+    df_results = pd.merge(df_results, df_other, left_on="FITS_Format_Name", right_on="FITS_FORMAT", how="left")
+
+    # Cleans up the dataframe after the merge by removing the format column imported from the CSV and
+    # renaming the RISK_CRITERIA column (name in the CSV) to Other_Risk.
+    df_results.drop(["FITS_FORMAT"], inplace=True, axis=1)
+    df_results.rename(columns={"RISK_CRITERIA": "Other_Risk"}, inplace=True)
+
+    # For files that didn't match a format in Riskfileformats.csv (Other_Risk is empty),
+    # puts the value "NARA Low/Transform" for any row with a NARA risk level of low
     # and a NARA proposed preservation plan that starts with the word Transform.
-    df_results.loc[(df_results["NARA_Risk Level"] == "Low Risk") & (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")), "Other_Risk"] = "NARA Low/Transform"
+    df_results.loc[(df_results["Other_Risk"].isnull()) &
+                   (df_results["NARA_Risk Level"] == "Low Risk") &
+                   (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")), "Other_Risk"] = "NARA Low/Transform"
 
-    # Makes a list of FITS formats that typically indicate a risk.
-    risk_list = df_other["FITS_FORMAT"].tolist()
-
-    # Gets a list of the row index for any row where the FITS_Format_Name matches a format on the risk list.
-    # The match is case insensitive and will match if the entire term in Riskfileformats.csv matches
-    # part of the FITS format name.
-    # re.escape prevents errors from characters in the format name that have regex meanings.
-    indexes = df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, risk_list)),
-                                                                         case=False)].index
-
-    # For each index in the list, gets the FITS format name for that row and looks it up in the risk spreadsheet.
-    # The match to the risk spreadsheet is case insensitive by converting values to lower case.
-    # Puts the risk criteria from the risk spreadsheet in the Other_Risk column.
-    # If the row already has "NARA Low/Transform", it will be replaced with the risk criteria.
-    for index in indexes:
-        format_name = df_results.loc[index, "FITS_Format_Name"].lower()
-        risk_criteria = df_other[df_other["FITS_FORMAT"].str.lower() == format_name]["RISK_CRITERIA"].values[0]
-        df_results.loc[index, "Other_Risk"] = risk_criteria
-
-    # Puts a default value for any row that is blank because it didn't match either type of other risk.
+    # Fills blanks in Other_Risk (no match in the CSV and not NARA Low Risk/Transform) to a default value.
     df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
 
     return df_results
