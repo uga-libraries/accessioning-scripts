@@ -397,15 +397,10 @@ def match_technical_appraisal(df_results, df_ita):
     Technical appraisal candidates include formats specified in the ITA spreadsheet and files in trash folders.
     Returns an updated results dataframe."""
 
-    # Makes a list of FITS formats that are typically deleted during technical appraisal.
-    ta_list = df_ita["FITS_FORMAT"].tolist()
-
     # Makes a column Technical_Appraisal and puts the value "Format" for any row with a FITS_Format_Name
-    # that matches any formats in the ta_list. The match is case insensitive and will match if the entire term
-    # in ITAfileformats.csv matches part of the FITS format name.
+    # that exactly matches any formats in the ta_list (FITS_FORMAT column in ITAfileformats.csv).
     # re.escape prevents errors from characters in the format name that have regex meanings.
-    df_results.loc[df_results["FITS_Format_Name"].str.contains("|".join(map(re.escape, ta_list)), case=False),
-                   "Technical_Appraisal"] = "Format"
+    df_results.loc[df_results["FITS_Format_Name"].isin(df_ita["FITS_FORMAT"].tolist()), "Technical_Appraisal"] = "Format"
 
     # Puts the value "Trash" in the Technical_Appraisal column for any row with a folder named trash or trashes.
     # Including the \ before and after the search term so it matches a complete folder name.
