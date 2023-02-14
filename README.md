@@ -47,23 +47,6 @@ reusing information from previous script iterations where it will save time or a
    so that the risk spreadsheet can be updated with the current formats.
 
 
-## format_analysis_tests.py
-
-Script usage: `python path/to/format_analysis_tests.py path/to/output_folder`
-
-For any tests that do not import the function from format_analysis_functions.py, sync the code before running the test. 
-If the input for any function or analysis changes, edit the test input and expected results.
-To test a FITS class error, save the fits.bat or fits.sh file to a different letter directory than the output folder and
-update the fits_path variable in test_fits_class_error().
-
-This script tests each function and analysis component (each subset and subtotal) in the format_analysis.py script. 
-Each test creates simplified input, runs the code, and compares it to the expected output.
-Tests include all known input data variations and function error handling.
-Results for failed tests are saved to a directory specified with the script argument.
-There are 49 tests organized into 28 functions.
-Note: these are not formal unit tests but will be converted to unit tests in the next development round.
-
-
 ## technical-appraisal-logs.py
 
 Script usage: `python /path/to/script /path/to/accession/directory [compare]`
