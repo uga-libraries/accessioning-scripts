@@ -117,9 +117,9 @@ class MyTestCase(unittest.TestCase):
                     ['Broadcast Wave (BWF) v. 0', 'Low Risk', 'Retain', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with no risk, NARA is low risk but not transform')
+        self.assertEqual(result, expected, 'Problem with no risk, NARA is low risk but retain')
 
-    def test_no_risk_transform_only(self):
+    def test_no_risk_plan_only(self):
         """
         Test for files that do not meet any risk criteria.
         The format isn't in Riskfileformats.csv and NARA plan is not Retain, but it isn't low risk, so it isn't a match.
@@ -147,7 +147,7 @@ class MyTestCase(unittest.TestCase):
                     ['Icon file format', 'High Risk', 'Further research is required', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with no risk, NARA transform but not low risk')
+        self.assertEqual(result, expected, 'Problem with no risk, NARA plan is not retain but not low risk')
 
     def test_format(self):
         """
@@ -176,7 +176,7 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with format')
 
-    def test_nara_low_transform(self):
+    def test_nara(self):
         """
         Test for files that are NARA low risk with a plan other than Retain.
         The format is not in the Riskfileformats.csv spreadsheet.
@@ -197,14 +197,14 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-                    ['iCalendar', 'Low Risk', 'Transform to CSV', 'NARA Low/Transform'],
-                    ['MBOX Email Format', 'Low Risk', 'Transform to EML but also retain MBOX', 'NARA Low/Transform'],
-                    ['MySQL Form Definition', 'Low Risk', 'Retain with the transformed database content.', 'NARA Low/Transform'],
-                    ['Open XML Paper Specification', 'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS', 'NARA Low/Transform'],
-                    ['Tagged Image File Format (TIFF) unspecified version', 'Low Risk', 'Depends on version, retain TIFF 1-6, otherwise see specific version plan', 'NARA Low/Transform']]
+                    ['iCalendar', 'Low Risk', 'Transform to CSV', 'NARA'],
+                    ['MBOX Email Format', 'Low Risk', 'Transform to EML but also retain MBOX', 'NARA'],
+                    ['MySQL Form Definition', 'Low Risk', 'Retain with the transformed database content.', 'NARA'],
+                    ['Open XML Paper Specification', 'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS', 'NARA'],
+                    ['Tagged Image File Format (TIFF) unspecified version', 'Low Risk', 'Depends on version, retain TIFF 1-6, otherwise see specific version plan', 'NARA']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with NARA low risk/transform')
+        self.assertEqual(result, expected, 'Problem with NARA')
 
     def test_format_and_nara_match(self):
         """

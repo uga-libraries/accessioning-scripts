@@ -429,12 +429,12 @@ def match_other_risk(df_results, df_other):
     df_results.rename(columns={"RISK_CRITERIA": "Other_Risk"}, inplace=True)
 
     # For files that didn't match a format in Riskfileformats.csv (Other_Risk is empty),
-    # puts the value "NARA Low/Transform" for any row with a NARA risk level of low
+    # puts the value "NARA" for any row with a NARA risk level of low
     # and a NARA proposed preservation plan that is not "Retain".
     # It will be matched if the plan starts with the word Retain but includes caveats.
     df_results.loc[(df_results["Other_Risk"].isnull()) &
                    (df_results["NARA_Risk Level"] == "Low Risk") &
-                   (df_results["NARA_Proposed Preservation Plan"] != "Retain"), "Other_Risk"] = "NARA Low/Transform"
+                   (df_results["NARA_Proposed Preservation Plan"] != "Retain"), "Other_Risk"] = "NARA"
 
     # Fills blanks in Other_Risk (no match in the CSV and not NARA Low Risk/Transform) to a default value.
     df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")
