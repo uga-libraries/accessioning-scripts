@@ -417,7 +417,7 @@ def match_technical_appraisal(df_results, df_ita):
 def match_other_risk(df_results, df_other):
     """Adds other risks to the results dataframe, which will already have FITS, NARA, and technical
     appraisal information. Other risk candidates include formats specified in the risk spreadsheet
-    and formats with NARA low risk but a preservation plan to transform. Returns an updated results dataframe."""
+    and formats with NARA low risk but a preservation plan other than retain. Returns an updated results dataframe."""
 
     # Adds information from Riskfileformats.csv to the dataframe if the format in both is exactly the same.
     # If the format isn't a match, the cells for the two columns from Riskfileformats.csv will be empty for that row.
@@ -429,11 +429,12 @@ def match_other_risk(df_results, df_other):
     df_results.rename(columns={"RISK_CRITERIA": "Other_Risk"}, inplace=True)
 
     # For files that didn't match a format in Riskfileformats.csv (Other_Risk is empty),
-    # puts the value "NARA Low/Transform" for any row with a NARA risk level of low
-    # and a NARA proposed preservation plan that starts with the word Transform.
+    # puts the value "NARA" for any row with a NARA risk level of low
+    # and a NARA proposed preservation plan that is not "Retain".
+    # It will be matched if the plan starts with the word Retain but includes caveats.
     df_results.loc[(df_results["Other_Risk"].isnull()) &
                    (df_results["NARA_Risk Level"] == "Low Risk") &
-                   (df_results["NARA_Proposed Preservation Plan"].str.startswith("Transform")), "Other_Risk"] = "NARA Low/Transform"
+                   (df_results["NARA_Proposed Preservation Plan"] != "Retain"), "Other_Risk"] = "NARA"
 
     # Fills blanks in Other_Risk (no match in the CSV and not NARA Low Risk/Transform) to a default value.
     df_results["Other_Risk"] = df_results["Other_Risk"].fillna(value="Not for Other")

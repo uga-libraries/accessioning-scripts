@@ -17,7 +17,7 @@ class MyTestCase(unittest.TestCase):
         """
         Test for files that do not meet any risk criteria.
         The format isn't in Riskfileformats.csv and the NARA data is not both a risk level of Low and
-        a preservation plan that starts with Transform.
+        a preservation plan other than Retain.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
@@ -42,7 +42,7 @@ class MyTestCase(unittest.TestCase):
         """
         Test for files that do not meet any risk criteria.
         The format partially matches the Riskfileformats.csv spreadsheet, but an exact match is required.
-        It also doesn't have the combination of NARA low risk with a plan to transform.
+        It also doesn't have the combination of NARA low risk and a preservation plan other than Retain.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
@@ -72,7 +72,7 @@ class MyTestCase(unittest.TestCase):
         """
         Test for files that do not meet any risk criteria.
         The format is in Riskfileformats.csv, but the case is different and an exact match is required.
-        It also doesn't have the combination of NARA low risk with a plan to transform.
+        It also doesn't have the combination of NARA low risk and a preservation plan other than Retain.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
@@ -98,7 +98,7 @@ class MyTestCase(unittest.TestCase):
     def test_no_risk_low_only(self):
         """
         Test for files that do not meet any risk criteria.
-        The format isn't in Riskfileformats.csv and NARA risk is low but the plan is not transform, so it isn't a match.
+        The format isn't in Riskfileformats.csv and NARA risk is low but the plan is Retain, so it isn't a match.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
@@ -117,17 +117,20 @@ class MyTestCase(unittest.TestCase):
                     ['Broadcast Wave (BWF) v. 0', 'Low Risk', 'Retain', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with no risk, NARA is low risk but not transform')
+        self.assertEqual(result, expected, 'Problem with no risk, NARA is low risk but retain')
 
-    def test_no_risk_transform_only(self):
+    def test_no_risk_plan_only(self):
         """
         Test for files that do not meet any risk criteria.
-        The format isn't in Riskfileformats.csv and NARA plan is transform, but it isn't low risk, so it isn't a match.
+        The format isn't in Riskfileformats.csv and NARA plan is not Retain, but it isn't low risk, so it isn't a match.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['AutoCAD Drawing (2000-2002)', 'Moderate Risk', 'Transform to a TBD format'],
-                ['FoxPro 2.0', 'Moderate Risk', 'Transform to CSV']]
+        rows = [['Apple Video file', 'Moderate Risk', 'Depends on version, transform to MP4 if not DRM protected, otherwise retain'],
+                ['AutoCAD Drawing (2000-2002)', 'Moderate Risk', 'Transform to a TBD format'],
+                ['Compressed Archive File', 'Moderate Risk', 'Retain but extract files from the container'],
+                ['FoxPro 2.0', 'Moderate Risk', 'Transform to CSV'],
+                ['Icon file format', 'High Risk', 'Further research is required']]
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
@@ -137,16 +140,19 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
+                    ['Apple Video file', 'Moderate Risk', 'Depends on version, transform to MP4 if not DRM protected, otherwise retain', 'Not for Other'],
                     ['AutoCAD Drawing (2000-2002)', 'Moderate Risk', 'Transform to a TBD format', 'Not for Other'],
-                    ['FoxPro 2.0', 'Moderate Risk', 'Transform to CSV', 'Not for Other']]
+                    ['Compressed Archive File', 'Moderate Risk', 'Retain but extract files from the container', 'Not for Other'],
+                    ['FoxPro 2.0', 'Moderate Risk', 'Transform to CSV', 'Not for Other'],
+                    ['Icon file format', 'High Risk', 'Further research is required', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with no risk, NARA transform but not low risk')
+        self.assertEqual(result, expected, 'Problem with no risk, NARA plan is not retain but not low risk')
 
     def test_format(self):
         """
         Test for files that match a format for other risk.
-        The format is not NARA low risk with a plan to transform.
+        The format is not NARA low risk and a preservation plan other than Retain.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
@@ -170,15 +176,18 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with format')
 
-    def test_nara_low_transform(self):
+    def test_nara(self):
         """
-        Test for files that are NARA low risk with a plan to transform.
+        Test for files that are NARA low risk with a plan other than Retain.
         The format is not in the Riskfileformats.csv spreadsheet.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
         rows = [['iCalendar', 'Low Risk', 'Transform to CSV'],
-                ['MBOX Email Format', 'Low Risk', 'Transform to EML but also retain MBOX']]
+                ['MBOX Email Format', 'Low Risk', 'Transform to EML but also retain MBOX'],
+                ['MySQL Form Definition', 'Low Risk', 'Retain with the transformed database content.'],
+                ['Open XML Paper Specification', 'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS'],
+                ['Tagged Image File Format (TIFF) unspecified version', 'Low Risk', 'Depends on version, retain TIFF 1-6, otherwise see specific version plan']]
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
@@ -188,11 +197,14 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-                    ['iCalendar', 'Low Risk', 'Transform to CSV', 'NARA Low/Transform'],
-                    ['MBOX Email Format', 'Low Risk', 'Transform to EML but also retain MBOX', 'NARA Low/Transform']]
+                    ['iCalendar', 'Low Risk', 'Transform to CSV', 'NARA'],
+                    ['MBOX Email Format', 'Low Risk', 'Transform to EML but also retain MBOX', 'NARA'],
+                    ['MySQL Form Definition', 'Low Risk', 'Retain with the transformed database content.', 'NARA'],
+                    ['Open XML Paper Specification', 'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS', 'NARA'],
+                    ['Tagged Image File Format (TIFF) unspecified version', 'Low Risk', 'Depends on version, retain TIFF 1-6, otherwise see specific version plan', 'NARA']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with NARA low risk/transform')
+        self.assertEqual(result, expected, 'Problem with NARA')
 
     def test_format_and_nara_match(self):
         """
@@ -202,7 +214,8 @@ class MyTestCase(unittest.TestCase):
         """
         # Creates test input.
         rows = [['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000'],
-                ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000']]
+                ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000'],
+                ['GZIP', 'Low Risk', 'Retain but extract files from the container']]
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
 
@@ -213,7 +226,8 @@ class MyTestCase(unittest.TestCase):
         # Creates a list with the expected result.
         expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
                     ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
-                    ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000', 'Layered image file']]
+                    ['Encapsulated Postscript File', 'Low Risk', 'Transform to TIFF or JPEG2000', 'Layered image file'],
+                    ['GZIP', 'Low Risk', 'Retain but extract files from the container', 'Archive format']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with format and NARA low risk/transform')
