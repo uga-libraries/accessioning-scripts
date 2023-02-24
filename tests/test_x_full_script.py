@@ -74,14 +74,14 @@ class MyTestCase(unittest.TestCase):
         self.ex06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
                       'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk Level',
                       'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
-                     [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2, False, '2023-02-14', 5.488,
+                     [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA',
                       'Archive format'],
-                     [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2, False, '2023-02-14', 5.488,
+                     [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format'],
-                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, '2023-02-14', 5.488,
+                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, '2023-01-03', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format']]
 
@@ -114,10 +114,10 @@ class MyTestCase(unittest.TestCase):
                       'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
                       'FITS_MD5', 'FITS_Creating_Application', 'Technical_Appraisal', 'Other_Risk'],
                      [os.path.join(self.disk1_path, 'data.xlsx'), 'XLSX', 'BLANK', 'BLANK',
-                      'Exiftool version 11.54', True, '2023-02-14', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
+                      'Exiftool version 11.54', True, '2023-01-30', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
                       'Microsoft Excel', 'Not for TA', 'Not for Other'],
                      [os.path.join(self.disk1_path, 'data.xlsx'), 'Office Open XML Workbook', 'BLANK', 'BLANK',
-                      'Tika version 1.21', True, '2023-02-14', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
+                      'Tika version 1.21', True, '2023-01-30', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
                       'Microsoft Excel', 'Not for TA', 'Not for Other']]
 
         # Expected values for the duplicates subset.
@@ -135,7 +135,7 @@ class MyTestCase(unittest.TestCase):
                       'FITS_Status_Message', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
                      [os.path.join(self.disk2_path, 'error.html'), 'Extensible Markup Language', 1,
-                      'BLANK', 'Jhove version 1.20.1', False, '2023-02-14', 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
+                      'BLANK', 'Jhove version 1.20.1', False, '2023-01-30', 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
                       'BLANK', True, True, 'Not able to determine type of end of line severity=info',
                       'Low Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other']]
 
