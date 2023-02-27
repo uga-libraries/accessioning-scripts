@@ -217,6 +217,35 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name, multiple matches')
 
+    def test_extension_and_version(self):
+        """
+        Test for files that match a single file extension and version combination in the NARA spreadsheet.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        rows = [['C:\\File.rtf', 'Rich Text', '1.2', ''],
+                ['C:\\File.psd', 'Photoshop', '', '']]
+        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\File.rtf', 'Rich Text', '1.2', '', 'Rich Text Format 1.2', 'rtf',
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/45',
+                     'Moderate Risk', 'Transform to PDF', 'File Extension and Version'],
+                    ['C:\\File.psd', 'Photoshop', '', '', 'Adobe Photoshop', 'psd',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/92',
+                     'Moderate Risk', 'Transform to TIFF or JPEG2000', 'File Extension']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with PUID, single match')
+
     def test_extension_case(self):
         """
         Test for files that match one extension in the NARA spreadsheet, with the same case.

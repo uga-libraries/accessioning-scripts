@@ -330,18 +330,20 @@ def match_nara_risk(df_fits, df_nara):
     # Adds temporary columns to df_fits and df_nara to assist in better matching.
     # Most are lowercase versions of columns for case-insensitive matching.
     # Also combines format name and version in FITS, since NARA has that information in one column,
-    # and makes a column of the file extension in FITS, since NARA has that as a separate column.
+    # makes a column of the file extension in FITS, since NARA has that as a separate column,
+    # and makes a column of the versions in NARA, since FITS has that as a separate column.
     df_fits["name_version"] = df_fits["FITS_Format_Name"].str.lower() + " " + df_fits["FITS_Format_Version"].astype(str)
     df_fits["name_version"] = df_fits["name_version"].str.strip(" nan")
     df_fits["name_lower"] = df_fits["FITS_Format_Name"].str.lower()
     df_nara["format_lower"] = df_nara["NARA_Format Name"].str.lower()
     df_fits["ext_lower"] = df_fits["FITS_File_Path"].str.lower().str.split(".").str[-1]
     df_nara["exts_lower"] = df_nara["NARA_File Extension(s)"].str.lower()
+    df_nara["version"] = df_nara["NARA_Format Name"].str.split(" ").str[-1] # TODO: only if starts with a number
 
     # List of columns to look at in the NARA dataframe each time.
     # These are removed from df_unmatched before a new technique is tried so the merge doesn't duplicate these columns.
     nara_columns = ["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL", "NARA_Risk Level",
-                    "NARA_Proposed Preservation Plan", "format_lower", "exts_lower"]
+                    "NARA_Proposed Preservation Plan", "format_lower", "exts_lower", "version"]
 
     # For each matching technique, makes a dataframe merging FITS and NARA in a particular way and creates two df:
     # one with files that still aren't matched and one with files that matched.
@@ -367,12 +369,22 @@ def match_nara_risk(df_fits, df_nara):
     df_format = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
     df_format = df_format.assign(NARA_Match_Type="Format Name")
 
-    # Technique 3: Extension is a match (case insensitive).
+    # Technique 3: Extension, and version if it has one, is a match (case insensitive).
     # Makes an expanded version of the NARA dataframe with one row per extension instead of one per format version.
     # NARA has a pipe separated string of extensions if a format has more than one.
     df_nara_expanded = df_nara[nara_columns].copy()
     df_nara_expanded["ext_separate"] = df_nara_expanded["exts_lower"].str.split(r"|")
     df_nara_expanded = df_nara_expanded.explode("ext_separate")
+    df_matching = pd.merge(df_unmatched, df_nara_expanded, left_on=["ext_lower", "FITS_Format_Version"],
+                           right_on=["ext_separate", "version"], how="left")
+    df_matching.drop("ext_separate", inplace=True, axis=1)
+    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
+    df_ext_ver = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
+    df_ext_ver = df_ext_ver.assign(NARA_Match_Type="File Extension and Version")
+
+    # Technique 4: Extension is a match (case insensitive).
+    # TODO: is this necessary, or does the extension + version get everything?
     df_matching = pd.merge(df_unmatched, df_nara_expanded, left_on="ext_lower", right_on="ext_separate", how="left")
     df_matching.drop("ext_separate", inplace=True, axis=1)
     df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
@@ -385,8 +397,8 @@ def match_nara_risk(df_fits, df_nara):
     df_unmatched["NARA_Match_Type"] = "No NARA Match"
 
     # Combines each dataframe, with temporary columns removed and the index reset to one run of sequential numbers.
-    df_matched = pd.concat([df_puid, df_format, df_ext, df_unmatched])
-    df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower"], inplace=True, axis=1)
+    df_matched = pd.concat([df_puid, df_format, df_ext_ver, df_ext, df_unmatched])
+    df_matched.drop(["name_version", "name_lower", "format_lower", "ext_lower", "exts_lower", "version"], inplace=True, axis=1)
     df_matched.index = np.arange(len(df_matched))
 
     return df_matched
