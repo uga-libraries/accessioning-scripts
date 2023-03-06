@@ -323,6 +323,28 @@ def make_fits_csv(fits_output, collection_folder, accession_number):
         df_error.to_csv(encode_errors_path, header=False, index=False)
 
 
+def update_risk(df_fits, df_risk, csv_path):
+    """When the acc_full_risk_data.csv was produced during a previous iteration of the script,
+    removes files in the risk csv which were deleted by the archivist since the csv was made and
+    saves the updated information to acc_full_risk_data.csv.
+    Returns the updated risk dataframe to be df_results for the rest of the script."""
+
+    # Compares the file paths in the fits and risk dataframes,
+    # and makes a list of unique paths that are only in the risk dataframe.
+    df_compare = df_fits.merge(df_risk, on="FITS_File_Path", how="right")
+    df_risk_only = df_compare[df_compare["FITS_Format_Name_x"].isnull()]
+    risk_only_list = list(set(df_risk_only["FITS_File_Path"].to_list()))
+
+    # Removes rows from df_risk if the path is not in df_fits.
+    df_risk = df_risk[df_risk["FITS_File_Path"].isin(risk_only_list) == False]
+
+    # Overwrites the existing acc_full_risk_data.csv with the updated information.
+    df_risk.to_csv(csv_path, index=False)
+
+    # Returns df_risk to use for df_results in the rest of the script.
+    return df_risk
+
+
 def match_nara_risk(df_fits, df_nara):
     """Combines risk information from NARA with the FITS data using different techniques,
     starting with the most accurate. A new column Match_Type is added to identify which technique produced a match.
