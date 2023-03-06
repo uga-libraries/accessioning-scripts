@@ -81,7 +81,7 @@ class MyTestCase(unittest.TestCase):
                      [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format'],
-                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, '2023-01-03', 5.488,
+                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format']]
 
