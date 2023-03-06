@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 # Configuration is made by the user on each new machine the script is installed on, so it could be missing.
 try:
@@ -393,22 +394,33 @@ def match_nara_risk(df_fits, df_nara):
 
 
 def match_technical_appraisal(df_results, df_ita):
-    """Adds technical appraisal to the results dataframe, which will already have FITS and NARA information.
-    Technical appraisal candidates include formats specified in the ITA spreadsheet and files in trash folders.
+    """Adds technical appraisal categories to the results dataframe, which will already have FITS and NARA information.
+    The categories are formats specified in the ITA spreadsheet, temporary files, and files in trash folders.
     Returns an updated results dataframe."""
 
     # Makes a column Technical_Appraisal and puts the value "Format" for any row with a FITS_Format_Name
-    # that exactly matches any formats in the ta_list (FITS_FORMAT column in ITAfileformats.csv).
+    # that exactly matches any format in the ta_list (FITS_FORMAT column in ITAfileformats.csv).
     # re.escape prevents errors from characters in the format name that have regex meanings.
     df_results.loc[df_results["FITS_Format_Name"].isin(df_ita["FITS_FORMAT"].tolist()), "Technical_Appraisal"] = "Format"
 
-    # Puts the value "Trash" in the Technical_Appraisal column for any row with a folder named trash or trashes.
+    # Puts the value "Temp File" in the Technical_Appraisal column if the filename starts with "." or "~",
+    # if the filename ends with ".tmp" or ".TMP", or if the filename is equal to "Thumbs.db" or "thumbs.db".
+    # If the row already has "Format", it will be replaced with "Temp File".
+    df_results["Path"] = df_results["FITS_File_Path"].apply(Path)
+    df_results["Filename"] = df_results["Path"].apply(lambda x: x.name)
+    temp_start = df_results["Filename"].str.startswith(('.', '~'))
+    temp_end = df_results["Filename"].str.endswith(('.tmp', '.TMP'))
+    temp_thumb = df_results["Filename"].isin(['Thumbs.db', 'thumbs.db'])
+    df_results.loc[temp_start | temp_end | temp_thumb, "Technical_Appraisal"] = "Temp File"
+    df_results.drop(["Path", "Filename"], axis=1, inplace=True)
+
+    # Puts the value "Trash" in the Technical_Appraisal column for any row with a folder named
+    # trash, Trash, trashes, or Trashes.
     # Including the \ before and after the search term so it matches a complete folder name.
-    # The match is case insensitive.
-    # If the row already has "Format", it will be replaced with "Trash".
+    # If the row already has "Format" or "Temp File", it will be replaced with "Trash".
     df_results.loc[df_results["FITS_File_Path"].str.contains(r"\\trash\\|\\trashes\\", case=False), "Technical_Appraisal"] = "Trash"
 
-    # Puts a default value for any row that is blank because it didn't match either type of technical appraisal.
+    # Puts a default value for any row that is blank because it didn't match any category of technical appraisal.
     df_results["Technical_Appraisal"] = df_results["Technical_Appraisal"].fillna(value="Not for TA")
 
     return df_results
