@@ -49,8 +49,8 @@ collection_folder, accession_number = os.path.split(accession_folder)
 fits_output = f"{collection_folder}/{accession_number}_FITS"
 if os.path.exists(fits_output):
     print("\nUpdating the XML files in the FITS folder to match the files in the accession folder.")
-    print("This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.")
-    print("Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.")
+    print("This will update fits.csv and remove deleted files from full_risk_data.csv from a previous script iteration.")
+    print("If new files have been added to the accession, delete full_risk_data.csv so it can be updated.")
     update_fits(accession_folder, fits_output, collection_folder, accession_number)
 else:
     print("\nGenerating new FITS format identification information.")
@@ -73,12 +73,14 @@ df_other = csv_to_dataframe(c.RISK)
 df_nara = csv_to_dataframe(c.NARA)
 
 # If there is already a spreadsheet with combined FITs and risk information from a previous iteration of the script,
-# reads that into a dataframe for additional analysis. This lets the archivist manually adjust the risk matches.
+# reads that into a dataframe for additional analysis, removing any files from the dataframe deleted during appraisal.
+# This lets the archivist manually adjust the risk matches in the CSV before appraisal is complete.
 # Otherwise, combines FITS, NARA, technical appraisal, and other risk data into a dataframe and saves it as a CSV.
 csv_path = os.path.join(collection_folder, f"{accession_number}_full_risk_data.csv")
 if os.path.exists(csv_path):
     print("\nUpdating the analysis report using existing risk data.")
-    df_results = csv_to_dataframe(csv_path)
+    df_risk = csv_to_dataframe(csv_path)
+    df_results = update_risk(df_fits, df_risk, csv_path)
 else:
     print("\nGenerating new risk data for the analysis report.")
     df_results = match_nara_risk(df_fits, df_nara)
