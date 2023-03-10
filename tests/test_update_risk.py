@@ -52,6 +52,7 @@ class MyTestCase(unittest.TestCase):
         result = [df_result.columns.to_list()] + df_result.values.tolist()
 
         # Creates a list of the expected result.
+        # df_risk should not be changed by the function.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Format Name', 'NARA_Risk Level'],
                     ['C:\\acc\\file.txt', 'Plain text', 'Plain Text', 'Low Risk'],
                     ['C:\\acc\\audio.mp4', 'MPEG', 'MPEG 4 (H.264)', 'Low Risk'],
@@ -90,6 +91,7 @@ class MyTestCase(unittest.TestCase):
         result = [df_result.columns.to_list()] + df_result.values.tolist()
 
         # Creates a list of the expected result.
+        # df_risk should not be changed by the function.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Format Name', 'NARA_Risk Level'],
                     ['C:\\acc\\file.txt', 'Plain text', 'Plain Text', 'Low Risk'],
                     ['C:\\acc\\audio.mp4', 'MPEG', 'MPEG 4 (H.264)', 'Low Risk'],
@@ -127,6 +129,7 @@ class MyTestCase(unittest.TestCase):
         result = [df_result.columns.to_list()] + df_result.values.tolist()
 
         # Creates a list of the expected result.
+        # df_risk should not be changed by the function.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Format Name', 'NARA_Risk Level'],
                     ['C:\\acc\\file.txt', 'Plain text', 'Plain Text', 'Low Risk'],
                     ['C:\\acc\\audio.mp4', 'MPEG', 'MPEG-4 Media File', 'Low Risk'],
@@ -153,6 +156,7 @@ class MyTestCase(unittest.TestCase):
         result = [df_result.columns.to_list()] + df_result.values.tolist()
 
         # Creates a list of the expected result.
+        # The deleted file should be removed from df_risk by the function.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Format Name', 'NARA_Risk Level'],
                     ['C:\\acc\\audio.mp4', 'MPEG', 'MPEG 4 (H.264)', 'Low Risk'],
                     ['C:\\acc\\audio.mp4', 'MPEG', 'MPEG-4 Media File', 'Low Risk'],
@@ -178,6 +182,7 @@ class MyTestCase(unittest.TestCase):
         result = [df_result.columns.to_list()] + df_result.values.tolist()
 
         # Creates a list of the expected result.
+        # The deleted file should be removed from df_risk by the function.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Format Name', 'NARA_Risk Level'],
                     ['C:\\acc\\file.txt', 'Plain text', 'Plain Text', 'Low Risk'],
                     ['C:\\acc\\audio.mp4', 'MPEG', 'MPEG 4 (H.264)', 'Low Risk'],
@@ -202,6 +207,7 @@ class MyTestCase(unittest.TestCase):
         result = [df_result.columns.to_list()] + df_result.values.tolist()
 
         # Creates a list of the expected result.
+        # The deleted files should be removed from df_risk by the function.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Format Name', 'NARA_Risk Level'],
                     ['C:\\acc\\spreadsheet.xlsx', 'XLSX', 'Microsoft Excel Office Open XML', 'Low Risk'],
                     ['C:\\acc\\spreadsheet.xlsx', 'Office Open XML Workbook', 'Microsoft Excel Office Open XML', 'Low Risk']]
@@ -229,6 +235,7 @@ class MyTestCase(unittest.TestCase):
         result = [df_result.columns.to_list()] + df_result.values.tolist()
 
         # Creates a list of the expected result.
+        # df_risk should not be changed by the function.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'NARA_Format Name', 'NARA_Risk Level'],
                     ['C:\\acc\\file.txt', 'Plain text', 'Plain Text', 'Low Risk'],
                     ['C:\\acc\\audio.mp4', 'MPEG', 'MPEG 4 (H.264)', 'Low Risk'],
