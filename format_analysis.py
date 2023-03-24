@@ -90,8 +90,8 @@ else:
 
 # Removes duplicates in df_results from multiple NARA matches (same risk and preservation plan) to a single file.
 # The full data with the duplicates is saved in the accession's full risk data CSV if matches need to be checked.
-df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], inplace=True, axis=1)
-df_results.drop_duplicates(inplace=True)
+df_results = df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], axis=1)
+df_results = df_results.drop_duplicates()
 
 # The next several code blocks make different subsets of the data based on different risk factors
 # and removes any columns not typically needed for review. If the subset is empty (no risk of that type),
