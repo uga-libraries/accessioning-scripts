@@ -48,12 +48,12 @@ class MyTestCase(unittest.TestCase):
                      ['Office Open XML Workbook', 'Low Risk', 1, 10, 0.005, 14.002],
                      ['Plain text', 'Low Risk', 3, 30, 0.008, 22.403],
                      ['XLSX', 'Low Risk', 1, 10, .005, 14.002],
-                     ['ZIP Format', 'Moderate Risk', 3, 30, 0.016, 44.805]]
+                     ['ZIP Format', 'Moderate Risk', 3, 30, 0.016, 41.984]]
 
         # Expected values for the NARA risk subtotal.
         self.ex02 = [['NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                     ['Low Risk', 7, 70, 0.019, 53.206],
-                     ['Moderate Risk', 3, 30, 0.016, 44.805]]
+                     ['Low Risk', 7, 70, 0.025, 59.938],
+                     ['Moderate Risk', 3, 30, 0.016, 38.36]]
 
         # Expected values for the tech appraisal subtotal.
         self.ex03 = [['Technical_Appraisal', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
@@ -61,13 +61,13 @@ class MyTestCase(unittest.TestCase):
 
         # Expected values for the other risk subtotal.
         self.ex04 = [['Other_Risk', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                     ['Archive format', 'ZIP Format', 3, 30, 0.016, 44.805]]
+                     ['Archive format', 'ZIP Format', 3, 30, 0.016, 38.36]]
 
         # Expected values for the media subtotal.
         self.ex05 = [['Media', 'File Count', 'Size (MB)', 'NARA High Risk (File Count)',
                       'NARA Moderate Risk (File Count)', 'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
                       'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
-                     ['disk1', 3, 0.014, 0, 0, 3, 0, 0, 0], ['disk2', 7, 0.021, 0, 3, 4, 0, 1, 3]]
+                     ['disk1', 4, 0.022, 0, 0, 4, 0, 0, 0], ['disk2', 6, 0.02, 0, 3, 3, 0, 1, 3]]
 
         # Expected values for the NARA risk subset.
         self.ex06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
@@ -168,10 +168,8 @@ class MyTestCase(unittest.TestCase):
 
         # ROUND TWO
 
-        # Deletes the trash folder and adds a file to the accession folder to simulate archivist appraisal.
+        # Deletes the trash folder to simulate archivist appraisal.
         shutil.rmtree(self.trash_path)
-        with open(os.path.join(self.disk2_path, 'new.txt'), 'w') as file:
-            file.write('Text' * 300)
 
         # Runs the script again on the test accession folder.
         # It will update the FITS files to match the accession folder and update the three spreadsheets.
@@ -192,6 +190,7 @@ class MyTestCase(unittest.TestCase):
                                os.path.join(self.disk1_path, 'data.xlsx'),
                                os.path.join(self.disk1_path, 'data.xlsx'),
                                os.path.join(self.disk1_path, 'duplicate_file.txt'),
+                               os.path.join(self.disk1_path, 'file.txt'),
                                os.path.join(self.disk2_path, 'disk1backup.zip'),
                                os.path.join(self.disk2_path, 'disk1backup2.zip'),
                                os.path.join(self.disk2_path, 'disk1backup3.zip'),
