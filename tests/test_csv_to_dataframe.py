@@ -26,7 +26,7 @@ class MyTestCase(unittest.TestCase):
         # Creates an abbreviated FITS CSV (fewer columns) with no special characters to use for test input.
         with open('accession_fits.csv', 'w', newline='') as file:
             file_write = csv.writer(file)
-            file_write.writerow(['File_Path', 'Format_Name', 'Format_Version', 'Multiple_IDs'])
+            file_write.writerow(['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs'])
             file_write.writerow(['C:\\Coll\\accession\\CD1_Images\\IMG1.JPG', 'JPEG EXIF', '1.01', False])
             file_write.writerow(['C:\\Coll\\accession\\CD2_Web\\index.html', 'Hypertext Markup Language', '4.01', True])
             file_write.writerow(['C:\\Coll\\accession\\CD2_Web\\index.html', 'HTML Transitional', 'HTML 4.01', True])
@@ -54,7 +54,7 @@ class MyTestCase(unittest.TestCase):
         result = [df.columns.to_list()] + df.values.tolist()
 
         # Creates a list with the expected result.
-        # NOTE: this must be when new things are added to the spreadsheet.
+        # NOTE: this must be updated when new things are added to the spreadsheet.
         expected = [['FITS_FORMAT', 'NOTES'],
                     ['Adobe Font Metric', np.NaN],
                     ['DOS batch file', np.NaN],
@@ -80,7 +80,7 @@ class MyTestCase(unittest.TestCase):
         result = [df.columns.to_list()] + df.values.tolist()
 
         # Creates a list with the expected result.
-        # NOTE: this must be when new things are added to the spreadsheet.
+        # NOTE: this must be updated when new things are added to the spreadsheet.
         expected = [['FITS_FORMAT', 'RISK_CRITERIA'],
                     ['Adobe Photoshop file', 'Layered image file'],
                     ['Cascading Style Sheet', 'Possible saved web page'],
@@ -131,7 +131,7 @@ class MyTestCase(unittest.TestCase):
         # Characters are the copyright symbol and an accented e.
         with open('accession_fits.csv', 'w', newline='') as file:
             file_write = csv.writer(file)
-            file_write.writerow(['File_Path', 'Format_Name', 'Format_Version', 'Multiple_IDs'])
+            file_write.writerow(['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs'])
             file_write.writerow(['C:\\Coll\\accession\\CD1_Images\\©Image.JPG', 'JPEG EXIF', '1.01', False])
             file_write.writerow(['C:\\Coll\\accession\\CD2_Web\\indexé.html', 'Hypertext Markup Language', '4.01', True])
             file_write.writerow(['C:\\Coll\\accession\\CD2_Web\\indexé.html', 'HTML Transitional', 'HTML 4.01', True])

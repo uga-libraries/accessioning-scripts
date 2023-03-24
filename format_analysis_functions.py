@@ -83,10 +83,8 @@ def csv_to_dataframe(csv_file):
         print("The CSV was read by ignoring encoding errors, so those characters are omitted from the dataframe.")
         df = pd.read_csv(csv_file, encoding_errors="ignore")
 
-    # Adds a prefix to the FITS and NARA dataframe columns so the source of the data is clear when the data is combined.
-    if "fits" in csv_file:
-        df = df.add_prefix("FITS_")
-    elif "NARA" in csv_file:
+    # Adds a prefix to the NARA dataframe columns so the source of the data is clear when the data is combined.
+    if "NARA" in csv_file:
         df = df.add_prefix("NARA_")
 
     return df
@@ -295,8 +293,9 @@ def make_fits_csv(fits_output, collection_folder, accession_number):
     Each row in the CSV is a single format identification. A file may have multiple identifications."""
 
     # Makes a CSV in the collection folder, with a header row, for combined FITS information.
-    header = ["File_Path", "Format_Name", "Format_Version", "PUID", "Identifying_Tool(s)", "Multiple_IDs",
-              "Date_Last_Modified", "Size_KB", "MD5", "Creating_Application", "Valid", "Well-Formed", "Status_Message"]
+    header = ["FITS_File_Path", "FITS_Format_Name", "FITS_Format_Version", "FITS_PUID", "FITS_Identifying_Tool(s)",
+              "FITS_Multiple_IDs", "FITS_Date_Last_Modified", "FITS_Size_KB", "FITS_MD5", "FITS_Creating_Application",
+              "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"]
     csv_open = open(f"{collection_folder}/{accession_number}_fits.csv", "w", newline="")
     csv_write = csv.writer(csv_open)
     csv_write.writerow(header)
