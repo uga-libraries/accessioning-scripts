@@ -1,6 +1,5 @@
 """Tests running the entire script through multiple iterations."""
 
-import datetime
 import hashlib
 import os
 import pandas as pd
@@ -49,12 +48,12 @@ class MyTestCase(unittest.TestCase):
                      ['Office Open XML Workbook', 'Low Risk', 1, 10, 0.005, 14.002],
                      ['Plain text', 'Low Risk', 3, 30, 0.008, 22.403],
                      ['XLSX', 'Low Risk', 1, 10, .005, 14.002],
-                     ['ZIP Format', 'Moderate Risk', 3, 30, 0.016, 44.805]]
+                     ['ZIP Format', 'Moderate Risk', 3, 30, 0.016, 41.984]]
 
         # Expected values for the NARA risk subtotal.
         self.ex02 = [['NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                     ['Low Risk', 7, 70, 0.019, 53.206],
-                     ['Moderate Risk', 3, 30, 0.016, 44.805]]
+                     ['Low Risk', 7, 70, 0.025, 59.938],
+                     ['Moderate Risk', 3, 30, 0.016, 38.36]]
 
         # Expected values for the tech appraisal subtotal.
         self.ex03 = [['Technical_Appraisal', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
@@ -62,13 +61,13 @@ class MyTestCase(unittest.TestCase):
 
         # Expected values for the other risk subtotal.
         self.ex04 = [['Other_Risk', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                     ['Archive format', 'ZIP Format', 3, 30, 0.016, 44.805]]
+                     ['Archive format', 'ZIP Format', 3, 30, 0.016, 38.36]]
 
         # Expected values for the media subtotal.
         self.ex05 = [['Media', 'File Count', 'Size (MB)', 'NARA High Risk (File Count)',
                       'NARA Moderate Risk (File Count)', 'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
                       'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
-                     ['disk1', 3, 0.014, 0, 0, 3, 0, 0, 0], ['disk2', 7, 0.021, 0, 3, 4, 0, 1, 3]]
+                     ['disk1', 4, 0.022, 0, 0, 4, 0, 0, 0], ['disk2', 6, 0.02, 0, 3, 3, 0, 1, 3]]
 
         # Expected values for the NARA risk subset.
         self.ex06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
@@ -157,32 +156,52 @@ class MyTestCase(unittest.TestCase):
         """
         # ROUND ONE
 
-        # Runs the script on the test accession folder and tests if the expected messages were produced.
-        # In format_analysis.py, these messages are printed to the terminal for archivist review.
+        # Runs the script on the test accession folder.
         script_path = os.path.join('..', 'format_analysis.py')
         accession_path = os.path.join(os.getcwd(), 'collection', 'accession')
         iteration_one = subprocess.run(f'python {script_path} {accession_path}', shell=True, stdout=subprocess.PIPE)
+
+        # Tests if the expected messages were produced.
         msg = '\r\nGenerating new FITS format identification information.\r\n\r\n' \
               'Generating new risk data for the analysis report.\r\n'
         self.assertEqual(iteration_one.stdout.decode('utf-8'), msg, 'Problem with Iteration_Message_1')
 
         # ROUND TWO
 
-        # Deletes the trash folder and adds a file to the accession folder to simulate archivist appraisal.
-        # Also deletes the full_risk_data.csv so an updated one will be made with the changes.
+        # Deletes the trash folder to simulate archivist appraisal.
         shutil.rmtree(self.trash_path)
-        with open(os.path.join(self.disk2_path, 'new.txt'), 'w') as file:
-            file.write('Text' * 300)
-        os.remove(os.path.join(os.getcwd(), 'collection', 'accession_full_risk_data.csv'))
 
         # Runs the script again on the test accession folder.
         # It will update the FITS files to match the accession folder and update the three spreadsheets.
         iteration_two = subprocess.run(f'python {script_path} {accession_path}', shell=True, stdout=subprocess.PIPE)
+
+        # Tests if the expected messages were produced.
         msg = '\r\nUpdating the XML files in the FITS folder to match the files in the accession folder.\r\n' \
-              'This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.\r\n' \
-              'Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n' \
-              'Generating new risk data for the analysis report.\r\n'
-        self.assertEqual(iteration_two.stdout.decode('utf-8'), msg, 'Problem with Iteration_Message_2')
+              'This will update fits.csv and remove deleted files from full_risk_data.csv from a previous script iteration.\r\n' \
+              'If new files have been added to the accession, delete full_risk_data.csv so it can be updated.\r\n\r\n' \
+              'Updating the analysis report using existing risk data.\r\n'
+        self.assertEqual(iteration_two.stdout.decode('utf-8'), msg, 'Problem with Iteration 2: Message')
+
+        # Tests if accession_full_risk_data.csv has been updated to remove the deleted files.
+        df_risk = pd.read_csv(os.path.join(os.getcwd(), 'collection', 'accession_full_risk_data.csv'))
+        fits_paths = df_risk['FITS_File_Path'].values.tolist()
+        fits_paths.sort()
+        expected_fits_paths = [os.path.join(self.disk1_path, 'data.xlsx'),
+                               os.path.join(self.disk1_path, 'data.xlsx'),
+                               os.path.join(self.disk1_path, 'data.xlsx'),
+                               os.path.join(self.disk1_path, 'duplicate_file.txt'),
+                               os.path.join(self.disk1_path, 'file.txt'),
+                               os.path.join(self.disk2_path, 'disk1backup.zip'),
+                               os.path.join(self.disk2_path, 'disk1backup2.zip'),
+                               os.path.join(self.disk2_path, 'disk1backup3.zip'),
+                               os.path.join(self.disk2_path, 'duplicate_file.txt'),
+                               os.path.join(self.disk2_path, 'empty.txt'),
+                               os.path.join(self.disk2_path, 'empty.txt'),
+                               os.path.join(self.disk2_path, 'empty.txt'),
+                               os.path.join(self.disk2_path, 'empty.txt'),
+                               os.path.join(self.disk2_path, 'empty.txt'),
+                               os.path.join(self.disk2_path, 'error.html')]
+        self.assertEqual(fits_paths, expected_fits_paths, 'Problem with Iteration 2: Paths')
 
         # ROUND THREE
 
@@ -202,8 +221,8 @@ class MyTestCase(unittest.TestCase):
         # It will use existing fits.csv and full_risk_data.csv to update format_analysis.xlsx.
         iteration_three = subprocess.run(f'python {script_path} {accession_path}', shell=True, stdout=subprocess.PIPE)
         msg = '\r\nUpdating the XML files in the FITS folder to match the files in the accession folder.\r\n' \
-              'This will update fits.csv but will NOT update full_risk_data.csv from a previous script iteration.\r\n' \
-              'Delete full_risk_data.csv before the script gets to that step for it to be remade with the new information.\r\n\r\n' \
+              'This will update fits.csv and remove deleted files from full_risk_data.csv from a previous script iteration.\r\n' \
+              'If new files have been added to the accession, delete full_risk_data.csv so it can be updated.\r\n\r\n' \
               'Updating the analysis report using existing risk data.\r\n'
         self.assertEqual(iteration_three.stdout.decode('utf-8'), msg, 'Problem with Iteration_Message_3')
 

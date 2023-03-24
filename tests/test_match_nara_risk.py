@@ -49,8 +49,7 @@ class MyTestCase(unittest.TestCase):
         """
         # Creates test input.
         rows = [['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102'],
-                ['C:\\PUID\\file.wpd', 'WordPerfect 5.1 for DOS', np.NaN,
-                 'https://www.nationalarchives.gov.uk/pronom/x-fmt/394']]
+                ['C:\\PUID\\file.xls', 'Microsoft Excel', '3.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/56']]
         df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
         df_nara = csv_to_dataframe(c.NARA)
 
@@ -68,13 +67,12 @@ class MyTestCase(unittest.TestCase):
                     ['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102',
                      'Hypertext Markup Language 1.0', 'htm|html',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/102', 'Low Risk', 'Retain', 'PRONOM'],
-                    ['C:\\PUID\\file.wpd', 'WordPerfect 5.1 for DOS', np.NaN,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/394', 'WordPerfect 5.1 for DOS', 'wpd|wp5',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/394', 'Moderate Risk', 'Transform to PDF', 'PRONOM'],
-                    ['C:\\PUID\\file.wpd', 'WordPerfect 5.1 for DOS', np.NaN,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/394', 'WordPerfect 5.1 for Windows',
-                     'wpd|wp5', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/394', 'Moderate Risk',
-                     'Transform to PDF', 'PRONOM']]
+                    ['C:\\PUID\\file.xls', 'Microsoft Excel', '3.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/56',
+                     'Microsoft Excel 3.0', 'xls', 'https://www.nationalarchives.gov.uk/pronom/fmt/56', 'Moderate Risk',
+                     'Transform to XLSX', 'PRONOM'],
+                    ['C:\\PUID\\file.xls', 'Microsoft Excel', '3.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/56',
+                     'Microsoft Excel for Macintosh 3.0', 'xls', 'https://www.nationalarchives.gov.uk/pronom/fmt/56',
+                     'Moderate Risk', 'Transform to XLSX', 'PRONOM']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with PUID, multiple matches')
@@ -102,7 +100,8 @@ class MyTestCase(unittest.TestCase):
                      'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
                     ['C:\\NameVer\\file.swf', 'Macromedia Flash', '7', '', 'Macromedia Flash 7', 'swf',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk', 'Retain', 'Format Name']]
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk',
+                     'Transform to MP4 if possible, otherwise retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case match')
@@ -130,7 +129,8 @@ class MyTestCase(unittest.TestCase):
                      'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
                     ['C:\\NameVer\\file.swf', 'macromedia flash', '7', '', 'Macromedia Flash 7', 'swf',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk', 'Retain', 'Format Name']]
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk',
+                     'Transform to MP4 if possible, otherwise retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case does not match')
@@ -188,34 +188,6 @@ class MyTestCase(unittest.TestCase):
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name, case does not match')
-
-    def test_name_multiple(self):
-        """
-        Test for files that match more than one name (no version) in the NARA spreadsheet.
-        Result for testing is the df returned by the function, converted to a list for an easier comparison.
-        """
-        # Creates test input.
-        rows = [['C:\\Name\\file.smil', 'Synchronized Multimedia Integration Language', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
-        df_nara = csv_to_dataframe(c.NARA)
-
-        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
-        df_results = match_nara_risk(df_fits, df_nara)
-        result = [df_results.columns.to_list()] + df_results.values.tolist()
-
-        # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
-                     'NARA_Match_Type'],
-                    ['C:\\Name\\file.smil', 'Synchronized Multimedia Integration Language', '', '',
-                     'Synchronized Multimedia Integration Language', 'smi|sami',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/205', 'Low Risk', 'Retain', 'Format Name'],
-                    ['C:\\Name\\file.smil', 'Synchronized Multimedia Integration Language', '', '',
-                     'Synchronized Multimedia Integration Language', 'smil',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/205', 'Low Risk', 'Retain', 'Format Name']]
-
-        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with name, multiple matches')
 
     def test_extension_case(self):
         """
@@ -296,7 +268,16 @@ class MyTestCase(unittest.TestCase):
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
                     ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.0',
-                     'ods|fods', 'https://www.nationalarchives.gov.uk/pronom/fmt/137', 'Low Risk', 'Retain',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/137', 'Low Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.1',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/294', 'Low Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.2',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/295', 'Low Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.3',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/1755', 'Low Risk', 'Retain',
                      'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -325,7 +306,16 @@ class MyTestCase(unittest.TestCase):
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
                     ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.0',
-                     'ods|fods', 'https://www.nationalarchives.gov.uk/pronom/fmt/137', 'Low Risk', 'Retain',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/137', 'Low Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.1',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/294', 'Low Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.2',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/295', 'Low Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.3',
+                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/1755', 'Low Risk', 'Retain',
                      'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -356,8 +346,7 @@ class MyTestCase(unittest.TestCase):
                      'aac|mp4|m4a', np.NaN, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
                     ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'MPEG-4 File Format, V.2, with Advanced Audio Coding',
                      'aac', np.NaN, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
-                    ['C:\\Ext\\file.aac', 'MPEG-4', '', '',
-                     'QuickTime [version 6.0 and higher] file with AAC Encoding (qta, aac)', 'qta|aac|m4p', np.NaN,
+                    ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'QuickTime Audio with AAC codec', 'qta|aac|m4p|mp3', np.NaN,
                      'Moderate Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
                     ['C:\\Ext\\file.CIN', 'Kodak', '', '', 'Kodak Cineon', 'cin', np.NaN, 'High Risk',
                      'Transform to TIFF if possible', 'File Extension'],
