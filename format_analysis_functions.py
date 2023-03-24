@@ -341,6 +341,19 @@ def update_risk(df_fits, df_risk, csv_path):
     # Overwrites the existing acc_full_risk_data.csv with the updated information.
     df_risk.to_csv(csv_path, index=False)
 
+    # Compares the file paths in the fits and risk dataframes,
+    # and makes a list of unique paths that are only in the fits dataframe.
+    # If any are found, prints the result to the terminal.
+    # This should not happen, so it alerts the archivist to a potential error.
+    df_compare = df_risk.merge(df_fits, on="FITS_File_Path", how="right")
+    df_fits_only = df_compare[df_compare["FITS_Format_Name_x"].isnull()]
+    fits_only_list = list(set(df_fits_only["FITS_File_Path"].to_list()))
+    if len(fits_only_list) > 0:
+        print("\nWarning: there are files in the accession folder that are not in the risk csv")
+        for path in fits_only_list:
+            print(f"\t* {path}")
+        print("Delete the risk csv and run the script again for these to be added.")
+
     # Returns df_risk to use for df_results in the rest of the script.
     return df_risk
 

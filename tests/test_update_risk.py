@@ -219,7 +219,7 @@ class MyTestCase(unittest.TestCase):
         """
         Test for running the function after a file (new.txt) is added to the accession folder (df_fits)
         and no changes are made to the risk csv (df_risk).
-        This change is not currently detected because it is so rare.
+        A warning is printed by the risk csv is not updated because it is so rare.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates the fits dataframe to use for testing.
