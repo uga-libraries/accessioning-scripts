@@ -74,7 +74,7 @@ df_nara = csv_to_dataframe(c.NARA)
 
 # If there is already a spreadsheet with combined FITs and risk information from a previous iteration of the script,
 # reads that into a dataframe for additional analysis, removing any files from the dataframe deleted during appraisal.
-# This lets the archivist manually adjust the risk matches in the CSV before appraisal is complete.
+# This lets the archivist manually adjust the risk matches in the CSV before format analysis is complete.
 # Otherwise, combines FITS, NARA, technical appraisal, and other risk data into a dataframe and saves it as a CSV.
 csv_path = os.path.join(collection_folder, f"{accession_number}_full_risk_data.csv")
 if os.path.exists(csv_path):
