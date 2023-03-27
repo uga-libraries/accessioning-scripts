@@ -43,9 +43,9 @@ class MyTestCase(unittest.TestCase):
                 result.append(row)
 
         # Creates a list with the expected result.
-        expected = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
-                     'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
-                     'Status_Message'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                     'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                     'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'],
                     ['C:\\csv_multi_id\\disk2\\backup.gz', 'GZIP Format', '',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Droid version 6.4; Tika version 1.21',
                      'True', '2022-12-14', '1.993', '6749b0ec1fbc96faab1a1f98dd7b8a74', '', '', '', ''],
@@ -87,9 +87,9 @@ class MyTestCase(unittest.TestCase):
                 result_csv.append(row)
 
         # Creates a list with the expected result for the CSV.
-        expected_csv = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
-                         'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
-                         'Status_Message'],
+        expected_csv = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                         'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                         'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'],
                         ['C:\\csv_multi_id_encoding\\disk2\\backup.gz', 'GZIP Format', '',
                          'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Droid version 6.4; Tika version 1.21',
                          'True', '2022-12-14', '1.993', '6749b0ec1fbc96faab1a1f98dd7b8a74', '', '', '', ''],
@@ -128,9 +128,9 @@ class MyTestCase(unittest.TestCase):
                 result.append(row)
 
         # Creates a list with the expected result.
-        expected = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
-                     'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
-                     'Status_Message'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                     'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                     'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'],
                     ['C:\\csv_one_file\\disk2\\web.html', 'Extensible Markup Language', '1.0', '',
                      'Jhove version 1.20.1', 'False', '2022-12-14', '0.001', 'e080b3394eaeba6b118ed15453e49a34', '',
                      'true', 'true', 'Not able to determine type of end of line severity=info']]
@@ -157,9 +157,9 @@ class MyTestCase(unittest.TestCase):
                 result.append(row)
 
         # Creates a list with the expected result.
-        expected = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
-                     'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
-                     'Status_Message'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                     'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                     'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'],
                     ['C:\\csv_one_id\\disk1\\file.txt', 'Plain text', '',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/111',
                      'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', 'False',
@@ -195,9 +195,9 @@ class MyTestCase(unittest.TestCase):
                 result_csv.append(row)
 
         # Creates a list with the expected result for the CSV.
-        expected_csv = [['File_Path', 'Format_Name', 'Format_Version', 'PUID', 'Identifying_Tool(s)', 'Multiple_IDs',
-                         'Date_Last_Modified', 'Size_KB', 'MD5', 'Creating_Application', 'Valid', 'Well-Formed',
-                         'Status_Message'],
+        expected_csv = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
+                         'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
+                         'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message'],
                         ['C:\\csv_one_id_encoding\\disk1\\spreadsheet1.csv', 'Comma-Separated Values (CSV)', '',
                          'https://www.nationalarchives.gov.uk/pronom/x-fmt/18', 'Droid version 6.4', 'False',
                          '2022-12-14', '6002.01', 'f95a4c954014342e4bf03f51fcefaecd', '', '', '', '']]

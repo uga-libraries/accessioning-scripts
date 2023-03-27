@@ -5,7 +5,7 @@ To simplify the testing, df_fits only has the file path, format name, format ver
 the only columns used by match_nara_risk."""
 
 import numpy as np
-import pandas as pd
+import os
 import unittest
 from format_analysis_functions import csv_to_dataframe, match_nara_risk
 import configuration as c
@@ -13,15 +13,13 @@ import configuration as c
 
 class MyTestCase(unittest.TestCase):
 
-    def test_puid_single(self):
+    def test_puid_version(self):
         """
-        Test for files that match a single PUID in the NARA spreadsheet.
+        Test for files that match a single PUID and format version combination in the NARA spreadsheet.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\PUID\\file.ai', 'Adobe Illustrator', '6', 'https://www.nationalarchives.gov.uk/pronom/fmt/422'],
-                ['C:\\PUID\\file.psd', 'Adobe Photoshop', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'puid_version_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -32,12 +30,66 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\PUID\\file.ai', 'Adobe Illustrator', '6', 'https://www.nationalarchives.gov.uk/pronom/fmt/422',
-                     'Adobe Illustrator 6.0', 'ai', 'https://www.nationalarchives.gov.uk/pronom/fmt/422',
-                     'Moderate Risk', 'Transform to PDF', 'PRONOM'],
-                    ['C:\\PUID\\file.psd', 'Adobe Photoshop', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92',
-                     'Adobe Photoshop', 'psd', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/92',
-                     'Moderate Risk', 'Transform to TIFF or JPEG2000', 'PRONOM']]
+                    ['C:\\PUID\\file.css', 'CSS', '2.0', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
+                     'Cascading Style Sheets 2.0', 'css', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
+                     'Low Risk', 'Retain', 'PRONOM and Version'],
+                    ['C:\\PUID\\file.html', 'HTML', '5.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/96',
+                     'Hypertext Markup Language 5.1', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/96',
+                     'Low Risk', 'Retain', 'PRONOM and Version']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with PUID and Version')
+
+    def test_puid_name(self):
+        """
+        Test for files that match a single PUID and format name combination in the NARA spreadsheet.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'puid_name_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\PUID\\file.e00', 'ESRI ArcInfo Interchange File Format', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
+                     'ESRI ArcInfo Interchange File Format', 'e00', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
+                     'Moderate Risk', 'Transform to KML, ESRI Shapefile, and/or GML as appropriate', 'PRONOM and Name'],
+                    ['C:\\PUID\\file.m2p', 'MPEG-2 Program Stream', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
+                     'MPEG-2 Program Stream', 'm2p|mpg|mpeg','https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
+                     'Low Risk', 'Retain', 'PRONOM and Name']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with PUID and Name')
+
+    def test_puid_single(self):
+        """
+        Test for files that match a single PUID, but not format name or version, in the NARA spreadsheet.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'puid_single_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\PUID\\file.cdx', 'CorelDraw', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/31',
+                     'CorelDraw Compressed Drawing', 'cdx', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/31',
+                     'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'PRONOM'],
+                    ['C:\\PUID\\file.dng', 'Digital Negative 1.0', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/436',
+                     'Digital Negative Format 1.0', 'dng', 'https://www.nationalarchives.gov.uk/pronom/fmt/436',
+                     'Low Risk', 'Retain', 'PRONOM']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with PUID, single match')
@@ -47,10 +99,8 @@ class MyTestCase(unittest.TestCase):
         Test for files that match multiple PUIDs in the NARA spreadsheet.
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
-        # Creates test input.
-        rows = [['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102'],
-                ['C:\\PUID\\file.xls', 'Microsoft Excel', '3.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/56']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        # # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'puid_multiple_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -61,18 +111,18 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102',
-                     'eXtensible Hypertext Markup Language 1.0', 'xhtm|xhtml',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/102', 'Low Risk', 'Retain', 'PRONOM'],
-                    ['C:\\PUID\\file.html', 'HTML', '1.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/102',
-                     'Hypertext Markup Language 1.0', 'htm|html',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/102', 'Low Risk', 'Retain', 'PRONOM'],
-                    ['C:\\PUID\\file.xls', 'Microsoft Excel', '3.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/56',
-                     'Microsoft Excel 3.0', 'xls', 'https://www.nationalarchives.gov.uk/pronom/fmt/56', 'Moderate Risk',
-                     'Transform to XLSX', 'PRONOM'],
-                    ['C:\\PUID\\file.xls', 'Microsoft Excel', '3.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/56',
-                     'Microsoft Excel for Macintosh 3.0', 'xls', 'https://www.nationalarchives.gov.uk/pronom/fmt/56',
-                     'Moderate Risk', 'Transform to XLSX', 'PRONOM']]
+                    ['C:\\PUID\\file.xhtml', 'XHTML', '1.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
+                     'eXtensible Hypertext Markup Language 1.1', 'xhtm|xhtml', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
+                     'Low Risk', 'Retain', 'PRONOM and Version'],
+                    ['C:\\PUID\\file.xhtml', 'XHTML', '1.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
+                     'Hypertext Markup Language 1.1', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
+                     'Low Risk', 'Retain', 'PRONOM and Version'],
+                    ['C:\\PUID\\file.oxps', 'Open XML Paper', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                     'Microsoft XML Paper Specification 1.0', 'xps', 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                     'Moderate Risk', 'Transform to PDF or possibly OXPS', 'PRONOM'],
+                    ['C:\\PUID\\file.oxps', 'Open XML Paper', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                     'Open XML Paper Specification', 'oxps', 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                     'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS', 'PRONOM']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with PUID, multiple matches')
@@ -83,9 +133,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\NameVer\\file.wk3', 'Lotus 1-2-3 Worksheet', '3.0', ''],
-                ['C:\\NameVer\\file.swf', 'Macromedia Flash', '7', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'name_version_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -96,10 +144,13 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\NameVer\\file.wk3', 'Lotus 1-2-3 Worksheet', '3.0', '', 'Lotus 1-2-3 Worksheet 3.0',
+                    ['C:\\Name\\file.wk3', 'Lotus 1-2-3 Worksheet', '3.0', np.NaN, 'Lotus 1-2-3 Worksheet 3.0',
                      'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
-                    ['C:\\NameVer\\file.swf', 'Macromedia Flash', '7', '', 'Macromedia Flash 7', 'swf',
+                    ['C:\\Name\\file.css', 'Cascading Style Sheets', '2.1', np.NaN, 'Cascading Style Sheets 2.1',
+                     'css', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk',
+                     'Retain', 'Format Name'],
+                    ['C:\\Name\\file.swf', 'Macromedia Flash', '7', np.NaN, 'Macromedia Flash 7', 'swf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk',
                      'Transform to MP4 if possible, otherwise retain', 'Format Name']]
 
@@ -112,9 +163,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\NameVer\\file.wk3', 'lotus 1-2-3 worksheet', '3.0', ''],
-                ['C:\\NameVer\\file.swf', 'macromedia flash', '7', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'name_version_not_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -125,12 +174,12 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\NameVer\\file.wk3', 'lotus 1-2-3 worksheet', '3.0', '', 'Lotus 1-2-3 Worksheet 3.0',
+                    ['C:\\Name\\file.wk3', 'lotus 1-2-3 worksheet', '3.0', np.NaN, 'Lotus 1-2-3 Worksheet 3.0',
                      'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
-                    ['C:\\NameVer\\file.swf', 'macromedia flash', '7', '', 'Macromedia Flash 7', 'swf',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk',
-                     'Transform to MP4 if possible, otherwise retain', 'Format Name']]
+                    ['C:\\Name\\file.css', 'cascading style sheets', '2.1', np.NaN, 'Cascading Style Sheets 2.1',
+                     'css', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk',
+                     'Retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case does not match')
@@ -141,9 +190,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\Name\\file.bat', 'Batch Script', '', ''],
-                ['C:\\Name\\file.eml', 'Electronic Mail Format', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'name_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -154,9 +201,9 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\Name\\file.bat', 'Batch Script', '', '', 'Batch Script', 'bat|cmd|btm',
+                    ['C:\\Name\\file.bat', 'Batch Script', np.NaN, np.NaN, 'Batch Script', 'bat|cmd|btm',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
-                    ['C:\\Name\\file.eml', 'Electronic Mail Format', '', '', 'Electronic Mail Format', 'eml',
+                    ['C:\\Name\\file.eml', 'Electronic Mail Format', np.NaN, np.NaN, 'Electronic Mail Format', 'eml',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -168,9 +215,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\Name\\file.bat', 'batch script', '', ''],
-                ['C:\\Name\\file.eml', 'electronic mail format', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'name_not_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -181,13 +226,40 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\Name\\file.bat', 'batch script', '', '', 'Batch Script', 'bat|cmd|btm',
+                    ['C:\\Name\\file.bat', 'batch script', np.NaN, np.NaN, 'Batch Script', 'bat|cmd|btm',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
-                    ['C:\\Name\\file.eml', 'electronic mail format', '', '', 'Electronic Mail Format', 'eml',
+                    ['C:\\Name\\file.eml', 'electronic mail format', np.NaN, np.NaN, 'Electronic Mail Format', 'eml',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name, case does not match')
+
+    def test_extension_and_version(self):
+        """
+        Test for files that match a single file extension and version combination in the NARA spreadsheet.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'extension_and_version_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\ext\\File.rtf', 'Rich Text', '1.2', np.NaN, 'Rich Text Format 1.2', 'rtf',
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/45',
+                     'Moderate Risk', 'Transform to PDF', 'File Extension and Version'],
+                    ['C:\\ext\\File.psd', 'Photoshop', np.NaN, np.NaN, 'Adobe Photoshop', 'psd',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/92',
+                     'Moderate Risk', 'Transform to TIFF or JPEG2000', 'File Extension']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with PUID, single match')
 
     def test_extension_case(self):
         """
@@ -195,9 +267,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\ext\\file.mxf', 'MXF', '', ''],
-                ['C:\\ext\\file.crl', 'Raster', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'extension_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -208,9 +278,9 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\ext\\file.mxf', 'MXF', '', '', 'Material Exchange Format', 'mxf',
+                    ['C:\\ext\\file.mxf', 'MXF', np.NaN, np.NaN, 'Material Exchange Format', 'mxf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
-                    ['C:\\ext\\file.crl', 'Raster', '', '', 'Intergraph Raster Format', 'crl',
+                    ['C:\\ext\\file.crl', 'Raster', np.NaN, np.NaN, 'Intergraph Raster Format', 'crl',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
                      'File Extension']]
 
@@ -223,9 +293,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\ext\\file.MXF', 'MXF', '', ''],
-                ['C:\\ext\\file.CRL', 'Raster', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'extension_no_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -236,9 +304,9 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\ext\\file.MXF', 'MXF', '', '', 'Material Exchange Format', 'mxf',
+                    ['C:\\ext\\file.MXF', 'MXF', np.NaN, np.NaN, 'Material Exchange Format', 'mxf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
-                    ['C:\\ext\\file.CRL', 'Raster', '', '', 'Intergraph Raster Format', 'crl',
+                    ['C:\\ext\\file.CRL', 'Raster', np.NaN, np.NaN, 'Intergraph Raster Format', 'crl',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
                      'File Extension']]
 
@@ -251,9 +319,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\Ext\\file.gz', 'g-zip', '', ''],
-                ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'extension_pipe_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -264,20 +330,11 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\Ext\\file.gz', 'g-zip', '', '', 'GZIP', 'gz|tgz',
+                    ['C:\\ext\\file.gz', 'g-zip', np.NaN, np.NaN, 'GZIP', 'gz|tgz',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
-                    ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.0',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/137', 'Low Risk', 'Retain',
-                     'File Extension'],
-                    ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.1',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/294', 'Low Risk', 'Retain',
-                     'File Extension'],
-                    ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.2',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/295', 'Low Risk', 'Retain',
-                     'File Extension'],
-                    ['C:\\Ext\\file.fods', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.3',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/1755', 'Low Risk', 'Retain',
+                    ['C:\\ext\\file.bat', 'script', np.NaN, np.NaN, 'Batch Script', 'bat|cmd|btm',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain',
                      'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -289,9 +346,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\Ext\\file.GZ', 'g-zip', '', ''],
-                ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'extension_pipe_no_case_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -302,20 +357,11 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\Ext\\file.GZ', 'g-zip', '', '', 'GZIP', 'gz|tgz',
+                    ['C:\\ext\\file.GZ', 'g-zip', np.NaN, np.NaN, 'GZIP', 'gz|tgz',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
-                    ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.0',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/137', 'Low Risk', 'Retain',
-                     'File Extension'],
-                    ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.1',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/294', 'Low Risk', 'Retain',
-                     'File Extension'],
-                    ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.2',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/295', 'Low Risk', 'Retain',
-                     'File Extension'],
-                    ['C:\\Ext\\file.FODS', 'OpenDocument Spreadsheet', '', '', 'OpenDocument Spreadsheet 1.3',
-                     'ods|fods|ots', 'https://www.nationalarchives.gov.uk/pronom/fmt/1755', 'Low Risk', 'Retain',
+                    ['C:\\ext\\file.BAT', 'script', np.NaN, np.NaN, 'Batch Script', 'bat|cmd|btm',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain',
                      'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -327,9 +373,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\Ext\\file.aac', 'MPEG-4', '', ''],
-                ['C:\\Ext\\file.CIN', 'Kodak', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'extension_multiple_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -340,17 +384,18 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'Advanced Audio Coding (AAC) MPEG-2 Audio', 'aac',
+                    ['C:\\ext\\file.aac', 'MPEG-4', np.NaN, np.NaN, 'Advanced Audio Coding (AAC) MPEG-2 Audio', 'aac',
                      np.NaN, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
-                    ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'Advanced Audio Coding MPEG-4 Low Complexity Object',
+                    ['C:\\ext\\file.aac', 'MPEG-4', np.NaN, np.NaN, 'Advanced Audio Coding MPEG-4 Low Complexity Object',
                      'aac|mp4|m4a', np.NaN, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
-                    ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'MPEG-4 File Format, V.2, with Advanced Audio Coding',
+                    ['C:\\ext\\file.aac', 'MPEG-4', np.NaN, np.NaN, 'MPEG-4 File Format, V.2, with Advanced Audio Coding',
                      'aac', np.NaN, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
-                    ['C:\\Ext\\file.aac', 'MPEG-4', '', '', 'QuickTime Audio with AAC codec', 'qta|aac|m4p|mp3', np.NaN,
+                    ['C:\\ext\\file.aac', 'MPEG-4', np.NaN, np.NaN,
+                     'QuickTime Audio with AAC codec', 'qta|aac|m4p|mp3', np.NaN,
                      'Moderate Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
-                    ['C:\\Ext\\file.CIN', 'Kodak', '', '', 'Kodak Cineon', 'cin', np.NaN, 'High Risk',
+                    ['C:\\ext\\file.CIN', 'Kodak', np.NaN, np.NaN, 'Kodak Cineon', 'cin', np.NaN, 'High Risk',
                      'Transform to TIFF if possible', 'File Extension'],
-                    ['C:\\Ext\\file.CIN', 'Kodak', '', '', 'OS/2 Change Control File', 'cin',
+                    ['C:\\ext\\file.CIN', 'Kodak', np.NaN, np.NaN, 'OS/2 Change Control File', 'cin',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/143', 'Moderate Risk', 'Retain', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -362,9 +407,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['C:\\None\\file.abc', 'New Format', '', ''],
-                ['C:\\None\\file', 'Unknown Binary', '', '']]
-        df_fits = pd.DataFrame(rows, columns=['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID'])
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'no_match_fits.csv'))
         df_nara = csv_to_dataframe(c.NARA)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -375,9 +418,9 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\None\\file.abc', 'New Format', '', '', np.NaN, np.NaN, np.NaN, 'No Match', np.NaN,
+                    ['C:\\None\\file.abc', 'New Format', np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, 'No Match', np.NaN,
                      'No NARA Match'],
-                    ['C:\\None\\file', 'Unknown Binary', '', '', np.NaN, np.NaN, np.NaN, 'No Match', np.NaN,
+                    ['C:\\None\\file', 'Unknown Binary', np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, 'No Match', np.NaN,
                      'No NARA Match']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
