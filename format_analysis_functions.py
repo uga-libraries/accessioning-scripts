@@ -76,12 +76,13 @@ def csv_to_dataframe(csv_file):
     If special characters require the CSV to be read while ignoring encoding errors, it prints a warning."""
 
     # Reads the CSV into a dataframe, ignoring encoding errors from special characters if necessary.
+    # Reads a string to allow better comparisons between dataframes.
     try:
-        df = pd.read_csv(csv_file)
+        df = pd.read_csv(csv_file, dtype=str)
     except UnicodeDecodeError:
         print("UnicodeDecodeError when trying to read:", csv_file)
         print("The CSV was read by ignoring encoding errors, so those characters are omitted from the dataframe.")
-        df = pd.read_csv(csv_file, encoding_errors="ignore")
+        df = pd.read_csv(csv_file, dtype=str, encoding_errors="ignore")
 
     # Adds a prefix to the NARA dataframe columns so the source of the data is clear when the data is combined.
     if "NARA" in csv_file:

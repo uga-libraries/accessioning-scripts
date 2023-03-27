@@ -37,9 +37,9 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs'],
-                    ['C:\\Coll\\accession\\CD1_Images\\IMG1.JPG', 'JPEG EXIF', '1.01', False],
-                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'Hypertext Markup Language', '4.01', True],
-                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'HTML Transitional', 'HTML 4.01', True]]
+                    ['C:\\Coll\\accession\\CD1_Images\\IMG1.JPG', 'JPEG EXIF', '1.01', 'False'],
+                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'Hypertext Markup Language', '4.01', 'True'],
+                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'HTML Transitional', 'HTML 4.01', 'True']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with FITS')
@@ -143,9 +143,9 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs'],
-                    ['C:\\Coll\\accession\\CD1_Images\\Image.JPG', 'JPEG EXIF', '1.01', False],
-                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'Hypertext Markup Language', '4.01', True],
-                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'HTML Transitional', 'HTML 4.01', True]]
+                    ['C:\\Coll\\accession\\CD1_Images\\Image.JPG', 'JPEG EXIF', '1.01', 'False'],
+                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'Hypertext Markup Language', '4.01', 'True'],
+                    ['C:\\Coll\\accession\\CD2_Web\\index.html', 'HTML Transitional', 'HTML 4.01', 'True']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with encoding error')

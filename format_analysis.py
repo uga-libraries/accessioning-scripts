@@ -68,6 +68,7 @@ make_fits_csv(fits_output, collection_folder, accession_number)
 # Read the CSVs with data (FITS, ITA (technical appraisal), other formats that can indicate risk, and NARA)
 # into pandas for analysis and summarizing, and prints a warning if encoding errors have to be ignored.
 df_fits = csv_to_dataframe(f"{collection_folder}/{accession_number}_fits.csv")
+df_fits['FITS_Size_KB'] = df_fits['FITS_Size_KB'].astype(float)
 df_ita = csv_to_dataframe(c.ITA)
 df_other = csv_to_dataframe(c.RISK)
 df_nara = csv_to_dataframe(c.NARA)
@@ -79,6 +80,7 @@ csv_path = os.path.join(collection_folder, f"{accession_number}_full_risk_data.c
 if os.path.exists(csv_path):
     print("\nUpdating the analysis report using existing risk data.")
     df_results = csv_to_dataframe(csv_path)
+    df_results['FITS_Size_KB'] = df_results['FITS_Size_KB'].astype(float)
 else:
     print("\nGenerating new risk data for the analysis report.")
     df_results = match_nara_risk(df_fits, df_nara)
