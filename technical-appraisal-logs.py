@@ -205,7 +205,7 @@ if __name__ == "__main__":
                         data.append("Path exceeds 260 characters")
                         wr_revlog.writerow(data)
                 except FileNotFoundError:
-                    data = ["Path not found: {entry}", None, None, None, "FileNotFoundError"]
+                    data = [f"Path not found: {entry}", None, None, None, "FileNotFoundError"]
                     wr_initman.writerow(data)
                     continue
     
