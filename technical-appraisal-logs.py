@@ -49,7 +49,7 @@ def scan_full_dir(dirpath):
             else:
                 yield entry
         except FileNotFoundError:
-            print (entry)
+            print (f'FileNotFoundError: {entry}')
             not_found.append(entry)
     
     for x in not_found:
@@ -188,14 +188,10 @@ if __name__ == "__main__":
                     filepath = data[0]
                     path = str(filepath)
 
-                    tempfiles = ['~', '._']
                     probchars = ['&', '$', '*', '?']
                     smartquotes = ['“', '”', '’']
 
                     # If the path contains any of these substrings, write the relevant file info to the review log and include the reason
-                    if any (t in path for t in tempfiles):
-                        data.append("Potential temp file")
-                        wr_revlog.writerow(data)
                     if any (c in path for c in probchars):
                         data.append("Path contains special characters")
                         wr_revlog.writerow(data)
@@ -209,13 +205,13 @@ if __name__ == "__main__":
                         data.append("Path exceeds 260 characters")
                         wr_revlog.writerow(data)
                 except FileNotFoundError:
-                    data = ["Path not found", None, None, None, "FileNotFoundError"]
+                    data = ["Path not found: {entry}", None, None, None, "FileNotFoundError"]
                     wr_initman.writerow(data)
                     continue
     
     # If there's a "compare" argument, scan the directory and put current file information into a new dataframe
     if start_compare == "compare":
-        new_df = pd.DataFrame(columns=header[:-1])
+        new_df = pd.DataFrame(columns=header[:-2])
         for entry in scan_full_dir(dir_to_log):
             data = get_file_info(entry)
 
