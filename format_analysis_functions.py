@@ -156,7 +156,10 @@ def get_text(parent, element):
         value_list = parent.findall(f"fits:{element}", ns)
         for item in value_list:
             if value == "":
-                value += item.text
+                try:
+                    value += item.text
+                except TypeError:
+                    value += "TYPE ERROR (NONETYPE)"
             else:
                 value += f"; {item.text}"
         return value
