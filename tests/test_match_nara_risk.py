@@ -33,9 +33,8 @@ class MyTestCase(unittest.TestCase):
                     ['C:\\ext\\File.rtf', 'Rich Text', '1.2', np.NaN, 'Rich Text Format 1.2', 'rtf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/45',
                      'Moderate Risk', 'Transform to PDF', 'File Extension and Version'],
-                    ['C:\\ext\\File.psd', 'Photoshop', np.NaN, np.NaN, 'Adobe Photoshop', 'psd',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/92',
-                     'Moderate Risk', 'Transform to TIFF or JPEG2000', 'File Extension']]
+                    ['C:\\ext\\File.accdb', 'MS Access', '2019', np.NaN, 'Microsoft Access 2019', 'accdb',
+                     np.NaN, 'Moderate risk', 'Transform to CSV', 'File Extension and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension and version match')
@@ -158,7 +157,9 @@ class MyTestCase(unittest.TestCase):
                      'https://www.nationalarchives.gov.uk/pronom/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
                     ['C:\\ext\\file.crl', 'Raster', np.NaN, np.NaN, 'Intergraph Raster Format', 'crl',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
-                     'File Extension']]
+                     'File Extension'],
+                    ['C:\\ext\\file.px', 'Pixel File', np.NaN, np.NaN, 'Pixel Image File', 'px', np.NaN,
+                     'High Risk', 'Further research is required', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension, case match')
@@ -241,7 +242,9 @@ class MyTestCase(unittest.TestCase):
                      'Retain but extract files from the container', 'File Extension'],
                     ['C:\\ext\\file.bat', 'script', np.NaN, np.NaN, 'Batch Script', 'bat|cmd|btm',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain',
-                     'File Extension']]
+                     'File Extension'],
+                    ['C:\\ext\\file.sami', 'SAMI', np.NaN, np.NaN, 'Synchronized Accessible Media Interchange',
+                     'smi|sami', np.NaN, 'Low Risk', 'Retain', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension (piped), case match')
@@ -323,7 +326,9 @@ class MyTestCase(unittest.TestCase):
                     ['C:\\Name\\file.bat', 'Batch Script', np.NaN, np.NaN, 'Batch Script', 'bat|cmd|btm',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.eml', 'Electronic Mail Format', np.NaN, np.NaN, 'Electronic Mail Format', 'eml',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name']]
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name'],
+                    ['C:\\Name\\file.rom', 'ROM Image', np.NaN, np.NaN, 'ROM Image', 'rom', np.NaN,
+                     'Moderate Risk', 'Retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name, case match')
@@ -405,7 +410,9 @@ class MyTestCase(unittest.TestCase):
                      'Retain', 'Format Name'],
                     ['C:\\Name\\file.swf', 'Macromedia Flash', '7', np.NaN, 'Macromedia Flash 7', 'swf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk',
-                     'Transform to MP4 if possible, otherwise retain', 'Format Name']]
+                     'Transform to MP4 if possible, otherwise retain', 'Format Name'],
+                    ['C:\\Name\\file.btr', 'Btrieve', '6.1', np.NaN, 'Btrieve 6.1', 'btr', np.NaN,
+                     'Moderate Risk', 'Transform to CSV', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case match')
