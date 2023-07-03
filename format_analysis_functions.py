@@ -460,6 +460,11 @@ def match_nara_risk(df_fits, df_nara):
     df_ext = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
     df_ext = df_ext.assign(NARA_Match_Type="File Extension")
 
+    # Adds default text for risk and match type for any that are still unmatched.
+    df_no_match = df_unmatched.copy()
+    df_no_match["NARA_Risk Level"] = "No Match"
+    df_no_match["NARA_Match_Type"] = "No NARA Match"
+
     # PART TWO: FITS IDENTIFICATIONS THAT DO NOT HAVE A PUID
     # Makes a dataframe with just FITS identifications that have no PUID.
     # If FITS has no a PUID, it can match something in NARA with any PUID or no PUID.
@@ -504,8 +509,9 @@ def match_nara_risk(df_fits, df_nara):
     df_unmatched["NARA_Risk Level"] = "No Match"
     df_unmatched["NARA_Match_Type"] = "No NARA Match"
 
+    # PART THREE: Combine and return.
     # Combines each dataframe, with temporary columns removed and the index reset to one run of sequential numbers.
-    df_matched = pd.concat([df_puid_version, df_puid_name, df_puid, df_format, df_ext_ver, df_ext,
+    df_matched = pd.concat([df_puid_version, df_puid_name, df_puid, df_format, df_ext_ver, df_ext, df_no_match,
                             df_format_no_puid, df_ext_ver_no_puid, df_ext_no_puid, df_unmatched])
     df_matched.drop(["fits_version_string", "fits_name_version", "fits_name_lower", "nara_format_lower",
                      "fits_ext_lower", "nara_exts_lower", "nara_version"],
