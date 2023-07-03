@@ -12,7 +12,6 @@ import configuration as c
 
 
 class MyTestCase(unittest.TestCase):
-
     def test_puid_version(self):
         """
         Test for files that match a single PUID and format version combination in the NARA spreadsheet.
@@ -57,11 +56,14 @@ class MyTestCase(unittest.TestCase):
         expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
-                    ['C:\\PUID\\file.e00', 'ESRI ArcInfo Interchange File Format', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
-                     'ESRI ArcInfo Interchange File Format', 'e00', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
+                    ['C:\\PUID\\file.e00', 'ESRI ArcInfo Interchange File Format', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
+                     'ESRI ArcInfo Interchange File Format', 'e00',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
                      'Moderate Risk', 'Transform to KML, ESRI Shapefile, and/or GML as appropriate', 'PRONOM and Name'],
-                    ['C:\\PUID\\file.m2p', 'MPEG-2 Program Stream', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
-                     'MPEG-2 Program Stream', 'm2p|mpg|mpeg','https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
+                    ['C:\\PUID\\file.m2p', 'MPEG-2 Program Stream', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
+                     'MPEG-2 Program Stream', 'm2p|mpg|mpeg', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
                      'Low Risk', 'Retain', 'PRONOM and Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -87,7 +89,8 @@ class MyTestCase(unittest.TestCase):
                     ['C:\\PUID\\file.cdx', 'CorelDraw', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/31',
                      'CorelDraw Compressed Drawing', 'cdx', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/31',
                      'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'PRONOM'],
-                    ['C:\\PUID\\file.dng', 'Digital Negative 1.0', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/436',
+                    ['C:\\PUID\\file.dng', 'Digital Negative 1.0', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/436',
                      'Digital Negative Format 1.0', 'dng', 'https://www.nationalarchives.gov.uk/pronom/fmt/436',
                      'Low Risk', 'Retain', 'PRONOM']]
 
@@ -112,17 +115,22 @@ class MyTestCase(unittest.TestCase):
                      'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
                      'NARA_Match_Type'],
                     ['C:\\PUID\\file.xhtml', 'XHTML', '1.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
-                     'eXtensible Hypertext Markup Language 1.1', 'xhtm|xhtml', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
+                     'eXtensible Hypertext Markup Language 1.1', 'xhtm|xhtml',
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/103',
                      'Low Risk', 'Retain', 'PRONOM and Version'],
                     ['C:\\PUID\\file.xhtml', 'XHTML', '1.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
                      'Hypertext Markup Language 1.1', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
                      'Low Risk', 'Retain', 'PRONOM and Version'],
-                    ['C:\\PUID\\file.oxps', 'Open XML Paper', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
-                     'Microsoft XML Paper Specification 1.0', 'xps', 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                    ['C:\\PUID\\file.oxps', 'Open XML Paper', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                     'Microsoft XML Paper Specification 1.0', 'xps',
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/657',
                      'Moderate Risk', 'Transform to PDF or possibly OXPS', 'PRONOM'],
-                    ['C:\\PUID\\file.oxps', 'Open XML Paper', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                    ['C:\\PUID\\file.oxps', 'Open XML Paper', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/657',
                      'Open XML Paper Specification', 'oxps', 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
-                     'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS', 'PRONOM']]
+                     'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS',
+                     'PRONOM']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with PUID, multiple matches')
@@ -259,7 +267,7 @@ class MyTestCase(unittest.TestCase):
                      'Moderate Risk', 'Transform to TIFF or JPEG2000', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
-        self.assertEqual(result, expected, 'Problem with PUID, single match')
+        self.assertEqual(result, expected, 'Problem with extension and version match')
 
     def test_extension_case(self):
         """
