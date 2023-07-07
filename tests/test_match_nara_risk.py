@@ -34,7 +34,7 @@ class MyTestCase(unittest.TestCase):
                      'https://www.nationalarchives.gov.uk/pronom/fmt/45',
                      'Moderate Risk', 'Transform to PDF', 'File Extension and Version'],
                     ['C:\\ext\\File.accdb', 'MS Access', '2019', np.NaN, 'Microsoft Access 2019', 'accdb',
-                     np.NaN, 'Moderate risk', 'Transform to CSV', 'File Extension and Version']]
+                     np.NaN, 'Moderate Risk', 'Transform to CSV', 'File Extension and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension and version match')
