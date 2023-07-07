@@ -362,160 +362,179 @@ def update_risk(df_fits, df_risk, csv_path):
 
 
 def match_nara_risk(df_fits, df_nara):
-    """Combines risk information from NARA with the FITS data using different techniques,
-    starting with the most accurate. A new column Match_Type is added to identify which technique produced a match.
-    Returns a dataframe that incorporates the NARA matches."""
+    """Matches risk information from NARA to the FITS data using different techniques, starting with the most accurate.
+    Returns a dataframe with all the FITS data, the NARA Risk Level and Proposed Preservation Plan,
+    and the name of the technique that produced the NARA to FITS match (NARA_Match_Type)."""
 
-    # Adds temporary columns to df_fits and df_nara to assist in better matching.
-    # Most are lowercase versions of columns for case-insensitive matching.
-    # Also makes a string version of the format to avoid type errors during merge,
-    # combines format name and version in FITS, since NARA has that information in one column,
-    # makes a column of the file extension in FITS, since NARA has that as a separate column,
-    # and makes a column of the versions in NARA, since FITS has that as a separate column.
+    # PART ONE: ADD TEMPORARY COLUMNS TO BOTH DATAFRAMES FOR BETTER MATCHING
+
+    # Formats FITS version as a string to avoid type errors during merging.
     df_fits["fits_version_string"] = df_fits["FITS_Format_Version"].astype(str)
+
+    # Combines FITS format name and version, since NARA has that information in one column.
+    # Removes " nan" from the combined column, which happens if FITS has no version.
     df_fits["fits_name_version"] = df_fits["FITS_Format_Name"].str.lower() + " " + df_fits["fits_version_string"]
     df_fits["fits_name_version"] = df_fits["fits_name_version"].str.strip(" nan")
+
+    # Makes FITs format name lowercase for case-insensitive matching.
     df_fits["fits_name_lower"] = df_fits["FITS_Format_Name"].str.lower()
-    df_nara["nara_format_lower"] = df_nara["NARA_Format Name"].str.lower()
+
+    # Makes a column with the FITS file extension, since NARA has that as a separate column.
+    # The file extension is assumed to be anything after the last period in the file name.
     df_fits["fits_ext_lower"] = df_fits["FITS_File_Path"].str.lower().str.split(".").str[-1]
+
+    # Makes NARA format name and extension lowercase for case-insensitive matching.
+    df_nara["nara_format_lower"] = df_nara["NARA_Format Name"].str.lower()
     df_nara["nara_exts_lower"] = df_nara["NARA_File Extension(s)"].str.lower()
+
+    # Makes a column with the NARA version, since FITS has that in a separate column.
+    # The version is assumed to be anything after the last space in the format name, the most common pattern.
+    # For ones that don't actually end in a version, it gets the last word, which does not interfere with matching.
     df_nara["nara_version"] = df_nara["NARA_Format Name"].str.split(" ").str[-1]
 
-    # List of columns to look at in the NARA dataframe each time.
-    # These are removed from df_unmatched before a new technique is tried so the merge doesn't duplicate these columns.
+    # List of relevant columns in the NARA dataframe.
     nara_columns = ["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL", "NARA_Risk Level",
                     "NARA_Proposed Preservation Plan", "nara_format_lower", "nara_exts_lower", "nara_version"]
 
-    # For each matching technique, makes a dataframe merging FITS and NARA in a particular way and creates two df:
-    # one with files that still aren't matched and one with files that matched.
-    # The dataframes from matches for each technique are combined at the end of the function with any still unmatched.
+    # For each matching technique, it makes a dataframe by merging NARA into FITS based on one or two columns
+    # and creates two dataframes:
+    #   one with files that matched (has a value in NARA_Risk Level after the merge)
+    #   one with files that did not match (NARA_Risk Level is empty after the merge).
+    # A column NARA_Match_Type is added to the matched dataframe with the matching technique name.
+    # The NARA columns are removed from the unmatched dataframe so they aren't duplicated in future merges.
+    # The next technique is applied to just the files that are unmatched.
+    # After all techniques are tried, default values are assigned to NARA columns for files that cannot be matched.
 
-    # PART ONE: FITS IDENTIFICATIONS THAT HAVE A PUID
-    # Makes a dataframe with just FITS identifications that have a PUID.
-    # If FITS has a PUID, it should only match something in NARA with the same PUID or if NARA has no PUID.
+    # PART TWO: FITS IDENTIFICATIONS THAT HAVE A PUID
+    # If FITS has a PUID, it should only match something in NARA with the same PUID or no PUID.
+
+    # Makes dataframes needed for part two matches:
+
+    # FITS identifications that have a PUID.
     df_fits_puid = df_fits[df_fits["FITS_PUID"].notnull()]
 
-    # Technique 1: PRONOM Identifier and Version are both a match.
-    df_matching = pd.merge(df_fits_puid, df_nara[nara_columns], left_on=["FITS_PUID", "fits_version_string"],
-                           right_on=["NARA_PRONOM URL", "nara_version"], how="left")
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_puid_version = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
-    df_puid_version = df_puid_version.assign(NARA_Match_Type="PRONOM and Version")
+    # NARA identifications that do not have a PUID.
+    df_nara_no_puid = df_nara[df_nara["NARA_PRONOM URL"].isnull()]
 
-    # Technique 2: PRONOM Identifier and Name are both a match.
-    df_matching = pd.merge(df_unmatched, df_nara[nara_columns], left_on=["FITS_PUID", "FITS_Format_Name"],
-                           right_on=["NARA_PRONOM URL", "NARA_Format Name"], how="left")
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_puid_name = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
-    df_puid_name = df_puid_name.assign(NARA_Match_Type="PRONOM and Name")
-
-    # Technique 3: PRONOM Identifier is a match.
-    # Have to filter for PUID is not null or it will match unrelated formats with no PUID.
-    df_matching = pd.merge(df_unmatched, df_nara[nara_columns],
-                           left_on="FITS_PUID", right_on="NARA_PRONOM URL", how="left")
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_puid = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
-    df_puid = df_puid.assign(NARA_Match_Type="PRONOM")
-
-    # Makes a dataframe with NARA identifications that do not have a PUID.
-    # The remaining techniques for FITS with PUID should match NARA without PUID.
-    # Otherwise, it would be a false-positive match with something in NARA with a different PUID.
-    df_nara_nopuid = df_nara[df_nara["NARA_PRONOM URL"].isnull()]
-
-    # Technique 4: Name, and version if it has one, is a match (case insensitive).
-    # FITS has the pattern of "format_name version" since that is most common in NARA.
-    # If the format name and version are combined in another way in NARA, this will not match it.
-    df_matching = pd.merge(df_unmatched, df_nara_nopuid[nara_columns],
-                           left_on="fits_name_version", right_on="nara_format_lower", how="left")
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_format = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
-    df_format = df_format.assign(NARA_Match_Type="Format Name")
-
-    # Technique 5: Extension and version is a match (case insensitive).
-    # Makes an expanded version of the NARA dataframe with one row per extension instead of one per format version.
-    # NARA has a pipe separated string of extensions if a format has more than one.
-    df_nara_expanded = df_nara_nopuid[nara_columns].copy()
+    # NARA identifications that do not have a PUID, with one row per file extension if there is more than one.
+    # If a format has more than one extension, the extensions are divided by a pipe in a single column in df_nara.
+    df_nara_expanded = df_nara_no_puid[nara_columns].copy()
     df_nara_expanded["nara_ext_separate"] = df_nara_expanded["nara_exts_lower"].str.split(r"|")
     df_nara_expanded = df_nara_expanded.explode("nara_ext_separate")
-    df_matching = pd.merge(df_unmatched, df_nara_expanded,
-                           left_on=["fits_ext_lower", "fits_version_string"],
-                           right_on=["nara_ext_separate", "nara_version"],
-                           how="left")
-    df_matching.drop("nara_ext_separate", inplace=True, axis=1)
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_ext_ver = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
-    df_ext_ver = df_ext_ver.assign(NARA_Match_Type="File Extension and Version")
 
-    # Technique 6: Extension is a match (case insensitive).
-    df_matching = pd.merge(df_unmatched, df_nara_expanded,
-                           left_on="fits_ext_lower", right_on="nara_ext_separate", how="left")
-    df_matching.drop("nara_ext_separate", inplace=True, axis=1)
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
+    # Technique 1: PRONOM Identifier and Format Version are both a match.
+    df_merge = pd.merge(df_fits_puid, df_nara[nara_columns], left_on=["FITS_PUID", "fits_version_string"],
+                        right_on=["NARA_PRONOM URL", "nara_version"], how="left")
+    df_puid_version = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_puid_version = df_puid_version.assign(NARA_Match_Type="PRONOM and Version")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_ext = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
+
+    # Technique 2: PRONOM Identifier and Format Name are both a match.
+    df_merge = pd.merge(df_unmatched, df_nara[nara_columns], left_on=["FITS_PUID", "FITS_Format_Name"],
+                        right_on=["NARA_PRONOM URL", "NARA_Format Name"], how="left")
+    df_puid_name = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_puid_name = df_puid_name.assign(NARA_Match_Type="PRONOM and Name")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
+
+    # Technique 3: PRONOM Identifier is a match.
+    df_merge = pd.merge(df_unmatched, df_nara[nara_columns], left_on="FITS_PUID",
+                        right_on="NARA_PRONOM URL", how="left")
+    df_puid = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_puid = df_puid.assign(NARA_Match_Type="PRONOM")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
+
+    # Technique 4: Format Name, and Format Version if it has one, are both a match.
+    # This only works if the NARA Format Name is structured name[SPACE]version.
+    df_merge = pd.merge(df_unmatched, df_nara_no_puid[nara_columns], left_on="fits_name_version",
+                        right_on="nara_format_lower", how="left")
+    df_format = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_format = df_format.assign(NARA_Match_Type="Format Name")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
+
+    # Technique 5: File Extension and Format Version are both a match.
+    df_merge = pd.merge(df_unmatched, df_nara_expanded, left_on=["fits_ext_lower", "fits_version_string"],
+                        right_on=["nara_ext_separate", "nara_version"], how="left")
+    df_merge.drop("nara_ext_separate", inplace=True, axis=1)
+    df_ext_ver = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_ext_ver = df_ext_ver.assign(NARA_Match_Type="File Extension and Version")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
+
+    # Technique 6: File Extension is a match.
+    df_merge = pd.merge(df_unmatched, df_nara_expanded, left_on="fits_ext_lower",
+                        right_on="nara_ext_separate", how="left")
+    df_merge.drop("nara_ext_separate", inplace=True, axis=1)
+    df_ext = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
     df_ext = df_ext.assign(NARA_Match_Type="File Extension")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
 
     # Adds default text for risk and match type for any that are still unmatched.
     df_no_match = df_unmatched.copy()
     df_no_match["NARA_Risk Level"] = "No Match"
     df_no_match["NARA_Match_Type"] = "No NARA Match"
 
-    # PART TWO: FITS IDENTIFICATIONS THAT DO NOT HAVE A PUID
-    # Makes a dataframe with just FITS identifications that have no PUID.
-    # If FITS has no a PUID, it can match something in NARA with any PUID or no PUID.
+    # PART THREE: FITS IDENTIFICATIONS THAT DO NOT HAVE A PUID
+    # If FITS has no PUID, it can match anything in NARA (has a PUID or no PUID).
+
+    # Makes dataframes needed for part three matches:
+
+    # FITS identifications that have no PUID.
     df_fits_no_puid = df_fits[df_fits["FITS_PUID"].isnull()].copy()
 
-    # Technique 4 (repeated with new df): Name, and version if it has one, is a match (case insensitive).
-    # FITS has the pattern of "format_name version" since that is most common in NARA.
-    # If the format name and version are combined in another way in NARA, this will not match it.
-    df_matching = pd.merge(df_fits_no_puid, df_nara[nara_columns],
-                           left_on="fits_name_version", right_on="nara_format_lower", how="left")
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_format_no_puid = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
-    df_format_no_puid = df_format_no_puid.assign(NARA_Match_Type="Format Name")
-
-    # Technique 5 (repeated with new df): Extension and version is a match (case insensitive).
-    # Makes an expanded version of the NARA dataframe with one row per extension instead of one per format version.
-    # NARA has a pipe separated string of extensions if a format has more than one.
+    # NARA identifications with one row per file extension if there is more than one.
+    # If a format has more than one extension, the extensions are divided by a pipe in a single column in df_nara.
     df_nara_expanded = df_nara[nara_columns].copy()
     df_nara_expanded["nara_ext_separate"] = df_nara_expanded["nara_exts_lower"].str.split(r"|")
     df_nara_expanded = df_nara_expanded.explode("nara_ext_separate")
-    df_matching = pd.merge(df_unmatched, df_nara_expanded,
-                           left_on=["fits_ext_lower", "fits_version_string"],
-                           right_on=["nara_ext_separate", "nara_version"],
-                           how="left")
-    df_matching.drop("nara_ext_separate", inplace=True, axis=1)
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
-    df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_ext_ver_no_puid= df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
-    df_ext_ver_no_puid = df_ext_ver_no_puid.assign(NARA_Match_Type="File Extension and Version")
 
-    # Technique 6 (repeated with new df): Extension is a match (case insensitive).
-    df_matching = pd.merge(df_unmatched, df_nara_expanded,
-                           left_on="fits_ext_lower", right_on="nara_ext_separate", how="left")
-    df_matching.drop("nara_ext_separate", inplace=True, axis=1)
-    df_unmatched = df_matching[df_matching["NARA_Risk Level"].isnull()].copy()
+    # Technique 4 (repeated with different FITS DF): Format Name, and Format Version if it has one, are both a match.
+    # This only works if the NARA Format Name is structured name[SPACE]version.
+    df_merge = pd.merge(df_fits_no_puid, df_nara[nara_columns], left_on="fits_name_version",
+                        right_on="nara_format_lower", how="left")
+    df_format_no_puid = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_format_no_puid = df_format_no_puid.assign(NARA_Match_Type="Format Name")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
-    df_ext_no_puid = df_matching[df_matching["NARA_Risk Level"].notnull()].copy()
+
+    # Technique 5 (repeated with different FITS DF): File Extension and Format Version are both a match.
+    df_merge = pd.merge(df_unmatched, df_nara_expanded, left_on=["fits_ext_lower", "fits_version_string"],
+                        right_on=["nara_ext_separate", "nara_version"], how="left")
+    df_merge.drop("nara_ext_separate", inplace=True, axis=1)
+    df_ext_ver_no_puid= df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_ext_ver_no_puid = df_ext_ver_no_puid.assign(NARA_Match_Type="File Extension and Version")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
+
+    # Technique 6 (repeated with different FITS DF): File Extension is a match.
+    df_merge = pd.merge(df_unmatched, df_nara_expanded, left_on="fits_ext_lower",
+                        right_on="nara_ext_separate", how="left")
+    df_merge.drop("nara_ext_separate", inplace=True, axis=1)
+    df_ext_no_puid = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
     df_ext_no_puid = df_ext_no_puid.assign(NARA_Match_Type="File Extension")
+    df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
+    df_unmatched.drop(nara_columns, inplace=True, axis=1)
 
     # Adds default text for risk and match type for any that are still unmatched.
     df_unmatched["NARA_Risk Level"] = "No Match"
     df_unmatched["NARA_Match_Type"] = "No NARA Match"
 
-    # PART THREE: Combine and return.
-    # Combines each dataframe, with temporary columns removed and the index reset to one run of sequential numbers.
+    # PART FOUR: COMBINE
+
+    # Combines the dataframes from each matching technique and the ones with no match.
     df_matched = pd.concat([df_puid_version, df_puid_name, df_puid, df_format, df_ext_ver, df_ext, df_no_match,
                             df_format_no_puid, df_ext_ver_no_puid, df_ext_no_puid, df_unmatched])
+
+    # Removes the temporary columns used for better matching.
     df_matched.drop(["fits_version_string", "fits_name_version", "fits_name_lower", "nara_format_lower",
                      "fits_ext_lower", "nara_exts_lower", "nara_version"],
                     inplace=True, axis=1)
+
+    # Resets the index to one run of sequential numbers.
     df_matched.index = np.arange(len(df_matched))
 
     return df_matched
