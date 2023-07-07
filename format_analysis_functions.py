@@ -374,7 +374,7 @@ def match_nara_risk(df_fits, df_nara):
     # Combines FITS format name and version, since NARA has that information in one column.
     # Removes " nan" from the combined column, which happens if FITS has no version.
     df_fits["fits_name_version"] = df_fits["FITS_Format_Name"].str.lower() + " " + df_fits["fits_version_string"]
-    df_fits["fits_name_version"] = df_fits["fits_name_version"].str.strip(" nan")
+    df_fits["fits_name_version"] = df_fits["fits_name_version"].str.replace("\snan$", "")
 
     # Makes FITs format name lowercase for case-insensitive matching.
     df_fits["fits_name_lower"] = df_fits["FITS_Format_Name"].str.lower()

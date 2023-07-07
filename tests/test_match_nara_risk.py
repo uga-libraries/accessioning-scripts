@@ -411,8 +411,9 @@ class MyTestCase(unittest.TestCase):
                     ['C:\\Name\\file.swf', 'Macromedia Flash', '7', np.NaN, 'Macromedia Flash 7', 'swf',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk',
                      'Transform to MP4 if possible, otherwise retain', 'Format Name'],
-                    ['C:\\Name\\file.btr', 'Btrieve', '6.1', np.NaN, 'Btrieve 6.1', 'btr', np.NaN,
-                     'Moderate Risk', 'Transform to CSV', 'Format Name']]
+                    ['C:\\fail\\File.pts', 'Avid Pro Tools Session', '5.1-6.9', np.NaN,
+                     'Avid Pro Tools Session 5.1-6.9', 'pts', np.NaN,
+                     'High Risk', 'Transform to WAV if possible', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case match')
