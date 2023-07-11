@@ -80,6 +80,27 @@ class MyTestCase(unittest.TestCase):
         # Compares the results. assertEqual prints "OK" or the differences between the two strings.
         self.assertEqual(result, expected, 'Problem with multiple matching elements')
 
+    def test_nonetype_one(self):
+        """
+        Test for single FITS element with NoneType value.
+        """
+        # Reads the FITS XML (fits_row function usually does this) for test input.
+        fits_file = os.path.join('test_FITS', 'get_text_FITS', 'element_nonetype_one.zip.fits.xml')
+        ns = {"fits": "http://hul.harvard.edu/ois/xml/ns/fits/fits_output"}
+        tree = ET.parse(fits_file)
+        root = tree.getroot()
+        parent = root.find("fits:identification/fits:identity", ns)
+
+        # Runs the function being tested and saves the result to a variable.
+        # In the fits_row function, this would be added to the file_data list.
+        result = get_text(parent, 'version')
+
+        # Creates a string with the expected result.
+        expected = 'TYPE ERROR (NONETYPE)'
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two strings.
+        self.assertEqual(result, expected, 'Problem with nonetype one')
+
 
 if __name__ == '__main__':
     unittest.main()
