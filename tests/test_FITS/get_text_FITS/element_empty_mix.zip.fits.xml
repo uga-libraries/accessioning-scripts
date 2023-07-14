@@ -7,11 +7,11 @@
     </identity>
   </identification>
   <fileinfo>
-    <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">C:\Users\ek90959\Desktop\NoneType_Test_Files\acc_with_nonetype\Open_Records_Request  MWA Sewage Spills.zip</filepath>
-    <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">Open_Records_Request  MWA Sewage Spills.zip</filename>
-    <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT"></size>
-    <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">58757</size>
-    <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT"></size>
+    <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">C:\Empty\element_empty_mix.zip</filepath>
+    <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">element_empty_mix.zip</filename>
+    <size toolname="OIS File Information" toolversion="1.0" />
+    <size toolname="OIS File Information" toolversion="1.0">58757</size>
+    <size toolname="OIS File Information" toolversion="1.0" />
     <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">ba3d1323f32252895467f422843d8adb</md5checksum>
     <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1255118498079</fslastmodified>
   </fileinfo>

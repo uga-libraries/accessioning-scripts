@@ -151,33 +151,21 @@ def get_text(parent, element):
 
     # If one or more instances of the element are present, returns the element value(s) as a string.
     # For multiple instances, puts a semicolon between the value for each instance.
-    # If FITS element is empty and triggers a TypeError, pass over it.
-    print(f'Function starting')
+    # If FITS element is empty (item.text is None), do not add that to string.
     try:
         value = None
         value_list = parent.findall(f"fits:{element}", ns)
-        print(value_list)
         for item in value_list:
-            print(f'Item: {item}')
-            if value is None:
-                print(f'If branch')
-                try:
-                    value = item.text
-                    print(f'If version: {value}')
-                except TypeError:
-                    pass
+            if item.text is None:
+                continue
+            elif value is None:
+                value = item.text
             else:
-                print('Else branch')
-                try:
-                    value += f"; {item.text}"
-                    print(f'Else version: {value}')
-                except TypeError:
-                    continue
+                value += f"; {item.text}"
         return value
     # If the element is missing, item.text raises an AttributeError.
     # Returns None, which results in a blank cell in the CSV.
     except AttributeError:
-        print(f'AttributeError')
         return None
 
 
