@@ -482,6 +482,7 @@ def match_nara_risk(df_fits, df_nara):
 
     # Adds default text for risk and match type for any that are still unmatched.
     df_unmatched = df_unmatched.copy()
+    df_unmatched["NARA_Format Name"] = "No Match"
     df_unmatched["NARA_Risk Level"] = "No Match"
     df_unmatched["NARA_Match_Type"] = "No NARA Match"
     df_result = pd.concat([df_result, df_unmatched], ignore_index=True)
@@ -514,7 +515,7 @@ def match_nara_risk(df_fits, df_nara):
     df_merge = pd.merge(df_unmatched, df_nara_expanded, left_on=["fits_ext_lower", "fits_version_string"],
                         right_on=["nara_ext_separate", "nara_version"], how="left")
     df_merge.drop("nara_ext_separate", inplace=True, axis=1)
-    df_matched= df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
+    df_matched = df_merge[df_merge["NARA_Risk Level"].notnull()].copy()
     df_matched = df_matched.assign(NARA_Match_Type="File Extension and Version")
     df_result = pd.concat([df_result, df_matched], ignore_index=True)
     df_unmatched = df_merge[df_merge["NARA_Risk Level"].isnull()].copy()
@@ -531,6 +532,7 @@ def match_nara_risk(df_fits, df_nara):
     df_unmatched.drop(nara_columns, inplace=True, axis=1)
 
     # Adds default text for risk and match type for any that are still unmatched.
+    df_unmatched["NARA_Format Name"] = "No Match"
     df_unmatched["NARA_Risk Level"] = "No Match"
     df_unmatched["NARA_Match_Type"] = "No NARA Match"
     df_result = pd.concat([df_result, df_unmatched], ignore_index=True)
@@ -540,6 +542,14 @@ def match_nara_risk(df_fits, df_nara):
     # Removes the temporary columns used for better matching.
     df_result.drop(["fits_version_string", "fits_name_version", "fits_name_lower", "nara_format_lower",
                     "fits_ext_lower", "nara_exts_lower", "nara_version"], inplace=True, axis=1)
+
+    # If FITS has no version and NARA has one that is "unspecified version",
+    # removes any other matches for that FITS path from other versions of the format in NARA.
+    nara_unspecified = df_result["NARA_Format Name"].str.endswith(" unspecified version")
+    fits_unspecified_list = df_result["FITS_File_Path"][nara_unspecified].to_list()
+    fits_name = df_result["FITS_File_Path"].isin(fits_unspecified_list)
+    fits_no_version = df_result["FITS_Format_Version"].isna()
+    df_result = df_result.drop(df_result[fits_name & fits_no_version & ~nara_unspecified].index)
 
     return df_result
 
