@@ -492,19 +492,19 @@ class MyTestCase(unittest.TestCase):
                      'NARA_Proposed Preservation Plan', 'NARA_Match_Type'],
                     ['C:\\None\\file.css', 'Cascading Style Sheets', '2.0',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
-                     np.NaN, np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
+                     'No Match', np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
                     ['C:\\None\\file.csv', 'Comma Separated Values', np.NaN,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
-                     np.NaN, np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
+                     'No Match', np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
                     ['C:\\None\\file.cdr', 'Corel Drawing', '8.0',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
-                     np.NaN, np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
+                     'No Match', np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
                     ['C:\\None\\file.exe', 'Executable', np.NaN,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
-                     np.NaN, np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
-                    ['C:\\None\\file.abc', 'New Format', np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+                     'No Match', np.NaN, np.NaN, 'No Match', np.NaN, 'No NARA Match'],
+                    ['C:\\None\\file.abc', 'New Format', np.NaN, np.NaN, 'No Match', np.NaN, np.NaN,
                      'No Match', np.NaN, 'No NARA Match'],
-                    ['C:\\None\\file', 'Unknown Binary', np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+                    ['C:\\None\\file', 'Unknown Binary', np.NaN, np.NaN, 'No Match', np.NaN, np.NaN,
                      'No Match', np.NaN, 'No NARA Match']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -632,6 +632,194 @@ class MyTestCase(unittest.TestCase):
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with PUID and Version')
+
+    def test_unspecified_extension_version(self):
+        """
+        Test for files that match a file extension and version combination in the NARA spreadsheet.
+        The FITS version is blank and the NARA version is "unspecified version".
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'unspecified_extension_version_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\unspecified\\file.swf', 'Flash', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/000',
+                     'Macromedia Flash unspecified version', 'swf', np.NaN, 'Moderate Risk',
+                     'Transform to MP4 if possible, otherwise retain', 'File Extension'],
+                    ['C:\\unspecified\\file.rtf', 'RTF', np.NaN, 'https://www.nationalarchives.gov.uk/pronom/fmt/000',
+                     'Rich Text Format unspecified version', 'rtf', np.NaN, 'Moderate Risk',
+                     'Transform to PDF', 'File Extension'],
+                    ['C:\\unspecified\\file.css', 'CSS', np.NaN, np.NaN,
+                     'Cascading Style Sheets unspecified version', 'css',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain', 'File Extension'],
+                    ['C:\\unspecified\\file.gif', 'GIF', np.NaN, np.NaN,
+                     'Graphics Interchange Format unspecified version', 'gif', np.NaN, 'Moderate Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\unspecified\\file.pdf', 'PDF', np.NaN, np.NaN,
+                     'Adobe Illustrator unspecified version', 'ai|pdf', np.NaN, 'Moderate Risk',
+                     'Transform to PDF', 'File Extension'],
+                    ['C:\\unspecified\\file.pdf', 'PDF', np.NaN, np.NaN,
+                     'Portable Document Format (PDF) unspecified version', 'pdf', np.NaN, 'Moderate Risk',
+                     'Depends on version, see specific version plan', 'File Extension'],
+                    ['C:\\unspecified\\file.pdf', 'PDF', np.NaN, np.NaN,
+                     'Portable Document Format/Archiving (PDF/A) unspecified version', 'pdf', np.NaN, 'Low Risk',
+                     'Retain', 'File Extension']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with unspecified version, extension and version')
+
+    def test_unspecified_name_version(self):
+        """
+        Test for files that match a single format name and version combination in the NARA spreadsheet.
+        The FITS version is blank and the NARA version is "unspecified version".
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'unspecified_name_version_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\unspecified\\file.swf', 'Macromedia Flash unspecified version', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/000', 'Macromedia Flash unspecified version',
+                     'swf', np.NaN, 'Moderate Risk', 'Transform to MP4 if possible, otherwise retain',
+                     'Format Name'],
+                    ['C:\\unspecified\\file.rtf', 'Rich Text Format unspecified version', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/000', 'Rich Text Format unspecified version',
+                     'rtf', np.NaN, 'Moderate Risk', 'Transform to PDF', 'Format Name'],
+                    ['C:\\unspecified\\file.css', 'Cascading Style Sheets unspecified version', np.NaN,
+                     np.NaN,
+                     'Cascading Style Sheets unspecified version', 'css',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain', 'Format Name'],
+                    ['C:\\unspecified\\file.gif', 'Graphics Interchange Format unspecified version', np.NaN, np.NaN,
+                     'Graphics Interchange Format unspecified version', 'gif', np.NaN, 'Moderate Risk',
+                     'Retain', 'Format Name']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with unspecified version, format name and version')
+
+    def test_unspecified_one_match(self):
+        """
+        Test for files that match a single row in the NARA spreadsheet, which happens to be unspecified version.
+        This verifies it works correctly if unspecified version is present but there is nothing to delete.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'unspecified_one_match_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\unspecified\\file.wmv', 'Windows Media Video', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Windows Media Video unspecified version',
+                     'wmv', 'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Moderate Risk', 'Transform to AVI',
+                     'PRONOM'],
+                    ['C:\\unspecified\\file.wpd', 'WordPerfect unspecified version', np.NaN, np.NaN,
+                     'WordPerfect unspecified version', 'wpd', np.NaN, 'Moderate Risk', 'Transform to PDF',
+                     'Format Name'],
+                    ['C:\\unspecified\\file.pict', 'Mac PICT', np.NaN, np.NaN, 'Macintosh PICT unspecified version',
+                     'pict|pct|pic', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/80', 'Moderate Risk',
+                     'Transform to PNG or JPEG', 'File Extension']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with unspecified version, one match')
+
+    def test_unspecified_puid_version(self):
+        """
+        Test for files that match a single PUID and version combination in the NARA spreadsheet.
+        The FITS version is blank and the NARA version is "unspecified version".
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'unspecified_puid_version_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\unspecified\\file.css', 'Cascading Style Sheets', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
+                     'Cascading Style Sheets unspecified version', 'css',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain', 'PRONOM'],
+                    ['C:\\unspecified\\file.html', 'Hypertext Markup Language', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/96',
+                     'Hypertext Markup Language unspecified version', 'htm|html',
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'PRONOM'],
+                    ['C:\\unspecified\\file.wmv', 'Windows Media Video', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Windows Media Video unspecified version',
+                     'wmv', 'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Moderate Risk', 'Transform to AVI',
+                     'PRONOM']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with unspecified version, PUID and version')
+
+    def test_unspecified_version_mix(self):
+        """
+        Test for files that match a single file extension and version in the NARA spreadsheet.
+        This includes a format name with a blank version (matches NARA unspecified version), and a numerical version.
+        This verifies it does not delete rows for a FITS format name if it has a version number.
+        Result for testing is the df returned by the function, converted to a list for an easier comparison.
+        """
+        # Creates test input.
+        df_fits = csv_to_dataframe(os.path.join('test_combined_fits', 'unspecified_version_mix_fits.csv'))
+        df_nara = csv_to_dataframe(c.NARA)
+
+        # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
+        df_results = match_nara_risk(df_fits, df_nara)
+        result = [df_results.columns.to_list()] + df_results.values.tolist()
+
+        # Creates a list with the expected result.
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
+                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                     'NARA_Match_Type'],
+                    ['C:\\unspecified\\file.css', 'Cascading Style Sheets', '2.0',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Cascading Style Sheets 2.0', 'css',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain',
+                     'PRONOM and Version'],
+                    ['C:\\unspecified\\file.css', 'Cascading Style Sheets', np.NaN,
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
+                     'Cascading Style Sheets unspecified version', 'css',
+                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain', 'PRONOM'],
+                    ['C:\\unspecified\\file.gif', 'Graphics Interchange Format', '87a', np.NaN,
+                     'Graphics Interchange Format 87a', 'gif', 'https://www.nationalarchives.gov.uk/pronom/fmt/3',
+                     'Moderate Risk', 'Retain', 'Format Name'],
+                    ['C:\\unspecified\\file.html', 'HTML', '5.1', np.NaN, 'Hypertext Markup Language 5.1', 'htm|html',
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain',
+                     'File Extension and Version'],
+                    ['C:\\unspecified\\file.gif', 'Graphics Interchange Format', np.NaN, np.NaN,
+                     'Graphics Interchange Format unspecified version', 'gif', np.NaN, 'Moderate Risk', 'Retain',
+                     'File Extension'],
+                    ['C:\\unspecified\\file.html', 'HTML', np.NaN, np.NaN,
+                     'Hypertext Markup Language unspecified version', 'htm|html',
+                     'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'File Extension']]
+
+        # Compares the results. assertEqual prints "OK" or the differences between the two lists.
+        self.assertEqual(result, expected, 'Problem with unspecified version and version number')
 
 
 if __name__ == '__main__':
