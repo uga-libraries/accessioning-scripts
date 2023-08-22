@@ -1,3 +1,4 @@
 FITS_File_Path,FITS_Format_Name,FITS_Format_Version,FITS_PUID
 C:\Name\file.bat,Batch Script,,
 C:\Name\file.eml,Electronic Mail Format,,
+C:\Name\file.rom,ROM Image,,
