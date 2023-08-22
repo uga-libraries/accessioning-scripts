@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.5.0" timestamp="7/11/23 10:12 AM">
+  <identification status="CONFLICT">
+    <identity format="Zip archive data" mimetype="application/zip" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="file utility" toolversion="5.03" />
+      <version toolname="file utility" toolversion="5.03" />
+    </identity>
+    <identity format="Zip archive data" mimetype="application/zip" toolname="FITS" toolversion="1.5.0">
+      <tool toolname="file utility" toolversion="5.03" />
+      <version toolname="file utility" toolversion="5.03" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">C:\Empty\element_empty_multi.zip</filepath>
+    <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">element_empty_multi.zip</filename>
+    <size toolname="OIS File Information" toolversion="1.0" />
+    <size toolname="OIS File Information" toolversion="2.0" />
+    <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">ba3d1323f32252895467f422843d8adb</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1255118498079</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata>
+    <container>
+      <originalSize toolname="Droid" toolversion="6.4" status="SINGLE_RESULT">58535</originalSize>
+      <compressionMethod toolname="Droid" toolversion="6.4" status="SINGLE_RESULT">stored</compressionMethod>
+      <entries totalEntries="2" toolname="Droid" toolversion="6.4" status="SINGLE_RESULT">
+        <format name="OLE2 Compound Document Format" number="1" />
+        <format name="Portable Network Graphics" number="1" />
+      </entries>
+    </container>
+  </metadata>
+  <statistics fitsExecutionTime="329">
+    <tool toolname="MediaInfo" toolversion="0.7.75" status="did not run" />
+    <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+    <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="Droid" toolversion="6.4" executionTime="60" />
+    <tool toolname="Jhove" toolversion="1.20.1" status="did not run" />
+    <tool toolname="file utility" toolversion="5.03" executionTime="107" />
+    <tool toolname="Exiftool" toolversion="11.54" executionTime="327" />
+    <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="did not run" />
+    <tool toolname="OIS File Information" toolversion="1.0" executionTime="4" />
+    <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+    <tool toolname="ffident" toolversion="0.2" executionTime="13" />
+    <tool toolname="Tika" toolversion="1.21" executionTime="60" />
+  </statistics>
+</fits>
+

@@ -49,11 +49,11 @@ def scan_full_dir(dirpath):
             else:
                 yield entry
         except FileNotFoundError:
-            print (entry)
+            print (f'FileNotFoundError: {entry}')
             not_found.append(entry)
     
     for x in not_found:
-        ext_path = (f'\\\\?\\{x.path}')
+        ext_path = f'\\\\?\\{x.path}'
         if x.is_dir():
             yield from scan_full_dir(ext_path)
         else:
@@ -145,10 +145,11 @@ if __name__ == "__main__":
         start_compare = None
     
     # If no "compare" argument, check for an existing manifest
-    if start_compare == None: 
+    if start_compare is None:
         man = find_init_manifest(dir_to_log)
 
-        # Alert the user if one is found with the same date and give them the option to cancel the process and prevent overwriting
+        # Alert the user if one is found with the same date and give them the option to
+        # cancel the process and prevent overwriting
         if man:
             if date in man:
                 todaysfile = man.rsplit('\\', 1)[-1]
@@ -188,14 +189,10 @@ if __name__ == "__main__":
                     filepath = data[0]
                     path = str(filepath)
 
-                    tempfiles = ['~', '._']
                     probchars = ['&', '$', '*', '?']
                     smartquotes = ['“', '”', '’']
 
                     # If the path contains any of these substrings, write the relevant file info to the review log and include the reason
-                    if any (t in path for t in tempfiles):
-                        data.append("Potential temp file")
-                        wr_revlog.writerow(data)
                     if any (c in path for c in probchars):
                         data.append("Path contains special characters")
                         wr_revlog.writerow(data)
@@ -209,26 +206,26 @@ if __name__ == "__main__":
                         data.append("Path exceeds 260 characters")
                         wr_revlog.writerow(data)
                 except FileNotFoundError:
-                    data = ["Path not found", None, None, None, "FileNotFoundError"]
+                    data = [f"Path not found: {entry}", None, None, None, "FileNotFoundError"]
                     wr_initman.writerow(data)
                     continue
     
     # If there's a "compare" argument, scan the directory and put current file information into a new dataframe
     if start_compare == "compare":
-        new_df = pd.DataFrame(columns=header[:-1])
+        new_df = pd.DataFrame(columns=header[:-2])
         for entry in scan_full_dir(dir_to_log):
             data = get_file_info(entry)
 
             # Skip over log docs
             if any(x in data[0] for x in log_docs):
-                    continue
+                continue
             else:
                 new_df.loc[len(new_df)] = data
 
         print('\nDeletion log will be saved to the accession folder. Working...')
 
         # Find the initial file manifest and read it to a pandas dataframe
-        man_df = pd.DataFrame(columns = header)
+        man_df = pd.DataFrame(columns=header)
         man = find_init_manifest(dir_to_log)
         df = pd.read_csv(man)
         man_df = pd.concat([man_df, df], axis=0)
@@ -237,7 +234,8 @@ if __name__ == "__main__":
         deleted = pd.concat([man_df, new_df], ignore_index=True)
         deleted[~deleted['File'].str.contains('|'.join(log_docs))]
         
-        # Compare the file name and parent folder from the file paths in each dataframe to identify and drop any duplicates
+        # Compare the file name and parent folder from the file paths in each dataframe to identify
+        # and drop any duplicates
         deleted['FName'] = deleted['File'].astype(str).str.split('\\', -2).str[-1].str.strip()
         deleted = deleted.drop_duplicates('FName', keep=False)
 
@@ -253,11 +251,12 @@ if __name__ == "__main__":
             print(f'\nA file called "{logfile}" already exists in this location. If any additional deletions are found, they will be added to this file.')
             del_df = pd.read_csv(del_log)
 
-            # Concatenate the two dataframes and exlude logs
+            # Concatenate the two dataframes and exclude logs
             new_deletions = pd.concat([deleted,del_df], ignore_index=True)
             new_deletions[~new_deletions['File'].str.contains('|'.join(log_docs))]
 
-            # Compare the file name and parent folder from the file paths in each dataframe to identify and drop any duplicates
+            # Compare the file name and parent folder from the file paths in each dataframe
+            # to identify and drop any duplicates
             new_deletions['FName'] = new_deletions['File'].astype(str).str.split('\\', -2).str[-1].str.strip()
             new_deletions = new_deletions.drop_duplicates('FName', keep=False)
             new_deletions['DateDeleted'] = datetime.now().strftime("%Y-%m-%d")
@@ -268,7 +267,7 @@ if __name__ == "__main__":
 
             # Update CSV file name with today's date
             split_fn = del_log.rsplit('_', 1)[0]
-            updated_fn = (f'{split_fn}_{date}.csv')
+            updated_fn = f'{split_fn}_{date}.csv'
             os.rename(del_log, updated_fn)
         
         # If no existing deletion log, write the dataframe of deleted files to a new CSV
