@@ -151,15 +151,15 @@ def get_text(parent, element):
 
     # If one or more instances of the element are present, returns the element value(s) as a string.
     # For multiple instances, puts a semicolon between the value for each instance.
+    # If FITS element is empty (item.text is None), do not add that to string.
     try:
-        value = ""
+        value = None
         value_list = parent.findall(f"fits:{element}", ns)
         for item in value_list:
-            if value == "":
-                try:
-                    value += item.text
-                except TypeError:
-                    value += "TYPE ERROR (NONETYPE)"
+            if item.text is None:
+                continue
+            elif value is None:
+                value = item.text
             else:
                 value += f"; {item.text}"
         return value
@@ -223,13 +223,17 @@ def fits_row(fits_file):
 
         # The rest of the loop adds format information to the formats dictionary
         # unless it meets one of the criteria used to simplify format identifications.
-        format_key = format_data["name"] + format_data["version"]
+
+        # The dictionary key is the format name and version combined (if present).
+        format_key = format_data["name"]
+        if format_data["version"] is not None:
+            format_key += str(format_data["version"])
 
         # Don't include a format identification if there is an identical name+version that has a PUID.
         # If a format with this name and version is already in the dictionary, this identification is only added
         # if the one in the dictionary has no PUID, which means this identification does have a PUID.
         if format_key in formats_dictionary:
-            if formats_dictionary[format_key]["puid"] == "":
+            if formats_dictionary[format_key]["puid"] is None:
                 formats_dictionary[format_key] = format_data
 
         # If one of the format identifications is empty, do not include any other format identifications.
