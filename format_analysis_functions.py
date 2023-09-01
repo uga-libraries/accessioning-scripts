@@ -74,7 +74,9 @@ def check_configuration():
 
 def csv_to_dataframe(csv_file):
     """Reads a CSV into a dataframe, renames columns if it is FITs or NARA, and returns the dataframe.
-    If special characters require the CSV to be read while ignoring encoding errors, it prints a warning."""
+    If special characters require the CSV to be read while ignoring encoding errors, it prints a warning.
+    A similar function is used in https://github.com/uga-libraries/format-report/blob/main/merge_format_reports.py;
+    keep development in sync between the two."""
 
     # Reads the CSV into a dataframe, ignoring encoding errors from special characters if necessary.
     # Reads a string to allow better comparisons between dataframes.
@@ -368,7 +370,9 @@ def update_risk(df_fits, df_risk, csv_path):
 def match_nara_risk(df_fits, df_nara):
     """Matches risk information from NARA to the FITS data using different techniques, starting with the most accurate.
     Returns a dataframe with all the FITS data, the NARA Risk Level and Proposed Preservation Plan,
-    and the name of the technique that produced the NARA to FITS match (NARA_Match_Type)."""
+    and the name of the technique that produced the NARA to FITS match (NARA_Match_Type).
+    A similar function is used in https://github.com/uga-libraries/format-report/blob/main/merge_format_reports.py;
+    keep development in sync between the two."""
 
     # PART ONE: ADD TEMPORARY COLUMNS TO BOTH DATAFRAMES FOR BETTER MATCHING
 
