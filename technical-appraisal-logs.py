@@ -25,6 +25,7 @@ dir_to_log = sys.argv[1]
 date = datetime.now().strftime("%Y%m%d")
 header = ['File', 'SizeKB', 'DateCreated', 'DateModified', 'MD5', 'Notes']
 
+
 def scan_full_dir(dirpath):
     """Scans a directory tree and gets os.DirEntry objects for all its files and subdirectories
     
@@ -59,6 +60,7 @@ def scan_full_dir(dirpath):
         else:
             yield ext_path
 
+
 def find_init_manifest(dirpath):
     """Scans a directory and identifies a CSV file manifest created by this script
     
@@ -80,6 +82,7 @@ def find_init_manifest(dirpath):
                 init_manifest = entry.path
                 return str(init_manifest)
 
+
 def find_deletion_log(dirpath):
     """Scans a directory and identifies a CSV deletion log created by this script
     
@@ -100,6 +103,7 @@ def find_deletion_log(dirpath):
             if 'deletionlog' in fname:
                 del_log = entry.path
                 return str(del_log)
+
 
 def get_file_info(entry):
     """Aggregates relevant attributes from the os.DirEntry object for a file and generates its MD5 hash
@@ -128,17 +132,19 @@ def get_file_info(entry):
     data.extend([path, sizeKB, date_modified, date_created])
     return data
 
+
 if __name__ == "__main__":
 
     log_docs = ['deletionlog_', 'initialmanifest_', 'filestoreview_']
     
-    # Check for a "compare" arugment provided by the user
+    # Check for a "compare" argument provided by the user
     try:
         if sys.argv[2].lower() == "compare":
             start_compare = sys.argv[2]
         else:
             start_compare = None
-            print(f'\nERROR: "{sys.argv[2]}" is an unrecognized argument\n\nScript usage: python /path/to/script /path/to/accession/directory [compare]')
+            print(f'\nERROR: "{sys.argv[2]}" is an unrecognized argument\n\nScript usage: python /path/to/script '
+                  f'/path/to/accession/directory [compare]')
             quit()
 
     except IndexError: 
@@ -153,15 +159,18 @@ if __name__ == "__main__":
         if man:
             if date in man:
                 todaysfile = man.rsplit('\\', 1)[-1]
-                check = input(f'\nA file called "{todaysfile}" already exists in this location. Do you wish to overwrite it? Type Y or N: ')
+                check = input(f'\nA file called "{todaysfile}" already exists in this location. Do you wish to overwrite'
+                              f' it? Type Y or N: ')
                 if check.lower() in ['n', 'no']:
-                    print(f'\nProcess cancelled. \n\nTo create a log of deleted files, run this script again with the "compare" parameter: python /path/to/script /path/to/accession/directory compare')
+                    print(f'\nProcess cancelled. \n\nTo create a log of deleted files, run this script again with the '
+                          f'"compare" parameter: python /path/to/script /path/to/accession/directory compare')
                     quit()
                 if check.lower() in ['y', 'yes']:
                     print('\nFile manifest will be saved to the accession folder. Working...')
 
         # Create the manifest CSV and a log of files to review
-        with open(f'{dir_to_log}\\initialmanifest_{date}.csv', "w", encoding="utf-8", newline='') as manifest, open(f'{dir_to_log}\\filestoreview_{date}.csv', "w", encoding="utf-8", newline='') as review_log:
+        with open(f'{dir_to_log}\\initialmanifest_{date}.csv', "w", encoding="utf-8", newline='') as manifest, \
+                open(f'{dir_to_log}\\filestoreview_{date}.csv', "w", encoding="utf-8", newline='') as review_log:
             wr_initman = csv.writer(manifest)
             wr_revlog = csv.writer(review_log)
             wr_initman.writerow(header)
@@ -192,7 +201,8 @@ if __name__ == "__main__":
                     probchars = ['&', '$', '*', '?']
                     smartquotes = ['“', '”', '’']
 
-                    # If the path contains any of these substrings, write the relevant file info to the review log and include the reason
+                    # If the path contains any of these substrings, write the relevant file info to the review log and
+                    # include the reason
                     if any (c in path for c in probchars):
                         data.append("Path contains special characters")
                         wr_revlog.writerow(data)
@@ -232,11 +242,11 @@ if __name__ == "__main__":
 
         # Concatenate the two dataframes and exclude logs
         deleted = pd.concat([man_df, new_df], ignore_index=True)
-        deleted[~deleted['File'].str.contains('|'.join(log_docs))]
+        deleted = deleted[~deleted['File'].str.contains('|'.join(log_docs))]
         
         # Compare the file name and parent folder from the file paths in each dataframe to identify
         # and drop any duplicates
-        deleted['FName'] = deleted['File'].astype(str).str.split('\\', -2).str[-1].str.strip()
+        deleted['FName'] = deleted['File'].astype(str).str.split('\\', n=-2).str[-1].str.strip()
         deleted = deleted.drop_duplicates('FName', keep=False)
 
         # Add a "Date Deleted" column with today's date
@@ -248,16 +258,17 @@ if __name__ == "__main__":
         del_log = find_deletion_log(dir_to_log)
         if del_log:
             logfile = del_log.rsplit('\\', 1)[-1]
-            print(f'\nA file called "{logfile}" already exists in this location. If any additional deletions are found, they will be added to this file.')
+            print(f'\nA file called "{logfile}" already exists in this location. If any additional deletions are found,'
+                  f' they will be added to this file.')
             del_df = pd.read_csv(del_log)
 
             # Concatenate the two dataframes and exclude logs
             new_deletions = pd.concat([deleted,del_df], ignore_index=True)
-            new_deletions[~new_deletions['File'].str.contains('|'.join(log_docs))]
+            new_deletions = new_deletions[~new_deletions['File'].str.contains('|'.join(log_docs))]
 
             # Compare the file name and parent folder from the file paths in each dataframe
             # to identify and drop any duplicates
-            new_deletions['FName'] = new_deletions['File'].astype(str).str.split('\\', -2).str[-1].str.strip()
+            new_deletions['FName'] = new_deletions['File'].astype(str).str.split('\\', n=-2).str[-1].str.strip()
             new_deletions = new_deletions.drop_duplicates('FName', keep=False)
             new_deletions['DateDeleted'] = datetime.now().strftime("%Y-%m-%d")
             new_deletions.drop(['FName'], axis=1, inplace=True)
