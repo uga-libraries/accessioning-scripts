@@ -42,7 +42,7 @@ class MyTestCase(unittest.TestCase):
         # These could be in the main code for the test, but it is already long.
 
         # Expected values for the format subtotal.
-        self.ex01 = [['FITS_Format_Name', 'NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+        self.ex01 = [['FITS_Format_Name', 'NARA_Risk_Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
                      ['empty', 'Low Risk', 1, 10, 0, 0],
                      ['Extensible Markup Language', 'Low Risk', 1, 10, 0, 0],
                      ['Office Open XML Workbook', 'Low Risk', 1, 10, 0.005, 14.002],
@@ -51,7 +51,7 @@ class MyTestCase(unittest.TestCase):
                      ['ZIP Format', 'Moderate Risk', 3, 30, 0.016, 41.984]]
 
         # Expected values for the NARA risk subtotal.
-        self.ex02 = [['NARA_Risk Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
+        self.ex02 = [['NARA_Risk_Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
                      ['Low Risk', 7, 70, 0.025, 59.938],
                      ['Moderate Risk', 3, 30, 0.016, 38.36]]
 
@@ -71,8 +71,8 @@ class MyTestCase(unittest.TestCase):
 
         # Expected values for the NARA risk subset.
         self.ex06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
-                      'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk Level',
-                      'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                      'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk_Level',
+                      'NARA_Proposed_Preservation_Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
                      [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA',
@@ -93,7 +93,7 @@ class MyTestCase(unittest.TestCase):
 
         # Expected values for the other risk subset.
         self.ex08 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
-                      'FITS_Multiple_IDs', 'FITS_Size_KB', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                      'FITS_Multiple_IDs', 'FITS_Size_KB', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
                      [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2,
                       'Droid version 6.4; file utility version 5.03; Exiftool version 11.54; ffident version 0.2; Tika version 1.21',
@@ -131,7 +131,7 @@ class MyTestCase(unittest.TestCase):
         self.ex11 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID',
                       'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
                       'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed',
-                      'FITS_Status_Message', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+                      'FITS_Status_Message', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
                      [os.path.join(self.disk2_path, 'error.html'), 'Extensible Markup Language', 1,
                       'BLANK', 'Jhove version 1.20.1', False, '2023-01-30', 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
@@ -212,7 +212,7 @@ class MyTestCase(unittest.TestCase):
         xlsx_to_drop = df_risk[(df_risk['FITS_File_Path'].str.endswith('data.xlsx')) &
                                (df_risk['FITS_Format_Name'] == 'ZIP Format')]
         empty_to_drop = df_risk[(df_risk['FITS_File_Path'].str.endswith('empty.txt')) &
-                                (df_risk['NARA_Format Name'] != 'Plain Text')]
+                                (df_risk['NARA_Format_Name'] != 'Plain Text')]
         df_risk.drop(xlsx_to_drop.index, inplace=True)
         df_risk.drop(empty_to_drop.index, inplace=True)
         df_risk.to_csv(os.path.join(os.getcwd(), 'collection', 'accession_full_risk_data.csv'), index=False)
