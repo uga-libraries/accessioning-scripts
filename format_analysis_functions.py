@@ -213,7 +213,7 @@ def fits_row(fits_file):
         # The value of PUID is None if there is no PUID in the FITs.
         puid = get_text(identity, "externalIdentifier[@type='puid']")
         if puid:
-            puid = "https://www.nationalarchives.gov.uk/pronom/" + puid
+            puid = "https://www.nationalarchives.gov.uk/PRONOM/" + puid
         format_data["puid"] = puid
 
         # For each tool, combines the attributes with the name and version.
