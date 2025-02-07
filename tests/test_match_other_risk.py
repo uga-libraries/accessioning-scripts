@@ -21,7 +21,7 @@ class MyTestCase(unittest.TestCase):
         Result for testing is the df returned by the function, converted to a list for an easier comparison.
         """
         # Creates test input.
-        rows = [['empty', np.NaN, np.NaN],
+        rows = [['empty', np.nan, np.nan],
                 ['Advanced Systems Format', 'Moderate Risk', 'Retain']]
         df_results = pd.DataFrame(rows, columns=['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan'])
         df_other = csv_to_dataframe(c.RISK)
@@ -32,7 +32,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['FITS_Format_Name', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan', 'Other_Risk'],
-                    ['empty', np.NaN, np.NaN, 'Not for Other'],
+                    ['empty', np.nan, np.nan, 'Not for Other'],
                     ['Advanced Systems Format', 'Moderate Risk', 'Retain', 'Not for Other']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.

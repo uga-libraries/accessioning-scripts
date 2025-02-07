@@ -56,15 +56,15 @@ class MyTestCase(unittest.TestCase):
         # Creates a list with the expected result.
         # NOTE: this must be updated when new things are added to the spreadsheet.
         expected = [['FITS_FORMAT', 'NOTES'],
-                    ['Adobe Font Metric', np.NaN],
-                    ['DOS batch file', np.NaN],
+                    ['Adobe Font Metric', np.nan],
+                    ['DOS batch file', np.nan],
                     ['DOS/Windows Executable', 'Also high risk'],
-                    ['empty', np.NaN],
-                    ['Microsoft Windows Autorun', np.NaN],
+                    ['empty', np.nan],
+                    ['Microsoft Windows Autorun', np.nan],
                     ['MS Windows icon resource', 'Also high risk'],
                     ['PE32 executable', 'Also high risk'],
-                    ['TFF/TrueType Font', np.NaN],
-                    ['Unknown Binary', np.NaN],
+                    ['TFF/TrueType Font', np.nan],
+                    ['Unknown Binary', np.nan],
                     ['x86 boot sector', 'Also high risk']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
