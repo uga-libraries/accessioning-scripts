@@ -18,7 +18,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\photo3.crw', 3000, 'High Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\photo4.crw', 4000, 'High Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\photo5.crw', 5000, 'High Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -47,7 +47,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\flyer3.ai', 3000, 'Moderate Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\flyer4.ai', 4000, 'Moderate Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\flyer5.ai', 5000, 'Moderate Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -76,7 +76,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\file3.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file4.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -105,7 +105,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\file3.uk', 3000, 'No Match', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file4.uk', 4000, 'No Match', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file5.uk', 5000, 'No Match', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -134,7 +134,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\photo3.crw', 3000, 'High Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\command2.bat', 4000, 'Moderate Risk', 'Format', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\command3.bat', 5000, 'Moderate Risk', 'Format', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -163,7 +163,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\command1.bat', 3000, 'Moderate Risk', 'Format', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\command2.bat', 4000, 'Moderate Risk', 'Format', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\command3.bat', 5000, 'Moderate Risk', 'Format', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -193,7 +193,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\file3.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file4.txt', 4000, 'Low Risk', 'Trash', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -222,7 +222,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\file3.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file4.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -251,7 +251,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\database.db', 3000, 'Low Risk', 'Not for TA', 'NARA Low/Transform'],
                 ['C:\\ACC\\Disk2\\database.db', 4000, 'Low Risk', 'Not for TA', 'NARA Low/Transform'],
                 ['C:\\ACC\\Disk2\\backup3.gz', 5000, 'Low Risk', 'Not for TA', 'Archive format']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -280,7 +280,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\graphic.cdr', 3000, 'High Risk', 'Not for TA', 'Layered image file'],
                 ['C:\\ACC\\Disk2\\file.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\theme.css', 5000, 'Low Risk', 'Not for TA', 'Possible saved web page']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -309,7 +309,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\file3.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file4.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -338,7 +338,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk2\\file3.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\file4.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -367,7 +367,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\file3.txt', 0.4, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file4.txt', 4.123, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file5.txt', 5.456, 'Low Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including the column headers.
@@ -398,7 +398,7 @@ class MyTestCase(unittest.TestCase):
                 ['C:\\ACC\\Disk1\\file3.txt', 3000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file4.txt', 4000, 'Low Risk', 'Not for TA', 'Not for Other'],
                 ['C:\\ACC\\Disk2\\file5.txt', 5000, 'Low Risk', 'Not for TA', 'Not for Other']]
-        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk Level', 'Technical_Appraisal', 'Other_Risk']
+        column_names = ['FITS_File_Path', 'FITS_Size_KB', 'NARA_Risk_Level', 'Technical_Appraisal', 'Other_Risk']
         df_results = pd.DataFrame(rows, columns=column_names)
 
         # Runs the function being tested and converts the resulting dataframe to a list, including column headers.

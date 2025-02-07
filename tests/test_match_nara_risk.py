@@ -27,14 +27,14 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\File.rtf', 'Rich Text', '1.2', np.nan, 'Rich Text Format 1.2', 'rtf',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/45',
-                     'Moderate Risk', 'Transform to PDF', 'File Extension and Version'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/45',
+                     'Low Risk', 'Transform to PDF and retain original', 'File Extension and Version'],
                     ['C:\\ext\\File.accdb', 'MS Access', '2019', np.nan, 'Microsoft Access 2019', 'accdb',
-                     np.nan, 'Moderate Risk', 'Transform to CSV', 'File Extension and Version']]
+                     np.nan, 'Moderate Risk', 'Transform to SIARD or CSV', 'File Extension and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension and version match')
@@ -54,16 +54,16 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\File.accdb', 'MS Access', '2010',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
                      'Microsoft Access 2010', 'accdb', np.nan,
-                     'Moderate Risk', 'Transform to CSV', 'File Extension and Version'],
+                     'Moderate Risk', 'Transform to SIARD or CSV', 'File Extension and Version'],
                     ['C:\\ext\\File.doc', 'MS Word for Mac', '5.1',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000', 'Microsoft Word for Macintosh 5.1',
-                     'doc', np.nan, 'Moderate Risk', 'Transform to PDF', 'File Extension and Version']]
+                     'doc', np.nan, 'Moderate Risk', 'Transform to ODT', 'File Extension and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension and version, NARA no PUID')
@@ -82,22 +82,22 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.aac', 'MPEG-4', np.nan, np.nan, 'Advanced Audio Coding (AAC) MPEG-2 Audio', 'aac',
-                     np.nan, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
+                     np.nan, 'Moderate Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
                     ['C:\\ext\\file.aac', 'MPEG-4', np.nan, np.nan, 'Advanced Audio Coding MPEG-4 Low Complexity Object',
-                     'aac|mp4|m4a', np.nan, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
+                     'aac|mp4|m4a', np.nan, 'Moderate Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
                     ['C:\\ext\\file.aac', 'MPEG-4', np.nan, np.nan, 'MPEG-4 File Format, V.2, with Advanced Audio Coding',
-                     'aac', np.nan, 'Low Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
+                     'aac', np.nan, 'Moderate Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
                     ['C:\\ext\\file.aac', 'MPEG-4', np.nan, np.nan,
                      'QuickTime Audio with AAC codec', 'qta|aac|m4p|mp3', np.nan,
                      'Moderate Risk', 'Transform to BWF or MP3 as appropriate', 'File Extension'],
-                    ['C:\\ext\\file.CIN', 'Kodak', np.nan, np.nan, 'Kodak Cineon', 'cin', np.nan, 'High Risk',
+                    ['C:\\ext\\file.CIN', 'Kodak', np.nan, np.nan, 'Kodak Cineon', 'cin', np.nan, 'Moderate Risk',
                      'Transform to TIFF if possible', 'File Extension'],
                     ['C:\\ext\\file.CIN', 'Kodak', np.nan, np.nan, 'OS/2 Change Control File', 'cin',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/143', 'Moderate Risk', 'Retain', 'File Extension']]
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/143', 'High Risk', 'Retain', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension, multiple matches')
@@ -117,8 +117,8 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.bmp', 'OS/2 Bitmap', np.nan, 'https://www.nationalarchives.gov.uk/pronom/fmt/000',
                      'OS/2 Bitmap unspecified version', 'bmp', np.nan, 'Moderate Risk', 'Transform to TIFF',
@@ -131,7 +131,7 @@ class MyTestCase(unittest.TestCase):
                      np.nan, 'Moderate Risk', 'Retain', 'File Extension'],
                     ['C:\\ext\\file.cdf', 'Mathematica Doc', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000', 'Mathematica Computable Document Format',
-                     'cdf', np.nan, 'Moderate Risk', 'Transform to PDF', 'File Extension']]
+                     'cdf', np.nan, 'High Risk', 'Transform to PDF', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with extension, multiple matches, NARA no PUID')
@@ -150,13 +150,13 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.mxf', 'MXF', np.nan, np.nan, 'Material Exchange Format', 'mxf',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
                     ['C:\\ext\\file.crl', 'Raster', np.nan, np.nan, 'Intergraph Raster Format', 'crl',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
                      'File Extension'],
                     ['C:\\ext\\file.px', 'Pixel File', np.nan, np.nan, 'Pixel Image File', 'px', np.nan,
                      'High Risk', 'Further research is required', 'File Extension']]
@@ -178,13 +178,13 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.MXF', 'MXF', np.nan, np.nan, 'Material Exchange Format', 'mxf',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/200', 'Low Risk', 'Retain', 'File Extension'],
                     ['C:\\ext\\file.CRL', 'Raster', np.nan, np.nan, 'Intergraph Raster Format', 'crl',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/229', 'Moderate Risk', 'Transform to TIFF',
                      'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -205,8 +205,8 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.cst', 'Adobe Cast File', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
@@ -234,14 +234,14 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.gz', 'g-zip', np.nan, np.nan, 'GZIP', 'gz|tgz',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
                     ['C:\\ext\\file.bat', 'script', np.nan, np.nan, 'Batch Script', 'bat|cmd|btm',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/413', 'Moderate Risk', 'Retain',
                      'File Extension'],
                     ['C:\\ext\\file.sami', 'SAMI', np.nan, np.nan, 'Synchronized Accessible Media Interchange',
                      'smi|sami', np.nan, 'Low Risk', 'Retain', 'File Extension']]
@@ -263,14 +263,14 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.GZ', 'g-zip', np.nan, np.nan, 'GZIP', 'gz|tgz',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/266', 'Low Risk',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/266', 'Low Risk',
                      'Retain but extract files from the container', 'File Extension'],
                     ['C:\\ext\\file.BAT', 'script', np.nan, np.nan, 'Batch Script', 'bat|cmd|btm',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/413', 'Moderate Risk', 'Retain',
                      'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -291,8 +291,8 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\ext\\file.heic', 'HEIC with compression', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
@@ -320,13 +320,13 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.bat', 'Batch Script', np.nan, np.nan, 'Batch Script', 'bat|cmd|btm',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.eml', 'Electronic Mail Format', np.nan, np.nan, 'Electronic Mail Format', 'eml',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/278', 'Low Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.rom', 'ROM Image', np.nan, np.nan, 'ROM Image', 'rom', np.nan,
                      'Moderate Risk', 'Retain', 'Format Name']]
 
@@ -347,13 +347,13 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.bat', 'batch script', np.nan, np.nan, 'Batch Script', 'bat|cmd|btm',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/413', 'Moderate Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.eml', 'electronic mail format', np.nan, np.nan, 'Electronic Mail Format', 'eml',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/278', 'Low Risk', 'Retain', 'Format Name']]
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/278', 'Low Risk', 'Retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name, case does not match')
@@ -373,8 +373,8 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.cod', 'BlackBerry Binary Executable', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000', 'BlackBerry Binary Executable',
@@ -399,21 +399,21 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.wk3', 'Lotus 1-2-3 Worksheet', '3.0', np.nan, 'Lotus 1-2-3 Worksheet 3.0',
-                     'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
+                     'wk3', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
                     ['C:\\Name\\file.css', 'Cascading Style Sheets', '2.1', np.nan, 'Cascading Style Sheets 2.1',
-                     'css', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk',
+                     'css', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk',
                      'Retain', 'Format Name'],
                     ['C:\\Name\\file.swf', 'Macromedia Flash', '7', np.nan, 'Macromedia Flash 7', 'swf',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/110', 'Moderate Risk',
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/110', 'Moderate Risk',
                      'Transform to MP4 if possible, otherwise retain', 'Format Name'],
                     ['C:\\fail\\File.pts', 'Avid Pro Tools Session', '5.1-6.9', np.nan,
-                     'Avid Pro Tools Session 5.1-6.9', 'pts', np.nan,
-                     'High Risk', 'Transform to WAV if possible', 'Format Name']]
+                     'Avid Pro Tools Session 5.1-6.9', 'pts', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/1951',
+                     'Moderate Risk', 'Transform to WAV if possible', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case match')
@@ -432,14 +432,14 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.wk3', 'lotus 1-2-3 worksheet', '3.0', np.nan, 'Lotus 1-2-3 Worksheet 3.0',
-                     'wk3', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/115', 'Moderate Risk',
+                     'wk3', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/115', 'Moderate Risk',
                      'Transform to CSV or XLSX', 'Format Name'],
                     ['C:\\Name\\file.css', 'cascading style sheets', '2.1', np.nan, 'Cascading Style Sheets 2.1',
-                     'css', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk',
+                     'css', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk',
                      'Retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -460,15 +460,15 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.btr', 'Btrieve', '6.0', 'https://www.nationalarchives.gov.uk/pronom/fmt/000',
-                     'Btrieve 6.0', 'btr', np.nan, 'Moderate Risk', 'Transform to CSV', 'Format Name'],
+                     'Btrieve 6.0', 'btr', np.nan, 'High Risk', 'Transform to CSV', 'Format Name'],
                     ['C:\\Name\\file.accdb', 'Microsoft Access', '2013',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
                      'Microsoft Access 2013', 'accdb', np.nan,
-                     'Moderate Risk', 'Transform to CSV', 'Format Name']]
+                     'Moderate Risk', 'Transform to SIARD or CSV', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, NARA no PUID')
@@ -487,9 +487,9 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level',
-                     'NARA_Proposed Preservation Plan', 'NARA_Match_Type'],
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
+                     'NARA_Match_Type'],
                     ['C:\\None\\file.css', 'Cascading Style Sheets', '2.0',
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000',
                      'No Match', np.nan, np.nan, 'No Match', np.nan, 'No NARA Match'],
@@ -524,24 +524,24 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\PUID\\file.xhtml', 'XHTML', '1.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
                      'eXtensible Hypertext Markup Language 1.1', 'xhtm|xhtml',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/103',
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/103',
                      'Low Risk', 'Retain', 'PRONOM and Version'],
                     ['C:\\PUID\\file.xhtml', 'XHTML', '1.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
-                     'Hypertext Markup Language 1.1', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/103',
+                     'Hypertext Markup Language 1.1', 'htm|html', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/103',
                      'Low Risk', 'Retain', 'PRONOM and Version'],
                     ['C:\\PUID\\file.oxps', 'Open XML Paper', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/657',
                      'Microsoft XML Paper Specification 1.0', 'xps',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/657',
                      'Moderate Risk', 'Transform to PDF or possibly OXPS', 'PRONOM'],
                     ['C:\\PUID\\file.oxps', 'Open XML Paper', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/657',
-                     'Open XML Paper Specification', 'oxps', 'https://www.nationalarchives.gov.uk/pronom/fmt/657',
+                     'Open XML Paper Specification', 'oxps', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/657',
                      'Low Risk', 'Further research is required, possibly transform to PDF, or retain as OXPS',
                      'PRONOM']]
 
@@ -562,17 +562,17 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\PUID\\file.e00', 'ESRI ArcInfo Interchange File Format', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
                      'ESRI ArcInfo Interchange File Format', 'e00',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/235',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/235',
                      'Moderate Risk', 'Transform to KML, ESRI Shapefile, and/or GML as appropriate', 'PRONOM and Name'],
                     ['C:\\PUID\\file.m2p', 'MPEG-2 Program Stream', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
-                     'MPEG-2 Program Stream', 'm2p|mpg|mpeg', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/386',
+                     'MPEG-2 Program Stream', 'm2p|mpg|mpeg', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/386',
                      'Low Risk', 'Retain', 'PRONOM and Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -592,15 +592,15 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\PUID\\file.cdx', 'CorelDraw', np.nan, 'https://www.nationalarchives.gov.uk/pronom/x-fmt/31',
-                     'CorelDraw Compressed Drawing', 'cdx', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/31',
+                     'CorelDraw Compressed Drawing', 'cdx', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/31',
                      'High Risk', 'Transform to a TBD format, possibly PDF or TIFF', 'PRONOM'],
                     ['C:\\PUID\\file.dng', 'Digital Negative 1.0', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/436',
-                     'Digital Negative Format 1.0', 'dng', 'https://www.nationalarchives.gov.uk/pronom/fmt/436',
+                     'Digital Negative Format 1.0', 'dng', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/436',
                      'Low Risk', 'Retain', 'PRONOM']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -620,14 +620,14 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\PUID\\file.css', 'CSS', '2.0', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
-                     'Cascading Style Sheets 2.0', 'css', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
+                     'Cascading Style Sheets 2.0', 'css', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224',
                      'Low Risk', 'Retain', 'PRONOM and Version'],
                     ['C:\\PUID\\file.html', 'HTML', '5.1', 'https://www.nationalarchives.gov.uk/pronom/fmt/96',
-                     'Hypertext Markup Language 5.1', 'htm|html', 'https://www.nationalarchives.gov.uk/pronom/fmt/96',
+                     'Hypertext Markup Language 5.1', 'htm|html', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/96',
                      'Low Risk', 'Retain', 'PRONOM and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -648,18 +648,18 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\unspecified\\file.swf', 'Flash', np.nan, 'https://www.nationalarchives.gov.uk/pronom/fmt/000',
                      'Macromedia Flash unspecified version', 'swf', np.nan, 'Moderate Risk',
                      'Transform to MP4 if possible, otherwise retain', 'File Extension'],
                     ['C:\\unspecified\\file.rtf', 'RTF', np.nan, 'https://www.nationalarchives.gov.uk/pronom/fmt/000',
                      'Rich Text Format unspecified version', 'rtf', np.nan, 'Moderate Risk',
-                     'Transform to PDF', 'File Extension'],
+                     'Transform to PDF and retain original', 'File Extension'],
                     ['C:\\unspecified\\file.css', 'CSS', np.nan, np.nan,
                      'Cascading Style Sheets unspecified version', 'css',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain', 'File Extension'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk', 'Retain', 'File Extension'],
                     ['C:\\unspecified\\file.gif', 'GIF', np.nan, np.nan,
                      'Graphics Interchange Format unspecified version', 'gif', np.nan, 'Moderate Risk', 'Retain',
                      'File Extension'],
@@ -671,7 +671,10 @@ class MyTestCase(unittest.TestCase):
                      'Depends on version, see specific version plan', 'File Extension'],
                     ['C:\\unspecified\\file.pdf', 'PDF', np.nan, np.nan,
                      'Portable Document Format/Archiving (PDF/A) unspecified version', 'pdf', np.nan, 'Low Risk',
-                     'Retain', 'File Extension']]
+                     'Retain', 'File Extension'],
+                    ['C:\\unspecified\\file.pdf', 'PDF', np.nan, np.nan,
+                     'Portable Document Format/Exchange (PDF/X) unspecified version', 'pdf', np.nan, 'Moderate Risk',
+                     'Transform to PDF/A', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with unspecified version, extension and version')
@@ -691,8 +694,8 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\unspecified\\file.swf', 'Macromedia Flash unspecified version', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000', 'Macromedia Flash unspecified version',
@@ -700,7 +703,7 @@ class MyTestCase(unittest.TestCase):
                      'Format Name'],
                     ['C:\\unspecified\\file.rtf', 'Rich Text Format unspecified version', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/000', 'Rich Text Format unspecified version',
-                     'rtf', np.nan, 'Moderate Risk', 'Transform to PDF', 'Format Name'],
+                     'rtf', np.nan, 'Moderate Risk', 'Transform to PDF and retain original', 'Format Name'],
                     ['C:\\unspecified\\file.css', 'Cascading Style Sheets unspecified version', np.nan,
                      np.nan,
                      'Cascading Style Sheets unspecified version', 'css',
@@ -727,18 +730,14 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
-                    ['C:\\unspecified\\file.wmv', 'Windows Media Video', np.nan,
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Windows Media Video unspecified version',
-                     'wmv', 'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Moderate Risk', 'Transform to AVI',
-                     'PRONOM'],
                     ['C:\\unspecified\\file.wpd', 'WordPerfect unspecified version', np.nan, np.nan,
                      'WordPerfect unspecified version', 'wpd', np.nan, 'Moderate Risk', 'Transform to PDF',
                      'Format Name'],
-                    ['C:\\unspecified\\file.pict', 'Mac PICT', np.nan, np.nan, 'Macintosh PICT unspecified version',
-                     'pict|pct|pic', 'https://www.nationalarchives.gov.uk/pronom/x-fmt/80', 'Moderate Risk',
+                    ['C:\\unspecified\\file.pict', 'Macintosh PICT', np.nan, np.nan, 'Macintosh PICT unspecified version',
+                     'pict|pct|pic', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/80', 'Moderate Risk',
                      'Transform to PNG or JPEG', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -759,21 +758,17 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\unspecified\\file.css', 'Cascading Style Sheets', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
                      'Cascading Style Sheets unspecified version', 'css',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain', 'PRONOM'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk', 'Retain', 'PRONOM'],
                     ['C:\\unspecified\\file.html', 'Hypertext Markup Language', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/fmt/96',
                      'Hypertext Markup Language unspecified version', 'htm|html',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'PRONOM'],
-                    ['C:\\unspecified\\file.wmv', 'Windows Media Video', np.nan,
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Windows Media Video unspecified version',
-                     'wmv', 'https://www.nationalarchives.gov.uk/pronom/fmt/133', 'Moderate Risk', 'Transform to AVI',
-                     'PRONOM']]
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/96', 'Low Risk', 'Retain', 'PRONOM']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with unspecified version, PUID and version')
@@ -794,29 +789,29 @@ class MyTestCase(unittest.TestCase):
         result = [df_results.columns.to_list()] + df_results.values.tolist()
 
         # Creates a list with the expected result.
-        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format Name',
-                     'NARA_File Extension(s)', 'NARA_PRONOM URL', 'NARA_Risk Level', 'NARA_Proposed Preservation Plan',
+        expected = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_PUID', 'NARA_Format_Name',
+                     'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\unspecified\\file.css', 'Cascading Style Sheets', '2.0',
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Cascading Style Sheets 2.0', 'css',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk', 'Retain',
                      'PRONOM and Version'],
                     ['C:\\unspecified\\file.css', 'Cascading Style Sheets', np.nan,
                      'https://www.nationalarchives.gov.uk/pronom/x-fmt/224',
                      'Cascading Style Sheets unspecified version', 'css',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/224', 'Low Risk', 'Retain', 'PRONOM'],
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk', 'Retain', 'PRONOM'],
                     ['C:\\unspecified\\file.gif', 'Graphics Interchange Format', '87a', np.nan,
                      'Graphics Interchange Format 87a', 'gif', 'https://www.nationalarchives.gov.uk/pronom/fmt/3',
                      'Moderate Risk', 'Retain', 'Format Name'],
                     ['C:\\unspecified\\file.html', 'HTML', '5.1', np.nan, 'Hypertext Markup Language 5.1', 'htm|html',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain',
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/96', 'Low Risk', 'Retain',
                      'File Extension and Version'],
                     ['C:\\unspecified\\file.gif', 'Graphics Interchange Format', np.nan, np.nan,
                      'Graphics Interchange Format unspecified version', 'gif', np.nan, 'Moderate Risk', 'Retain',
                      'File Extension'],
                     ['C:\\unspecified\\file.html', 'HTML', np.nan, np.nan,
                      'Hypertext Markup Language unspecified version', 'htm|html',
-                     'https://www.nationalarchives.gov.uk/pronom/fmt/96', 'Low Risk', 'Retain', 'File Extension']]
+                     'https://www.nationalarchives.gov.uk/PRONOM/fmt/96', 'Low Risk', 'Retain', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with unspecified version and version number')
