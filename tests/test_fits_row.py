@@ -26,7 +26,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\empty_version.csv', 'Comma-Separated Values (CSV)', None,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/18',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/18',
                      'Droid version 6.4', False, datetime.date(2022, 12, 14), 6002.01,
                      'f95a4c954014342e4bf03f51fcefaecd', None, None, None, None]]
 
@@ -45,7 +45,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\puid.csv', 'Comma-Separated Values (CSV)', None,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/18', 'Droid version 6.4', False,
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/18', 'Droid version 6.4', False,
                      datetime.date(2022, 12, 14), 6002.01, 'f95a4c954014342e4bf03f51fcefaecd',
                      None, None, None, None]]
 
@@ -64,7 +64,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\tools.txt', 'Plain text', None,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/111',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/111',
                      'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', False,
                      datetime.date(2022, 12, 14), 2, '7b71af3fdf4a2f72a378e3e77815e497',
                      None, 'true', 'true', None]]
@@ -84,7 +84,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\multi_keep_all.xlsx', 'ZIP Format', '2.0',
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/263',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/263',
                      'Droid version 6.4; file utility version 5.03; ffident version 0.2', True,
                      datetime.date(2022, 12, 14), 20.56, 'db4c3079e3805469c1b47c4864234e66', 'Microsoft Excel',
                      None, None, None],
@@ -128,7 +128,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\multi_keep_puid.gz', 'GZIP Format', None,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/266',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/266',
                      'Droid version 6.4; Tika version 1.21', False, datetime.date(2022, 12, 14), 1.993,
                      '6749b0ec1fbc96faab1a1f98dd7b8a74', None, None, None, None]]
 
@@ -147,7 +147,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk2\\size_less.txt', 'Plain text', None,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/111',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/111',
                      'Droid version 6.4; Jhove version 1.20.1; file utility version 5.03', False,
                      datetime.date(2022, 12, 14), .000345, 'e700d0871d44af1a217f0bf32320f25c',
                      None, 'true', 'true', None]]
@@ -186,7 +186,7 @@ class MyTestCase(unittest.TestCase):
 
         # Creates a list with the expected result.
         expected = [['C:\\accession\\disk1\\size_greater.csv', 'Comma-Separated Values (CSV)', None,
-                     'https://www.nationalarchives.gov.uk/pronom/x-fmt/18',
+                     'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/18',
                      'Droid version 6.4', False, datetime.date(2022, 12, 14), 4.404,
                      'd5e857a4bd33d2b5a2f96b78ccffe1f3', None, None, None, None]]
 

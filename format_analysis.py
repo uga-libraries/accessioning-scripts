@@ -92,7 +92,7 @@ else:
 
 # Removes duplicates in df_results from multiple NARA matches (same risk and preservation plan) to a single file.
 # The full data with the duplicates is saved in the accession's full risk data CSV if matches need to be checked.
-df_results = df_results.drop(["NARA_Format Name", "NARA_File Extension(s)", "NARA_PRONOM URL"], axis=1)
+df_results = df_results.drop(["NARA_Format_Name", "NARA_File_Extensions", "NARA_PRONOM_URL"], axis=1)
 df_results = df_results.drop_duplicates()
 
 # The next several code blocks make different subsets of the data based on different risk factors
@@ -100,7 +100,7 @@ df_results = df_results.drop_duplicates()
 # the dataframe is given the default value of 'No data of this type'.
 
 # Subset: NARA risk. Any format that is not Low Risk.
-df_nara_risk = df_results[df_results["NARA_Risk Level"] != "Low Risk"].copy()
+df_nara_risk = df_results[df_results["NARA_Risk_Level"] != "Low Risk"].copy()
 df_nara_risk.drop(["FITS_PUID", "FITS_Identifying_Tool(s)", "FITS_Creating_Application",
                    "FITS_Valid", "FITS_Well-Formed", "FITS_Status_Message"], inplace=True, axis=1)
 if len(df_nara_risk) == 0:
@@ -112,8 +112,8 @@ if len(df_nara_risk) == 0:
 # removes NARA columns (so duplicates from different NARA identifications aren't counted),
 # and drops duplicate rows.
 df_multiple = df_results[df_results.duplicated('FITS_File_Path', keep=False) == True].copy()
-df_multiple.drop(['FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message', 'NARA_Risk Level',
-                  'NARA_Proposed Preservation Plan', 'NARA_Match_Type'], inplace=True, axis=1)
+df_multiple.drop(['FITS_Valid', 'FITS_Well-Formed', 'FITS_Status_Message', 'NARA_Risk_Level',
+                  'NARA_Proposed_Preservation_Plan', 'NARA_Match_Type'], inplace=True, axis=1)
 df_multiple.drop_duplicates(inplace=True)
 if len(df_multiple) == 0:
     df_multiple = pd.DataFrame([['No data of this type']])
@@ -156,8 +156,8 @@ totals_dict = {"Files": len(df_results.index), "MB": df_results["FITS_Size_KB"].
 
 # Calculates file and size subtotals based on different criteria.
 # The input df for tech appraisal and other risk are filtered to exclude files which don't have that risk.
-df_format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk Level"], totals_dict)
-df_nara_risk_subtotals = subtotal(df_results, ["NARA_Risk Level"], totals_dict)
+df_format_subtotals = subtotal(df_results, ["FITS_Format_Name", "NARA_Risk_Level"], totals_dict)
+df_nara_risk_subtotals = subtotal(df_results, ["NARA_Risk_Level"], totals_dict)
 df_tech_appraisal_subtotals = subtotal(df_results[df_results["Technical_Appraisal"] != "Not for TA"],
                                        ["Technical_Appraisal", "FITS_Format_Name"], totals_dict)
 df_other_risk_subtotals = subtotal(df_results[df_results["Other_Risk"] != "Not for Other"],

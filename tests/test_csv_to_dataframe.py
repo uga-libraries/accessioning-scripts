@@ -56,15 +56,15 @@ class MyTestCase(unittest.TestCase):
         # Creates a list with the expected result.
         # NOTE: this must be updated when new things are added to the spreadsheet.
         expected = [['FITS_FORMAT', 'NOTES'],
-                    ['Adobe Font Metric', np.NaN],
-                    ['DOS batch file', np.NaN],
+                    ['Adobe Font Metric', np.nan],
+                    ['DOS batch file', np.nan],
                     ['DOS/Windows Executable', 'Also high risk'],
-                    ['empty', np.NaN],
-                    ['Microsoft Windows Autorun', np.NaN],
+                    ['empty', np.nan],
+                    ['Microsoft Windows Autorun', np.nan],
                     ['MS Windows icon resource', 'Also high risk'],
                     ['PE32 executable', 'Also high risk'],
-                    ['TFF/TrueType Font', np.NaN],
-                    ['Unknown Binary', np.NaN],
+                    ['TFF/TrueType Font', np.nan],
+                    ['Unknown Binary', np.nan],
                     ['x86 boot sector', 'Also high risk']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -110,13 +110,12 @@ class MyTestCase(unittest.TestCase):
 
         # Second test is the columns in the dataframe, which were renamed by the function.
         result_columns = df.columns.to_list()
-        expected_columns = ['NARA_Format Name', 'NARA_File Extension(s)', 'NARA_Category/Plan(s)',
-                            'NARA_NARA Format ID', 'NARA_MIME type(s)', 'NARA_Specification/Standard URL',
-                            'NARA_PRONOM URL', 'NARA_LOC URL', 'NARA_British Library URL', 'NARA_WikiData URL',
-                            'NARA_ArchiveTeam URL', 'NARA_ForensicsWiki URL', 'NARA_Wikipedia URL',
-                            'NARA_docs.fileformat.com', 'NARA_Other URL', 'NARA_Notes', 'NARA_Risk Level',
-                            'NARA_Preservation Action', 'NARA_Proposed Preservation Plan',
-                            'NARA_Description and Justification', 'NARA_Preferred Processing and Transformation Tool(s)']
+        expected_columns = ['NARA_Format_Name', 'NARA_File_Extensions', 'Category/Plan(s)', 'NARA Format ID',
+                            'MIME type(s)', 'Specification/Standard URL', 'NARA_PRONOM_URL', 'LOC URL',
+                            'British Library URL', 'WikiData URL', 'ArchiveTeam URL', 'ForensicsWiki URL',
+                            'Wikipedia URL', 'docs.fileformat.com', 'Other URL', 'Notes', 'NARA_Risk_Level',
+                            'NARA Preservation Action', 'NARA_Proposed_Preservation_Plan',
+                            'Description and Justification', 'NARA Preferred Processing and Transformation Tool(s)']
 
         # Compares both results. assertEqual prints "OK" or the differences between the result and expected result.
         self.assertEqual(result_empty, expected_empty, 'Problem with nara - dataframe empty')
