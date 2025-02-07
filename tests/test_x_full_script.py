@@ -52,8 +52,8 @@ class MyTestCase(unittest.TestCase):
 
         # Expected values for the NARA risk subtotal.
         self.ex02 = [['NARA_Risk_Level', 'File Count', 'File %', 'Size (MB)', 'Size %'],
-                     ['Low Risk', 7, 70, 0.025, 59.938],
-                     ['Moderate Risk', 3, 30, 0.016, 38.36]]
+                     ['Low Risk', 5, 50, 0.014, 33.565],
+                     ['Moderate Risk', 5, 50, 0.027, 64.733]]
 
         # Expected values for the tech appraisal subtotal.
         self.ex03 = [['Technical_Appraisal', 'FITS_Format_Name', 'File Count', 'File %', 'Size (MB)', 'Size %'],
@@ -67,27 +67,33 @@ class MyTestCase(unittest.TestCase):
         self.ex05 = [['Media', 'File Count', 'Size (MB)', 'NARA High Risk (File Count)',
                       'NARA Moderate Risk (File Count)', 'NARA Low Risk (File Count)', 'No NARA Match (File Count)',
                       'Technical Appraisal_Format (File Count)', 'Other Risk Indicator (File Count)'],
-                     ['disk1', 4, 0.022, 0, 0, 4, 0, 0, 0], ['disk2', 6, 0.02, 0, 3, 3, 0, 1, 3]]
+                     ['disk1', 4, 0.022, 0, 2, 2, 0, 0, 0], ['disk2', 6, 0.02, 0, 3, 3, 0, 1, 3]]
 
         # Expected values for the NARA risk subset.
         self.ex06 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Multiple_IDs',
                       'FITS_Date_Last_Modified', 'FITS_Size_KB', 'FITS_MD5', 'NARA_Risk_Level',
                       'NARA_Proposed_Preservation_Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
-                     [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
+                     [os.path.join(self.disk2_path, 'disk1backup.zip'), 'ZIP Format', 2.0, False, '2024-08-13', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA',
                       'Archive format'],
-                     [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
+                     [os.path.join(self.disk2_path, 'disk1backup2.zip'), 'ZIP Format', 2.0, False, '2024-08-13', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
                       'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format'],
-                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2, False, '2023-01-30', 5.488,
+                     [os.path.join(self.disk2_path, 'disk1backup3.zip'), 'ZIP Format', 2.0, False, '2024-08-13', 5.488,
                       'd585e96a134ddb7ca6764d41a62f20a1', 'Moderate Risk',
-                      'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format']]
+                      'Retain but extract files from the container', 'PRONOM', 'Not for TA', 'Archive format'],
+                     [os.path.join(self.disk1_path, 'data.xlsx'), 'XLSX', 'BLANK', True, '2024-08-13', 5.405,
+                      'e6e80af91da856ed8b3b7a6e14a7840d', 'Moderate Risk', 'Retain', 'File Extension',
+                      'Not for TA', 'Not for Other'],
+                     [os.path.join(self.disk1_path, 'data.xlsx'), 'Office Open XML Workbook', 'BLANK', True,
+                      '2024-08-13', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d', 'Moderate Risk', 'Retain',
+                      'File Extension', 'Not for TA', 'Not for Other']]
 
         # Expected values for the tech appraisal subset.
         self.ex07 = [['FITS_File_Path', 'FITS_Format_Name', 'FITS_Format_Version', 'FITS_Identifying_Tool(s)',
-                      'FITS_Multiple_IDs', 'FITS_Size_KB', 'FITS_Creating_Application', 'NARA_Risk Level',
-                      'NARA_Proposed Preservation Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
+                      'FITS_Multiple_IDs', 'FITS_Size_KB', 'FITS_Creating_Application', 'NARA_Risk_Level',
+                      'NARA_Proposed_Preservation_Plan', 'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
                      [os.path.join(self.disk2_path, 'empty.txt'), 'empty', 'BLANK', 'file utility version 5.03',
                       False, 0, 'BLANK', 'Low Risk', 'Retain', 'File Extension', 'Format', 'Not for Other']]
 
@@ -113,10 +119,10 @@ class MyTestCase(unittest.TestCase):
                       'FITS_Identifying_Tool(s)', 'FITS_Multiple_IDs', 'FITS_Date_Last_Modified', 'FITS_Size_KB',
                       'FITS_MD5', 'FITS_Creating_Application', 'Technical_Appraisal', 'Other_Risk'],
                      [os.path.join(self.disk1_path, 'data.xlsx'), 'XLSX', 'BLANK', 'BLANK',
-                      'Exiftool version 11.54', True, '2023-01-30', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
+                      'Exiftool version 11.54', True, '2024-08-13', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
                       'Microsoft Excel', 'Not for TA', 'Not for Other'],
                      [os.path.join(self.disk1_path, 'data.xlsx'), 'Office Open XML Workbook', 'BLANK', 'BLANK',
-                      'Tika version 1.21', True, '2023-01-30', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
+                      'Tika version 1.21', True, '2024-08-13', 5.405, 'e6e80af91da856ed8b3b7a6e14a7840d',
                       'Microsoft Excel', 'Not for TA', 'Not for Other']]
 
         # Expected values for the duplicates subset.
@@ -133,10 +139,10 @@ class MyTestCase(unittest.TestCase):
                       'FITS_MD5', 'FITS_Creating_Application', 'FITS_Valid', 'FITS_Well-Formed',
                       'FITS_Status_Message', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                       'NARA_Match_Type', 'Technical_Appraisal', 'Other_Risk'],
-                     [os.path.join(self.disk2_path, 'error.html'), 'Extensible Markup Language', 1,
-                      'BLANK', 'Jhove version 1.20.1', False, '2023-01-30', 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
+                     [os.path.join(self.disk2_path, 'error.html'), 'Extensible Markup Language', 1.0,
+                      'BLANK', 'Jhove version 1.20.1', False, '2024-08-13', 0.036, '14b55b1626bac03dc8e35fdb14b1f6ed',
                       'BLANK', True, True, 'Not able to determine type of end of line severity=info',
-                      'Low Risk', 'Retain', 'Format Name', 'Not for TA', 'Not for Other']]
+                      'Low Risk', 'Retain', 'Format Name and Version', 'Not for TA', 'Not for Other']]
 
     def tearDown(self):
         """
