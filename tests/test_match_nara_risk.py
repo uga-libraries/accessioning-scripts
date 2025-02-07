@@ -380,7 +380,7 @@ class MyTestCase(unittest.TestCase):
                      'https://www.nationalarchives.gov.uk/PRONOM/fmt/000', 'BlackBerry Binary Executable',
                      'cod', np.nan, 'High Risk', 'Retain', 'Format Name'],
                     ['C:\\Name\\file.dat', 'Data File', np.nan, 'https://www.nationalarchives.gov.uk/PRONOM/fmt/000',
-                     'Data File', 'dat', np.nan, 'Moderate Risk', 'Retain', 'Format Name']]
+                     'Data File', 'dat', np.nan, 'High Risk', 'Retain', 'Format Name']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name, NARA no PUID')
@@ -404,16 +404,16 @@ class MyTestCase(unittest.TestCase):
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.wk3', 'Lotus 1-2-3 Worksheet', '3.0', np.nan, 'Lotus 1-2-3 Worksheet 3.0',
                      'wk3', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/115', 'Moderate Risk',
-                     'Transform to CSV or XLSX', 'Format Name'],
+                     'Transform to CSV or XLSX', 'Format Name and Version'],
                     ['C:\\Name\\file.css', 'Cascading Style Sheets', '2.1', np.nan, 'Cascading Style Sheets 2.1',
                      'css', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk',
-                     'Retain', 'Format Name'],
+                     'Retain', 'Format Name and Version'],
                     ['C:\\Name\\file.swf', 'Macromedia Flash', '7', np.nan, 'Macromedia Flash 7', 'swf',
                      'https://www.nationalarchives.gov.uk/PRONOM/fmt/110', 'Moderate Risk',
-                     'Transform to MP4 if possible, otherwise retain', 'Format Name'],
+                     'Transform to MP4 if possible, otherwise retain', 'Format Name and Version'],
                     ['C:\\fail\\File.pts', 'Avid Pro Tools Session', '5.1-6.9', np.nan,
                      'Avid Pro Tools Session 5.1-6.9', 'pts', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/1951',
-                     'Moderate Risk', 'Transform to WAV if possible', 'Format Name']]
+                     'Moderate Risk', 'Transform to WAV if possible', 'Format Name and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case match')
@@ -437,10 +437,10 @@ class MyTestCase(unittest.TestCase):
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.wk3', 'lotus 1-2-3 worksheet', '3.0', np.nan, 'Lotus 1-2-3 Worksheet 3.0',
                      'wk3', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/115', 'Moderate Risk',
-                     'Transform to CSV or XLSX', 'Format Name'],
+                     'Transform to CSV or XLSX', 'Format Name and Version'],
                     ['C:\\Name\\file.css', 'cascading style sheets', '2.1', np.nan, 'Cascading Style Sheets 2.1',
                      'css', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk',
-                     'Retain', 'Format Name']]
+                     'Retain', 'Format Name and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, case does not match')
@@ -464,11 +464,11 @@ class MyTestCase(unittest.TestCase):
                      'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\Name\\file.btr', 'Btrieve', '6.0', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/000',
-                     'Btrieve 6.0', 'btr', np.nan, 'High Risk', 'Transform to CSV', 'Format Name'],
+                     'Btrieve 6.0', 'btr', np.nan, 'High Risk', 'Transform to CSV', 'Format Name and Version'],
                     ['C:\\Name\\file.accdb', 'Microsoft Access', '2013',
                      'https://www.nationalarchives.gov.uk/PRONOM/fmt/000',
                      'Microsoft Access 2013', 'accdb', np.nan,
-                     'Moderate Risk', 'Transform to SIARD or CSV', 'Format Name']]
+                     'Moderate Risk', 'Transform to SIARD or CSV', 'Format Name and Version']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
         self.assertEqual(result, expected, 'Problem with name and version, NARA no PUID')
@@ -724,10 +724,10 @@ class MyTestCase(unittest.TestCase):
                      'NARA_File_Extensions', 'NARA_PRONOM_URL', 'NARA_Risk_Level', 'NARA_Proposed_Preservation_Plan',
                      'NARA_Match_Type'],
                     ['C:\\unspecified\\file.wpd', 'WordPerfect unspecified version', np.nan, np.nan,
-                     'WordPerfect unspecified version', 'wpd', np.nan, 'Moderate Risk', 'Transform to PDF',
+                     'WordPerfect unspecified version', 'wpd|wp', np.nan, 'Moderate Risk', 'Transform to ODT',
                      'Format Name'],
-                    ['C:\\unspecified\\file.pict', 'Macintosh PICT', np.nan, np.nan, 'Macintosh PICT unspecified version',
-                     'pict|pct|pic', 'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/80', 'Moderate Risk',
+                    ['C:\\unspecified\\file.pict', 'Macintosh PICT', np.nan, np.nan,
+                     'Macintosh PICT unspecified version', 'pict|pct|pic', np.nan, 'Moderate Risk',
                      'Transform to PNG or JPEG', 'File Extension']]
 
         # Compares the results. assertEqual prints "OK" or the differences between the two lists.
@@ -792,7 +792,7 @@ class MyTestCase(unittest.TestCase):
                      'https://www.nationalarchives.gov.uk/PRONOM/x-fmt/224', 'Low Risk', 'Retain', 'PRONOM'],
                     ['C:\\unspecified\\file.gif', 'Graphics Interchange Format', '87a', np.nan,
                      'Graphics Interchange Format 87a', 'gif', 'https://www.nationalarchives.gov.uk/PRONOM/fmt/3',
-                     'Moderate Risk', 'Retain', 'Format Name'],
+                     'Moderate Risk', 'Retain', 'Format Name and Version'],
                     ['C:\\unspecified\\file.html', 'HTML', '5.1', np.nan, 'Hypertext Markup Language 5.1', 'htm|html',
                      'https://www.nationalarchives.gov.uk/PRONOM/fmt/96', 'Low Risk', 'Retain',
                      'File Extension and Version'],
