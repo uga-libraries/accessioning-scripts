@@ -125,9 +125,15 @@ def get_file_info(entry):
     size = entry.stat().st_size
     sizeKB = round((int(size)/1000), 1)
     modified = entry.stat().st_mtime
-    date_modified = datetime.fromtimestamp(modified).strftime('%Y-%m-%d')
+    try:
+        date_modified = datetime.fromtimestamp(modified).strftime('%Y-%m-%d')
+    except OSError:
+        date_modified = 'date_modified_not_calculated'
     created = entry.stat().st_ctime
-    date_created = datetime.fromtimestamp(created).strftime('%Y-%m-%d')
+    try:
+        date_created = datetime.fromtimestamp(created).strftime('%Y-%m-%d')
+    except OSError:
+        date_created = 'date_created_not_calculated'
 
     data.extend([path, sizeKB, date_modified, date_created])
     return data
